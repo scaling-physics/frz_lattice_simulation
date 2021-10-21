@@ -27,7 +27,7 @@ int diffuse(vector<int> &diffuse_pos,array<short,Lsq> &grid){
 //RETURN updated grid and diffuse position
 
 //Do I need to check how full the grid is? Set concentration?delete particles randomely?
-void create_particle(vector diffuse_pos, vector bound_pos, array grid)
+void create_particle(vector<int> &diffuse_pos,array<short,Lsq> &grid)
 {
 int const k_on = 0.02;
 
@@ -39,7 +39,7 @@ int const k_on = 0.02;
 
 //calculate energy change by binding/unbinding a particle
 //
-void energy_change(vector bound_pos, array grid)
+void energy_change(vector<int> &bound_pos,array<short,Lsq> &grid)
 {
 int const alpha=1;
 int const J=1;
