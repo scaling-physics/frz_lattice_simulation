@@ -11,7 +11,7 @@ using namespace std;
 //if move attempts to move next to a particle --> return particle combination for step 3
 // RETURN, updated diffuse_pos and grid, create array with attempted binding
 
-void diffuse(vector diffuse_pos,array grid){
+int diffuse(vector<int> &diffuse_pos,array<short,Lsq> &grid){
 //randomely choose diffuse_pos
 //choose random direction
 //check if neighbours of new hex are empty --> yes accept
@@ -61,12 +61,18 @@ int main(){
 const int MC_steps = 10; // number of Monte Carlo Steps
 int MC_counter = 0;
 
+vector<int> diffuse_pos;
+vector<int> bound_pos;
+array<short,Lsq> grid{0};
+int site;
+
+
 while (MC_counter<MC_Steps){
 
 cout << n <<'\n';
 //step 1: Move diffusive particles
 
-diffuse(a,b);
+site=diffuse(diffuse_pos,grid);
 //if move is rejected check if it binds or not
 
 
@@ -74,7 +80,7 @@ diffuse(a,b);
 
 //step 2: Check and create a new particles
 
-create_particle(a,c,b);
+create_particle(diffuse_pos,grid);
 
 //step 3: bind and unbind
 //first loop through the array for from step 1 to check if diffusive particles bind/form a new cluster or not
