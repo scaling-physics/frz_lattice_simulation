@@ -10,7 +10,14 @@ using namespace std;
 //if move goes to a lattice point without neighbours then move is accepted
 //if move attempts to move next to a particle --> return particle combination for step 3
 // RETURN, updated diffuse_pos and grid, create array with attempted binding
+
 void diffuse(vector diffuse_pos,array grid){
+//randomely choose diffuse_pos
+//choose random direction
+//check if neighbours of new hex are empty --> yes accept
+//-->no: exit. perform energy calculation and check if particle joins cluster
+
+
 
 
 }
@@ -20,7 +27,8 @@ void diffuse(vector diffuse_pos,array grid){
 //RETURN updated grid and diffuse position
 
 //Do I need to check how full the grid is? Set concentration?delete particles randomely?
-void create_particle(vector diffuse_pos, vector bound_pos, array grid){
+void create_particle(vector diffuse_pos, vector bound_pos, array grid)
+{
 int const k_on = 0.02;
 
 
@@ -31,7 +39,8 @@ int const k_on = 0.02;
 
 //calculate energy change by binding/unbinding a particle
 //
-void energy_change(vector bound_pos, array grid){
+void energy_change(vector bound_pos, array grid)
+{
 int const alpha=1;
 int const J=1;
 int no_bound==bound_pos.size()
