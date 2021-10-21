@@ -16,10 +16,10 @@ int diffuse(vector<int> &diffuse_pos,array<short,Lsq> &grid){
 //choose random direction
 //check if neighbours of new hex are empty --> yes accept
 //-->no: exit. perform energy calculation and check if particle joins cluster
+int particle_pos;
 
 
-
-
+return particle_pos;
 }
 
 // find empty hexes without neighbours
@@ -27,11 +27,13 @@ int diffuse(vector<int> &diffuse_pos,array<short,Lsq> &grid){
 //RETURN updated grid and diffuse position
 
 //Do I need to check how full the grid is? Set concentration?delete particles randomely?
-void create_particle(vector<int> &diffuse_pos,array<short,Lsq> &grid)
+int create_particle(vector<int> &diffuse_pos,array<short,Lsq> &grid)
 {
 int const k_on = 0.02;
 
+int new_particle_pos;
 
+return new_particle pos;
 }
 
 
@@ -39,7 +41,7 @@ int const k_on = 0.02;
 
 //calculate energy change by binding/unbinding a particle
 //
-void energy_change(vector<int> &bound_pos,array<short,Lsq> &grid)
+void binding_attempt(vector<int> &bound_pos,array<short,Lsq> &grid)
 {
 int const alpha=1;
 int const J=1;
@@ -65,7 +67,7 @@ vector<int> diffuse_pos;
 vector<int> bound_pos;
 array<short,Lsq> grid{0};
 int site;
-
+int new_particle_site;
 
 while (MC_counter<MC_Steps){
 
@@ -80,13 +82,17 @@ site=diffuse(diffuse_pos,grid);
 
 //step 2: Check and create a new particles
 
-create_particle(diffuse_pos,grid);
+new_particle_site=create_particle(diffuse_pos,grid);
 
 //step 3: bind and unbind
-//first loop through the array for from step 1 to check if diffusive particles bind/form a new cluster or not
+//BINDING
+//first take site and check if particle moved adjacent to particle and perform binding_attempt
+
+//second take new_particle_site: if zero skip, if non-zero check if adjacent to particle and perform binding_attempt
 
 
-
+//UNBINDING
+//perform unbinding_attempt for a random bound particle
 
 
 MC_counter++;

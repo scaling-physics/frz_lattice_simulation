@@ -3,8 +3,9 @@
 # include <iostream>	// cout, etc.
 #include <sstream>      // std::stringstrea
 #include <vector>
+#include <array>
 using namespace std;
-vector<int> neighbors[L];
+vector<int> v[10];
 
 // Function for inserting elements
 // in array of vectors
@@ -66,5 +67,11 @@ void arrayOfVectors()
 int main()
 {
     arrayOfVectors();
+    array<int,5> x{0};
+
+    for (auto iter = x.begin(); iter != x.end(); ++iter) {
+        std::cout << *iter << ' ';
+    }
+
     return 0;
 }
