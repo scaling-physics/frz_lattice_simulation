@@ -4,6 +4,7 @@
 #include <sstream>      // std::stringstrea
 #include <array>
 #include <vector>
+#include "lattice.h"
 using namespace std;
 
 // fct takes position of diffuse particles attempts to move one at random,
@@ -41,10 +42,8 @@ return new_particle pos;
 
 //calculate energy change by binding/unbinding a particle
 //
-void binding_attempt(vector<int> &bound_pos,array<short,Lsq> &grid)
+void binding_attempt(vector<int> &bound_pos,array<short,Lsq> &grid, int const &alpha, int const &J)
 {
-int const alpha=1;
-int const J=1;
 int no_bound==bound_pos.size()
 
 float nucleation_term = alpha*J*no_bound
@@ -63,11 +62,20 @@ int main(){
 const int MC_steps = 10; // number of Monte Carlo Steps
 int MC_counter = 0;
 
+//constants for reaction:
+int const alpha=1;
+int const J=1;
+
+// Input and Output arrays
 vector<int> diffuse_pos;
 vector<int> bound_pos;
 array<short,Lsq> grid{0};
 int site;
 int new_particle_site;
+
+
+
+
 
 while (MC_counter<MC_Steps){
 
