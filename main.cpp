@@ -44,9 +44,9 @@ return new_particle pos;
 //
 void binding_attempt(vector<int> &bound_pos,array<short,Lsq> &grid, int const &alpha, int const &J)
 {
-int no_bound==bound_pos.size()
+int no_bound==bound_pos.size();
 
-float nucleation_term = alpha*J*no_bound
+
 
 
 }

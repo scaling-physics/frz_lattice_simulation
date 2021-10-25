@@ -1,4 +1,5 @@
 # include <fstream>
+#include <range/v3/all.hpp>
 # include <cmath>
 # include <iostream>	// cout, etc.
 #include <sstream>      // std::stringstrea
@@ -65,65 +66,68 @@ void arrayOfVectors()
 }
 
 std::vector<int> get_neighbors(int const &pos, int const &L)
-{std::vector<int> neighbors;
+        {std::vector<int> neighbors;
 
-//corners
-std::array<int,4> corners={0,L-1, (L-1)*L,L*L-1};
-//edges
-std::set<int> edge_top;
-std::set<int> edge_bottom;
-std::set<int> edge_left;
-std::set<int> edge_right;
+        //corners
+        std::array<int,4> corners={0,L-1, (L-1)*L,L*L-1};
+        //edges
+        std::set<int> edge_top= ranges::view::iota(1, L-2);
+        std::set<int> edge_bottom= ranges::view::iota((L-1)*L+1,L*L-2);
+        std::set<int> edge_left;
+        std::set<int> edge_right;
 
-for (int j= 0; j<4; j++)
-{cout<<corners[j] << '\n';}
-
-
-if(pos==corners[0]){
-neighbors={pos+1,pos+L,pos+((L-1)*L),pos+((L-1)*L+1)};
-cout <<"corner 0 being executed";
-}
-
-else if(pos==corners[1]){
-neighbors={pos-1,pos+(L-1),pos+L,pos+((L-1)*L)};
-cout <<"corner 1 being executed";
-}
-else if(pos==corners[2]){
-neighbors={pos-(L-1)*L,pos-L,pos-(L+1),pos+1};
-cout <<"corner 2 being executed";
-}
-else if(pos==corners[3]){
-neighbors={pos-(L-1)*L-1,pos-(L-1)*L,pos-L,pos-1};
-
-cout <<"corner 3 being executed";
-}
-
-else if(edge_top.find(pos) !=edge_top.end()){
-neighbors={0,0,0,0,0,0};
-}
-
-else if(edge_bottom.find(pos) !=edge_bottom.end()){
-neighbors={0,0,0,0,0,0};
-}
-
-else if(edge_left.find(pos) !=edge_left.end()){
-neighbors={0,0,0,0,0,0};
-}
-
-else if(edge_right.find(pos) !=edge_right.end()){
-neighbors={0,0,0,0,0,0};
-}
-
-else{
-neighbors={0,0,0,0,0,0};
-}
+        for (int j= 0; j<4; j++)
+        {cout<<corners[j] << '\n';}
 
 
+        if(pos==corners[0]){
+            neighbors={pos+1,pos+L,pos+((L-1)*L),pos+((L-1)*L+1)};
+            cout <<"corner 0 being executed";
+            }
 
+        else if(pos==corners[1]){
+            neighbors={pos-1,pos+(L-1),pos+L,pos+((L-1)*L)};
+            cout <<"corner 1 being executed";
+            }
+        else if(pos==corners[2]){
+            neighbors={pos-(L-1)*L,pos-L,pos-(L+1),pos+1};
+            cout <<"corner 2 being executed";
+            }
+        else if(pos==corners[3]){
+            neighbors={pos-(L-1)*L-1,pos-(L-1)*L,pos-L,pos-1};
+            cout <<"corner 3 being executed";
+            }
 
-return neighbors;
+        else if(edge_top.find(pos) !=edge_top.end()){
+            if(pos%2==0)
+            {neighbors={pos-1, pos+1, pos+L, pos+(L-1)*L-1, pos+(L-1)*L, pos+(L-1)*L+1};}
+            else
+            {neighbors={pos-1, pos+1, pos+L-1, pos+L, pos+L-1, pos+(L-1)*L};}
+            }
 
-}
+        else if(edge_bottom.find(pos) !=edge_bottom.end()){
+            if(pos%2==0)
+            {neighbors={pos-(L-1)*L, pos-L-1, pos-L, pos-L+1, pos-1, pos+1};}
+            else
+            {neighbors={pos-(L-1)*L-1, pos-(L-1)*L, pos-(L-1)*L+1, pos-L, pos-1, pos+1};}
+            }
+
+        else if(edge_left.find(pos) !=edge_left.end()){
+            neighbors={pos-L, pos-L+1, pos+1, pos+L};
+            }
+
+        else if(edge_right.find(pos) !=edge_right.end()){
+            neighbors={pos-L, pos-1, pos+L-1,pos+L};
+            }
+
+        else{
+            if(pos%2==0)
+            {neighbors={pos-L-1, pos-L, pos-L+1, pos-1, pos+1, pos+L};}
+            else
+            {neighbors={pos-L, pos-1, pos+1, pos+L-1, pos+L, pos+L+1};}
+            }
+            return neighbors;
+        }
 // Driver code
 int main()
 {
@@ -137,7 +141,7 @@ int main()
     const int L=4;
     int Lsq = L*L;
     //cout << Lsq;
-    int pos=15;
+    int pos=5;
 
     neighbors=get_neighbors(pos,L);
     for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
