@@ -1,5 +1,9 @@
+#ifndef lattice_H
+#define lattice_H
+
+
+
 # include <fstream>
-#include <range/v3/all.hpp>
 # include <cmath>
 # include <iostream>	// cout, etc.
 #include <sstream>      // std::stringstrea
@@ -20,19 +24,25 @@ public:
    std::vector<int> bound_pos; //reference to position of bound particles
 
 
-   std::vector<int> get_neighbors(int const &pos, int const &L)
+  std::vector<int> get_neighbors(int const &pos, int const &L)
         {std::vector<int> neighbors;
 
         //corners
         std::array<int,4> corners={0,L-1, (L-1)*L,L*L-1};
         //edges
-        std::set<int> edge_top= ranges::view::iota(1, L-2);
-        std::set<int> edge_bottom= ranges::view::iota((L-1)*L+1,L*L-2);
-        std::set<int> edge_left;
-        std::set<int> edge_right;
+        std::vector<int> edge_top(L-2);
+            for (int i=0;i<L-2;i++){edge_top[i]=i+1;}
+        std::vector<int> edge_bottom(L-2);
+            for (int i=0;i<L-2;i++){edge_bottom[i]=(L-1)*L+i+1;}
+        std::vector<int> edge_left(L-2);
+            for (int i=0;i<L-2;i++){edge_left[i]=(i+1)*L;}
+        std::vector<int> edge_right(L-2);
+            for (int i=0;i<L-2;i++){edge_right[i]=(i+2)*L-1;}
 
-        for (int j= 0; j<4; j++)
-        {cout<<corners[j] << '\n';}
+        for (int j= 0; j<2; j++)
+        {cout<<edge_left[j] << '\n';}
+        for (int j= 0; j<2; j++)
+        {cout<<edge_right[j] << '\n';}
 
 
         if(pos==corners[0]){
@@ -53,25 +63,25 @@ public:
             cout <<"corner 3 being executed";
             }
 
-        else if(edge_top.find(pos) !=edge_top.end()){
+        else if(std::find(edge_top.begin(), edge_top.end(),pos) !=edge_top.end()){
             if(pos%2==0)
             {neighbors={pos-1, pos+1, pos+L, pos+(L-1)*L-1, pos+(L-1)*L, pos+(L-1)*L+1};}
             else
-            {neighbors={pos-1, pos+1, pos+L-1, pos+L, pos+L-1, pos+(L-1)*L};}
+            {neighbors={pos-1, pos+1, pos+L-1, pos+L, pos+L+1, pos+(L-1)*L};}
             }
 
-        else if(edge_bottom.find(pos) !=edge_bottom.end()){
+        else if(std::find(edge_bottom.begin(), edge_bottom.end(),pos) !=edge_bottom.end()){
             if(pos%2==0)
             {neighbors={pos-(L-1)*L, pos-L-1, pos-L, pos-L+1, pos-1, pos+1};}
             else
             {neighbors={pos-(L-1)*L-1, pos-(L-1)*L, pos-(L-1)*L+1, pos-L, pos-1, pos+1};}
             }
 
-        else if(edge_left.find(pos) !=edge_left.end()){
+        else if(std::find(edge_left.begin(), edge_left.end(),pos) !=edge_left.end()){
             neighbors={pos-L, pos-L+1, pos+1, pos+L};
             }
 
-        else if(edge_right.find(pos) !=edge_right.end()){
+        else if(std::find(edge_right.begin(), edge_right.end(),pos) !=edge_right.end()){
             neighbors={pos-L, pos-1, pos+L-1,pos+L};
             }
 
@@ -83,5 +93,6 @@ public:
             }
             return neighbors;
         }
-
 };
+
+#endif // lattice_H

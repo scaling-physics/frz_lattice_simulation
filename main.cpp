@@ -5,6 +5,15 @@
 #include <array>
 #include <vector>
 #include "lattice.h"
+
+# include <chrono>
+# include <random>
+
+//generate random number
+unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
+std::mt19937_64 gen(seed);
+std::uniform_real_distribution<double> unidist(0.0,1.0);
+
 using namespace std;
 
 // fct takes position of diffuse particles attempts to move one at random,
