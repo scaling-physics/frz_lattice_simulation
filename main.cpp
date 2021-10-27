@@ -1,4 +1,4 @@
- # include <fstream>
+# include <fstream>
 # include <cmath>
 # include <iostream>	// cout, etc.
 #include <sstream>      // std::stringstrea
@@ -21,21 +21,22 @@ using namespace std;
 //if move attempts to move next to a particle --> return particle combination for step 3
 // RETURN, updated diffuse_pos and grid, create array with attempted binding
 
-int diffuse(vector<int> &diffuse_pos,array<short,Lsq> &grid){
+int diffuse(vector<int> &diffuse_pos,array<short,Lsq> &grid)
+{
 //randomely choose diffuse_pos
 //choose random direction
 //check if neighbours of new hex are empty --> yes accept
 //-->no: exit. perform energy calculation and check if particle joins cluster
-int rand = unidist(gen)*diffuse_pos.size();
-int particle_pos = diffuse_pos[rand] ;
+    int rand = unidist(gen)*diffuse_pos.size();
+    int particle_pos = diffuse_pos[rand] ;
 
-std::vector<int> neighbors_dif;
-std::array<int,2> coord;
-coord =lattice.get_index(particle_pos,Nx,Ny);
-neighbors_dif=lattice.get_neighbors(coord,Nx,Ny);
+    std::vector<int> neighbors_dif;
+    std::array<int,2> coord;
+    coord =lattice.get_index(particle_pos,Nx,Ny);
+    neighbors_dif=lattice.get_neighbors(coord,Nx,Ny);
 
 
-return particle_pos;
+    return particle_pos;
 }
 
 // find empty hexes without neighbours
@@ -59,7 +60,7 @@ return particle_pos;
 //
 void binding_attempt(vector<int> &bound_pos,array<short,Lsq> &grid, int const &alpha, int const &J)
 {
-int no_bound=bound_pos.size();
+    int no_bound=bound_pos.size();
 
 
 
@@ -73,32 +74,34 @@ int no_bound=bound_pos.size();
 
 
 
-int main(){
-const int MC_steps = 10; // number of Monte Carlo Steps
-int MC_counter = 0;
+int main()
+{
+    const int MC_steps = 10; // number of Monte Carlo Steps
+    int MC_counter = 0;
 
 //constants for reaction:
-int const alpha=1;
-int const J=1;
+    int const alpha=1;
+    int const J=1;
 
 // Input and Output arrays
-Lattice lattice;
-vector<int> diffuse_pos;
-vector<int> bound_pos;
-array<short,Lsq> grid{0};
-int site;
-int new_particle_site;
+    Lattice lattice;
+    vector<int> diffuse_pos;
+    vector<int> bound_pos;
+    array<short,Lsq> grid{0};
+    int site;
+    int new_particle_site;
 
 
 
 
 
-while (MC_counter<MC_steps){
+    while (MC_counter<MC_steps)
+    {
 
-cout << MC_counter <<'\n';
+        cout << MC_counter <<'\n';
 //step 1: Move diffusive particles
 
-site=diffuse(diffuse_pos,grid);
+        site=diffuse(diffuse_pos,grid);
 //if move is rejected check if it binds or not
 
 
@@ -119,11 +122,11 @@ site=diffuse(diffuse_pos,grid);
 //perform unbinding_attempt for a random bound particle
 
 
-MC_counter++;
+        MC_counter++;
 
 
 
 
-}
-return 0;
+    }
+    return 0;
 };
