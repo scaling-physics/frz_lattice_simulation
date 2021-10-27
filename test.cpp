@@ -74,7 +74,7 @@ void arrayOfVectors()
     printElements();
 }
 
-std::vector<int> get_neighbors(int const &pos, int const &L)
+std::vector<int> get_neighbors_a(int const &pos, int const &L)
         {std::vector<int> neighbors;
 
         //corners
@@ -89,10 +89,10 @@ std::vector<int> get_neighbors(int const &pos, int const &L)
         std::vector<int> edge_right(L-2);
             for (int i=0;i<L-2;i++){edge_right[i]=(i+2)*L-1;}
 
-        for (int j= 0; j<2; j++)
-        {cout<<edge_left[j] << '\n';}
-        for (int j= 0; j<2; j++)
-        {cout<<edge_right[j] << '\n';}
+//        for (int j= 0; j<2; j++)
+//        {cout<<edge_left[j] << '\n';}
+//        for (int j= 0; j<2; j++)
+//        {cout<<edge_right[j] << '\n';}
 
 
         if(pos==corners[0]){
@@ -143,27 +143,92 @@ std::vector<int> get_neighbors(int const &pos, int const &L)
             }
             return neighbors;
         }
+
+std::array<int,2> get_index(int const &pos, int const &Nx, int const &Ny)
+{ //transform 1d array into 2d notation
+        int x=pos%Nx;
+        int y=pos/Nx;
+
+        array<int, 2> coord{x,y};
+
+
+        return coord;
+        }
+
+bool is_in_lattice(array<int,2> &coord, int const &Nx, int const &Ny)
+{ int x=coord[0];
+    int y= coord[1];
+        return ( (unsigned int)x<Nx && (unsigned int)y<Ny );//negative values are looped around to big numbers by the cast to unsigned. In this way, only one inequality is required.
+    }
+
+std::vector<int> get_neighbors(array<int,2> &coord, int const &Nx, int const &Ny)
+    {std::vector<int> neighbors;
+        int x=coord[0];
+        int y= coord[1];
+
+
+
+        if(y%2==0){
+            if(x-1>=0){neighbors.push_back(y*Nx+x-1);
+            neighbors.push_back(((Ny+y+1)%Ny)*Nx+x-1);
+            neighbors.push_back(((Ny+y-1)%Ny)*Nx+x-1);}
+
+            if(x+1<Nx){neighbors.push_back(y*Nx+x+1);}
+
+            neighbors.push_back(((Ny+y+1)%Ny)*Nx+x);
+            neighbors.push_back(((Ny+y-1)%Ny)*Nx+x);
+
+
+
+        }
+
+        else{
+            if(x-1>=0){neighbors.push_back(y*Nx+x-1);}
+
+            if(x+1<Nx){neighbors.push_back(y*Nx+x+1);
+            neighbors.push_back(((Ny+y+1)%Ny)*Nx+x+1);
+            neighbors.push_back(((Ny+y-1)%Ny)*Nx+x+1);}
+
+            neighbors.push_back(((Ny+y+1)%Ny)*Nx+x);
+            neighbors.push_back(((Ny+y-1)%Ny)*Nx+x);
+
+        }
+
+        return neighbors;
+    }
+
+
+
+
 // Driver code
 int main()
 {
     //arrayOfVectors();
     array<int,5> x{0};
     vector<int> neighbors;
+    vector<int> neighbors_a;
+    array<int,2> coord;
 
 //    for (auto iter = x.begin(); iter != x.end(); ++iter) {
 //        std::cout << *iter << ' ';
 //    }
-    const int L=4;
+    const int L=10;
+    const int Nx=10;
+    const int Ny=5;
     int Lsq = L*L;
     //cout << Lsq;
-    int pos=13;
+    int pos=9;
 
-    neighbors=get_neighbors(pos,L);
-    for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
-        std::cout << *iter << ' ';
+    neighbors_a=get_neighbors_a(pos,L);
+    for (auto iter = neighbors_a.begin(); iter != neighbors_a.end(); ++iter) {
+        std::cout << *iter << "\n"<<' ';
         }
-
-
-    cout << unidist(gen)*Lsq;
+    coord = get_index(pos, Nx,Ny);
+    neighbors= get_neighbors(coord,Nx,Ny);
+    cout<<"neighbor"<<"\n";
+    for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
+        std::cout << *iter << "\n"<<' ';
+        }
+//    cout << unidist(gen)*Lsq;
     return 0;
 }

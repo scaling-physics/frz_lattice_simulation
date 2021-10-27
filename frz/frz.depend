@@ -1,0 +1,36 @@
+# depslib dependency file v1.0
+1635337932 source:/home/hannohennighausen/Documents/frz_lattice_model/main.cpp
+	<fstream>
+	<cmath>
+	<iostream>
+	<sstream>
+	<array>
+	<vector>
+	"lattice.h"
+	<chrono>
+	<random>
+
+1635337381 /home/hannohennighausen/Documents/frz_lattice_model/include/lattice.h
+	<fstream>
+	<cmath>
+	<iostream>
+	<sstream>
+	<vector>
+	<array>
+	<algorithm>
+	<set>
+	<chrono>
+	<random>
+
+1635337279 source:/home/hannohennighausen/Documents/frz_lattice_model/test.cpp
+	<fstream>
+	<cmath>
+	<iostream>
+	<sstream>
+	<vector>
+	<array>
+	<algorithm>
+	<set>
+	<chrono>
+	<random>
+
