@@ -5,38 +5,56 @@
 #include <array>
 #include <vector>
 #include "lattice.h"
-Lattice lattice;
 # include <chrono>
 # include <random>
+#include <algorithm>
+Lattice lattice;
+//using namespace std;
 
 //generate random number
+
+
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
 std::uniform_real_distribution<double> unidist(0.0,1.0);
 
-using namespace std;
+
 
 // fct takes position of diffuse particles attempts to move one at random,
 //if move goes to a lattice point without neighbours then move is accepted
 //if move attempts to move next to a particle --> return particle combination for step 3
 // RETURN, updated diffuse_pos and grid, create array with attempted binding
 
-int diffuse(vector<int> &diffuse_pos,array<short,Lsq> &grid)
+int diffuse(std::vector<int> &diffuse_pos,std::array<short,16> &grid)
 {
 //randomely choose diffuse_pos
+
+
+    float rand = unidist(gen)*diffuse_pos.size();
+    std::cout<<"rand"<<rand<<"\n";
+    int particle_pos = diffuse_pos[std::floor(rand)] ;
+    std::cout<<"particle"<<particle_pos<<"\n";
 //choose random direction
-//check if neighbours of new hex are empty --> yes accept
-//-->no: exit. perform energy calculation and check if particle joins cluster
-    int rand = unidist(gen)*diffuse_pos.size();
-    int particle_pos = diffuse_pos[rand] ;
-
     std::vector<int> neighbors_dif;
-    std::array<int,2> coord;
-    coord =lattice.get_index(particle_pos,Nx,Ny);
-    neighbors_dif=lattice.get_neighbors(coord,Nx,Ny);
+    neighbors_dif=lattice.get_neighbors(particle_pos);
 
 
-    return particle_pos;
+    int new_pos =neighbors_dif[ std::floor(neighbors_dif.size()*(rand - std::floor(rand)))];
+    std::cout<<"new_pos"<<new_pos<<"\n";
+//check if new hex is occupied
+    if(grid[new_pos]==0)// accept move
+    {
+        grid[particle_pos]=0;
+        grid[new_pos]=1;
+        diffuse_pos[std::floor(rand)]=new_pos;
+        //NEED TO UPDATE DIFFUSE_pos!!!!!!
+        return new_pos;
+
+    }
+
+    else{
+    return particle_pos;}
+
 }
 
 // find empty hexes without neighbours
@@ -58,7 +76,7 @@ int diffuse(vector<int> &diffuse_pos,array<short,Lsq> &grid)
 
 //calculate energy change by binding/unbinding a particle
 //
-void binding_attempt(vector<int> &bound_pos,array<short,Lsq> &grid, int const &alpha, int const &J)
+void binding_attempt(std::vector<int> &bound_pos,std::array<short,16> &grid, int const &alpha, int const &J)
 {
     int no_bound=bound_pos.size();
 
@@ -76,7 +94,7 @@ void binding_attempt(vector<int> &bound_pos,array<short,Lsq> &grid, int const &a
 
 int main()
 {
-    const int MC_steps = 10; // number of Monte Carlo Steps
+    const int MC_steps = 5; // number of Monte Carlo Steps
     int MC_counter = 0;
 
 //constants for reaction:
@@ -84,10 +102,8 @@ int main()
     int const J=1;
 
 // Input and Output arrays
-    Lattice lattice;
-    vector<int> diffuse_pos;
-    vector<int> bound_pos;
-    array<short,Lsq> grid{0};
+
+
     int site;
     int new_particle_site;
 
@@ -95,13 +111,14 @@ int main()
 
 
 
-    while (MC_counter<MC_steps)
+    while(MC_counter<MC_steps)
     {
 
-        cout << MC_counter <<'\n';
+        std::cout << MC_counter <<'\n';
 //step 1: Move diffusive particles
 
-        site=diffuse(diffuse_pos,grid);
+        site=diffuse(lattice.diffuse_pos,lattice.grid);
+        std::cout<<"site"<<site<<"\n";
 //if move is rejected check if it binds or not
 
 
@@ -123,10 +140,9 @@ int main()
 
 
         MC_counter++;
-
-
-
-
     }
+    for (auto iter = lattice.grid.begin(); iter !=lattice.grid.end(); ++iter) {
+        std::cout << *iter << "\n"<<' ';
+        }
     return 0;
 };

@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1635337932 source:/home/hannohennighausen/Documents/frz_lattice_model/main.cpp
+1635435032 source:/home/hannohennighausen/Documents/frz_lattice_model/main.cpp
 	<fstream>
 	<cmath>
 	<iostream>
@@ -9,8 +9,9 @@
 	"lattice.h"
 	<chrono>
 	<random>
+	<algorithm>
 
-1635337381 /home/hannohennighausen/Documents/frz_lattice_model/include/lattice.h
+1635435603 /home/hannohennighausen/Documents/frz_lattice_model/include/lattice.h
 	<fstream>
 	<cmath>
 	<iostream>

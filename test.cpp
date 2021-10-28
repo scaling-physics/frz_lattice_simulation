@@ -5,10 +5,10 @@
 #include <vector>
 #include <array>
 #include <algorithm>
-#include <set>
 # include <chrono>
 # include <random>
-
+    const int Nx=4;
+    const int Ny=4;
 //generate random number
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
@@ -144,58 +144,89 @@ std::vector<int> get_neighbors_a(int const &pos, int const &L)
             return neighbors;
         }
 
-std::array<int,2> get_index(int const &pos, int const &Nx, int const &Ny)
-{ //transform 1d array into 2d notation
+std::array<int,2> get_index(int const pos)
+    {
+        //transform 1d array into 2d notation
         int x=pos%Nx;
         int y=pos/Nx;
 
-        array<int, 2> coord{x,y};
+        std::array<int, 2> coord{x,y};
 
 
         return coord;
-        }
+    }
 
-bool is_in_lattice(array<int,2> &coord, int const &Nx, int const &Ny)
-{ int x=coord[0];
-    int y= coord[1];
+    int get_single_index(int x, int y)
+    {
+        int index = y*Ny+x;
+        return index;
+
+    }
+
+    bool is_in_lattice(std::array<int,2> coord)
+    {
+        int x=coord[0];
+        int y= coord[1];
         return ( (unsigned int)x<Nx && (unsigned int)y<Ny );//negative values are looped around to big numbers by the cast to unsigned. In this way, only one inequality is required.
     }
 
-std::vector<int> get_neighbors(array<int,2> &coord, int const &Nx, int const &Ny)
-    {std::vector<int> neighbors;
+    std::vector<int> get_neighbors(int pos)
+    {
+        std::vector<int> neighbors;
+        std::array<int,2> coord;
+        coord = get_index(pos);
+
         int x=coord[0];
         int y= coord[1];
 
 
 
-        if(y%2==0){
-            if(x-1>=0){neighbors.push_back(y*Nx+x-1);
-            neighbors.push_back(((Ny+y+1)%Ny)*Nx+x-1);
-            neighbors.push_back(((Ny+y-1)%Ny)*Nx+x-1);}
-
-            if(x+1<Nx){neighbors.push_back(y*Nx+x+1);}
-
-            neighbors.push_back(((Ny+y+1)%Ny)*Nx+x);
-            neighbors.push_back(((Ny+y-1)%Ny)*Nx+x);
-
+        if(y%2==0)
+        {
+            if(x-1>=0)
+            {
+                neighbors.push_back(get_single_index(x-1,y));
+                neighbors.push_back(get_single_index(x-1,(y+1)%Ny));
+                neighbors.push_back(get_single_index(x-1,(Ny+y-1)%Ny));
+            }
 
 
+        if(x+1<Nx)
+        {
+            neighbors.push_back(get_single_index(x+1,y));
         }
 
-        else{
-            if(x-1>=0){neighbors.push_back(y*Nx+x-1);}
+        neighbors.push_back(get_single_index(x,(y+1)%Ny));
+        neighbors.push_back(get_single_index(x,(Ny+y-1)%Ny));
 
-            if(x+1<Nx){neighbors.push_back(y*Nx+x+1);
-            neighbors.push_back(((Ny+y+1)%Ny)*Nx+x+1);
-            neighbors.push_back(((Ny+y-1)%Ny)*Nx+x+1);}
 
-            neighbors.push_back(((Ny+y+1)%Ny)*Nx+x);
-            neighbors.push_back(((Ny+y-1)%Ny)*Nx+x);
 
-        }
-
-        return neighbors;
     }
+
+    else
+    {
+        if(x-1>=0)
+        {
+            neighbors.push_back(get_single_index(x-1,y));
+        }
+
+        if(x+1<Nx)
+        {
+            neighbors.push_back(get_single_index(x+1,y));
+            neighbors.push_back(get_single_index(x+1,(y+1)%Ny));
+            neighbors.push_back(get_single_index(x+1,(Ny+y-1)%Ny));
+        }
+
+        neighbors.push_back(get_single_index(x,(y+1)%Ny));
+        neighbors.push_back(get_single_index(x,(Ny+y-1)%Ny));
+
+
+
+    }
+    sort(neighbors.begin(),neighbors.end());
+    return neighbors;
+}
+
 
 
 
@@ -204,7 +235,6 @@ std::vector<int> get_neighbors(array<int,2> &coord, int const &Nx, int const &Ny
 int main()
 {
     //arrayOfVectors();
-    array<int,5> x{0};
     vector<int> neighbors;
     vector<int> neighbors_a;
     array<int,2> coord;
@@ -213,19 +243,22 @@ int main()
 //        std::cout << *iter << ' ';
 //    }
     const int L=10;
-    const int Nx=10;
-    const int Ny=5;
     int Lsq = L*L;
     //cout << Lsq;
-    int pos=9;
+    int pos=5;
 
     neighbors_a=get_neighbors_a(pos,L);
     for (auto iter = neighbors_a.begin(); iter != neighbors_a.end(); ++iter) {
         std::cout << *iter << "\n"<<' ';
         }
-    coord = get_index(pos, Nx,Ny);
-    neighbors= get_neighbors(coord,Nx,Ny);
+
+    neighbors= get_neighbors(pos);
     cout<<"neighbor"<<"\n";
+    for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
+        std::cout << *iter << "\n"<<' ';
+        }
+    sort(neighbors.begin(),neighbors.end());
+    cout<<"neighbor sorted"<<"\n";
     for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
         std::cout << *iter << "\n"<<' ';
         }
