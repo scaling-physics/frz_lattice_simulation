@@ -32,6 +32,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../include/Particles.h" />
 		<Unit filename="../include/lattice.h" />
 		<Unit filename="../main.cpp" />
 		<Extensions />

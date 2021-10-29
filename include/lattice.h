@@ -1,5 +1,5 @@
-#ifndef lattice_H
-#define lattice_H
+#ifndef LATTICE_H
+#define LATTICE_H
 
 
 
@@ -10,9 +10,13 @@
 #include <vector>
 #include <array>
 #include <algorithm>
-#include <set>
-# include <chrono>
-# include <random>
+
+//declare global dimensions
+const int Nx=4;
+const int Ny=4;
+const int L=4;
+const int Nxy = Nx*Ny;
+
 
 
 class Lattice
@@ -23,15 +27,7 @@ private:
 
 
 public:
-    const int Nx=4;
-    const int Ny=4;
-    const int L=4;
-    const int Lsq = Nx*Ny;
 
-
-    std::array<short,16> grid{0}; //0 if empty, 1 if occupied but diffuse; orientation if occupied and bound
-    std::vector<int> diffuse_pos={1,2,3}; //reference to position of diffuse particles
-    std::vector<int> bound_pos; //reference to position of bound particles
 
 
     std::array<int,2> get_index(int const pos)
@@ -118,4 +114,4 @@ public:
 
 };
 
-#endif // lattice_H
+#endif // LATTICE_H

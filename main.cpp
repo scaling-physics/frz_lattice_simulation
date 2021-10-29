@@ -4,11 +4,14 @@
 #include <sstream>      // std::stringstrea
 #include <array>
 #include <vector>
-#include "lattice.h"
 # include <chrono>
 # include <random>
 #include <algorithm>
+
+#include "lattice.h"
 Lattice lattice;
+#include "Particles.h"
+Particles particles;
 //using namespace std;
 
 //generate random number
@@ -25,7 +28,7 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
 //if move attempts to move next to a particle --> return particle combination for step 3
 // RETURN, updated diffuse_pos and grid, create array with attempted binding
 
-int diffuse(std::vector<int> &diffuse_pos,std::array<short,16> &grid)
+int diffuse(std::vector<int> &diffuse_pos,std::array<short,Nxy> &grid)
 {
 //randomely choose diffuse_pos
 
@@ -52,33 +55,56 @@ int diffuse(std::vector<int> &diffuse_pos,std::array<short,16> &grid)
 
     }
 
-    else{
-    return particle_pos;}
+    else
+    {
+        return particle_pos;
+    }
 
 }
 
-// find empty hexes without neighbours
+// find empty hexes (without neighbors)
 // randomely create a particle with k_on/
 //RETURN updated grid and diffuse position
 
 //Do I need to check how full the grid is? Set concentration?delete particles randomely?
-//int create_particle(vector<int> &diffuse_pos,array<short,Lsq> &grid)
-//{
-//int const k_on = 0.02;
-//
-//int new_particle_pos;
-//
-//return new_particle pos;
-//}
+int create_particle(std::vector<int> &diffuse_pos,std::vector<int> &bound_pos,std::array<short,Nxy> &grid)
+{
+    std::vector<int> empty_hex(Nxy);
+    for(int x = 0; x < Nxy; ++x)
+    {
+        empty_hex[x] = x;
+    }
+
+    std::vector<int> occupied_hex;
+    occupied_hex.insert(occupied_hex.end(),bound_pos.begin(),bound_pos.end());
+    occupied_hex.insert(occupied_hex.end(),diffuse_pos.begin(),diffuse_pos.end());
+
+    for(auto it=occupied_hex.begin(); it!=occupied_hex.end(); ++it)
+    {
+        empty_hex.erase(std::remove(empty_hex.begin(),empty_hex.end(),*it),empty_hex.end());
+    }
+    float rand = unidist(gen)*(empty_hex.size());
+    int new_particle_pos=std::floor(rand);
+    int const k_on = 0.5;
+
+    if((rand-std::floor(rand))<k_on)// accept move
+    {
+        grid[new_particle_pos]=1;
+        diffuse_pos.push_back(new_particle_pos);
+        return new_particle_pos;
+
+    }
+    else {return Nxy+1}
+}
 
 
 
 
 //calculate energy change by binding/unbinding a particle
 //
-void binding_attempt(std::vector<int> &bound_pos,std::array<short,16> &grid, int const &alpha, int const &J)
+void binding_attempt(std::vector<int> &bound_pos,std::array<short,Nxy> &grid, int const &alpha, int const &J)
 {
-    int no_bound=bound_pos.size();
+//    int no_bound=bound_pos.size();
 
 
 
@@ -98,17 +124,24 @@ int main()
     int MC_counter = 0;
 
 //constants for reaction:
-    int const alpha=1;
-    int const J=1;
+//    int const alpha=1;
+//    int const J=1;
 
 // Input and Output arrays
-
 
     int site;
     int new_particle_site;
 
+    particles.grid[1]=1;
+    particles.grid[2]=1;
+    particles.grid[3]=1;
+    particles.grid[4]=3;
+    particles.grid[5]=2;
+    particles.grid[6]=3;
 
 
+    particles.get_diffuse_pos();
+    particles.get_bound_pos();
 
 
     while(MC_counter<MC_steps)
@@ -117,7 +150,7 @@ int main()
         std::cout << MC_counter <<'\n';
 //step 1: Move diffusive particles
 
-        site=diffuse(lattice.diffuse_pos,lattice.grid);
+        site=diffuse(particles.diffuse_pos,particles.grid);
         std::cout<<"site"<<site<<"\n";
 //if move is rejected check if it binds or not
 
@@ -141,8 +174,9 @@ int main()
 
         MC_counter++;
     }
-    for (auto iter = lattice.grid.begin(); iter !=lattice.grid.end(); ++iter) {
+    for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
+    {
         std::cout << *iter << "\n"<<' ';
-        }
+    }
     return 0;
 };

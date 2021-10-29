@@ -234,34 +234,34 @@ std::array<int,2> get_index(int const pos)
 // Driver code
 int main()
 {
-    //arrayOfVectors();
-    vector<int> neighbors;
-    vector<int> neighbors_a;
-    array<int,2> coord;
-
-//    for (auto iter = x.begin(); iter != x.end(); ++iter) {
-//        std::cout << *iter << ' ';
-//    }
-    const int L=10;
-    int Lsq = L*L;
-    //cout << Lsq;
-    int pos=5;
-
-    neighbors_a=get_neighbors_a(pos,L);
-    for (auto iter = neighbors_a.begin(); iter != neighbors_a.end(); ++iter) {
-        std::cout << *iter << "\n"<<' ';
-        }
-
-    neighbors= get_neighbors(pos);
-    cout<<"neighbor"<<"\n";
-    for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
-        std::cout << *iter << "\n"<<' ';
-        }
-    sort(neighbors.begin(),neighbors.end());
-    cout<<"neighbor sorted"<<"\n";
-    for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
-        std::cout << *iter << "\n"<<' ';
-        }
+    arrayOfVectors();
+//    vector<int> neighbors;
+//    vector<int> neighbors_a;
+//    array<int,2> coord;
+//
+////    for (auto iter = x.begin(); iter != x.end(); ++iter) {
+////        std::cout << *iter << ' ';
+////    }
+//    const int L=10;
+//    int Lsq = L*L;
+//    //cout << Lsq;
+//    int pos=5;
+//
+//    neighbors_a=get_neighbors_a(pos,L);
+//    for (auto iter = neighbors_a.begin(); iter != neighbors_a.end(); ++iter) {
+//        std::cout << *iter << "\n"<<' ';
+//        }
+//
+//    neighbors= get_neighbors(pos);
+//    cout<<"neighbor"<<"\n";
+//    for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
+//        std::cout << *iter << "\n"<<' ';
+//        }
+//    sort(neighbors.begin(),neighbors.end());
+//    cout<<"neighbor sorted"<<"\n";
+//    for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
+//        std::cout << *iter << "\n"<<' ';
+//        }
 //    cout << unidist(gen)*Lsq;
     return 0;
 }

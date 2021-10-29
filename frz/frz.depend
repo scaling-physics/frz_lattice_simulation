@@ -35,3 +35,35 @@
 	<chrono>
 	<random>
 
+1635502811 source:c:\users\hanno\onedrive\documents\hannotablet\physics\marburg\murray_praktikum\frz_lattice_model\main.cpp
+	<fstream>
+	<cmath>
+	<iostream>
+	<sstream>
+	<array>
+	<vector>
+	<chrono>
+	<random>
+	<algorithm>
+	"lattice.h"
+	"Particles.h"
+
+1635498275 c:\users\hanno\onedrive\documents\hannotablet\physics\marburg\murray_praktikum\frz_lattice_model\include\lattice.h
+	<fstream>
+	<cmath>
+	<iostream>
+	<sstream>
+	<vector>
+	<array>
+	<algorithm>
+
+1635502768 c:\users\hanno\onedrive\documents\hannotablet\physics\marburg\murray_praktikum\frz_lattice_model\include\particles.h
+	<fstream>
+	<cmath>
+	<iostream>
+	<sstream>
+	<vector>
+	<array>
+	<algorithm>
+	"lattice.h"
+
