@@ -228,13 +228,21 @@ std::array<int,2> get_index(int const pos)
 }
 
 
-
+int mod(int a, int b)
+{
+    int r;
+    return r=a%b>0 ? a%b: std::abs(b)+a%b;
+}
 
 
 // Driver code
 int main()
 {
-    arrayOfVectors();
+    int g;
+
+    g=mod(-1,4);
+    std::cout<<g<<endl;
+//    //arrayOfVectors();
 //    vector<int> neighbors;
 //    vector<int> neighbors_a;
 //    array<int,2> coord;
@@ -262,6 +270,6 @@ int main()
 //    for (auto iter = neighbors.begin(); iter != neighbors.end(); ++iter) {
 //        std::cout << *iter << "\n"<<' ';
 //        }
-//    cout << unidist(gen)*Lsq;
+////    cout << unidist(gen)*Lsq;
     return 0;
 }

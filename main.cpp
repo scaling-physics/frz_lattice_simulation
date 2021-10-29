@@ -15,7 +15,7 @@ Particles particles;
 //using namespace std;
 
 //generate random number
-
+//INPUT MOD INTO NEIGHBORS!!!!
 
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
@@ -62,6 +62,7 @@ int diffuse(std::vector<int> &diffuse_pos,std::array<short,Nxy> &grid)
 
 }
 
+
 // find empty hexes (without neighbors)
 // randomely create a particle with k_on/
 //RETURN updated grid and diffuse position
@@ -84,17 +85,19 @@ int create_particle(std::vector<int> &diffuse_pos,std::vector<int> &bound_pos,st
         empty_hex.erase(std::remove(empty_hex.begin(),empty_hex.end(),*it),empty_hex.end());
     }
     float rand = unidist(gen)*(empty_hex.size());
-    int new_particle_pos=std::floor(rand);
-    int const k_on = 0.5;
+    std::cout<<"creation rand"<<rand<<"\n";
+    int new_particle_pos=empty_hex[std::floor(rand)];
+    std::cout<<"creation site"<<new_particle_pos<<"\n";
+    float const k_on = 0.5;
 
-    if((rand-std::floor(rand))<k_on)// accept move
+    if((rand-std::floor(rand))<k_on)// create particle
     {
         grid[new_particle_pos]=1;
         diffuse_pos.push_back(new_particle_pos);
         return new_particle_pos;
 
     }
-    else {return Nxy+1}
+    else {return Nxy+1;}
 }
 
 
@@ -102,7 +105,7 @@ int create_particle(std::vector<int> &diffuse_pos,std::vector<int> &bound_pos,st
 
 //calculate energy change by binding/unbinding a particle
 //
-void binding_attempt(std::vector<int> &bound_pos,std::array<short,Nxy> &grid, int const &alpha, int const &J)
+void binding_attempt(std::vector<int> &bound_pos,std::array<short,Nxy> &grid, int const alpha, int const J)
 {
 //    int no_bound=bound_pos.size();
 
@@ -133,11 +136,11 @@ int main()
     int new_particle_site;
 
     particles.grid[1]=1;
-    particles.grid[2]=1;
-    particles.grid[3]=1;
-    particles.grid[4]=3;
-    particles.grid[5]=2;
-    particles.grid[6]=3;
+//    particles.grid[2]=1;
+//    particles.grid[3]=1;
+//    particles.grid[4]=3;
+//    particles.grid[5]=2;
+//    particles.grid[6]=3;
 
 
     particles.get_diffuse_pos();
@@ -159,8 +162,8 @@ int main()
 
 //step 2: Check and create a new particles
 
-//new_particle_site=create_particle(diffuse_pos,grid);
-
+        new_particle_site=create_particle(particles.diffuse_pos,particles.bound_pos,particles.grid);
+        std::cout<<"new particle created"<<new_particle_site<<"\n";
 //step 3: bind and unbind
 //BINDING
 //first take site and check if particle moved adjacent to particle and perform binding_attempt

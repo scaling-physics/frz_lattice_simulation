@@ -17,7 +17,11 @@ const int Ny=4;
 const int L=4;
 const int Nxy = Nx*Ny;
 
-
+int mod(int a, int b)
+{
+    int r;
+    return r=a%b>0 ? a%b: std::abs(b)+a%b;
+}
 
 class Lattice
 {
