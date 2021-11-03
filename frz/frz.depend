@@ -1,17 +1,18 @@
 # depslib dependency file v1.0
-1635435032 source:/home/hannohennighausen/Documents/frz_lattice_model/main.cpp
+1635958977 source:/home/hannohennighausen/Documents/frz_lattice_model/main.cpp
 	<fstream>
 	<cmath>
 	<iostream>
 	<sstream>
 	<array>
 	<vector>
+	<chrono>
+	<random>
+	<algorithm>
 	"lattice.h"
-	<chrono>
-	<random>
-	<algorithm>
+	"Particles.h"
 
-1635435603 /home/hannohennighausen/Documents/frz_lattice_model/include/lattice.h
+1635946710 /home/hannohennighausen/Documents/frz_lattice_model/include/lattice.h
 	<fstream>
 	<cmath>
 	<iostream>
@@ -19,9 +20,6 @@
 	<vector>
 	<array>
 	<algorithm>
-	<set>
-	<chrono>
-	<random>
 
 1635337279 source:/home/hannohennighausen/Documents/frz_lattice_model/test.cpp
 	<fstream>
@@ -58,6 +56,16 @@
 	<algorithm>
 
 1635502768 c:\users\hanno\onedrive\documents\hannotablet\physics\marburg\murray_praktikum\frz_lattice_model\include\particles.h
+	<fstream>
+	<cmath>
+	<iostream>
+	<sstream>
+	<vector>
+	<array>
+	<algorithm>
+	"lattice.h"
+
+1635755618 /home/hannohennighausen/Documents/frz_lattice_model/include/Particles.h
 	<fstream>
 	<cmath>
 	<iostream>

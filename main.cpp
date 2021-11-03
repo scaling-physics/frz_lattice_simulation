@@ -14,8 +14,7 @@ Lattice lattice;
 Particles particles;
 //using namespace std;
 
-//generate random number
-//INPUT MOD INTO NEIGHBORS!!!!
+//random number generator
 
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
@@ -23,19 +22,19 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
 
 
 
-// fct takes position of diffuse particles attempts to move one at random,
-//if move goes to a lattice point without neighbours then move is accepted
-//if move attempts to move next to a particle --> return particle combination for step 3
-// RETURN, updated diffuse_pos and grid, create array with attempted binding
+// fct takes position of diffuse particle: attempts to move one at random,
+//if move goes to a empty lattice point is accepted
+// updated diffuse_pos and grid
+//RETURN (new) particle position
 
-int diffuse(std::vector<int> &diffuse_pos,std::array<short,Nxy> &grid)
+int diffuse(Particles &particles)
 {
 //randomely choose diffuse_pos
 
 
-    float rand = unidist(gen)*diffuse_pos.size();
+    float rand = unidist(gen)*particles.diffuse_pos.size();
     std::cout<<"rand"<<rand<<"\n";
-    int particle_pos = diffuse_pos[std::floor(rand)] ;
+    int particle_pos = particles.diffuse_pos[std::floor(rand)] ;
     std::cout<<"particle"<<particle_pos<<"\n";
 //choose random direction
     std::vector<int> neighbors_dif;
@@ -45,11 +44,11 @@ int diffuse(std::vector<int> &diffuse_pos,std::array<short,Nxy> &grid)
     int new_pos =neighbors_dif[ std::floor(neighbors_dif.size()*(rand - std::floor(rand)))];
     std::cout<<"new_pos"<<new_pos<<"\n";
 //check if new hex is occupied
-    if(grid[new_pos]==0)// accept move
+    if(particles.grid[new_pos]==0)// accept move
     {
-        grid[particle_pos]=0;
-        grid[new_pos]=1;
-        diffuse_pos[std::floor(rand)]=new_pos;
+        particles.grid[particle_pos]=0;
+        particles.grid[new_pos]=1;
+        particles.diffuse_pos[std::floor(rand)]=new_pos;
         //NEED TO UPDATE DIFFUSE_pos!!!!!!
         return new_pos;
 
@@ -63,13 +62,14 @@ int diffuse(std::vector<int> &diffuse_pos,std::array<short,Nxy> &grid)
 }
 
 
-// find empty hexes (without neighbors)
+// find empty hexes (without neighbors?)
 // randomely create a particle with k_on/
 //RETURN updated grid and diffuse position
 
 //Do I need to check how full the grid is? Set concentration?delete particles randomely?
-int create_particle(std::vector<int> &diffuse_pos,std::vector<int> &bound_pos,std::array<short,Nxy> &grid)
+int create_particle(Particles &particles)
 {
+    float const k_on = 0.5;
     std::vector<int> empty_hex(Nxy);
     for(int x = 0; x < Nxy; ++x)
     {
@@ -77,8 +77,8 @@ int create_particle(std::vector<int> &diffuse_pos,std::vector<int> &bound_pos,st
     }
 
     std::vector<int> occupied_hex;
-    occupied_hex.insert(occupied_hex.end(),bound_pos.begin(),bound_pos.end());
-    occupied_hex.insert(occupied_hex.end(),diffuse_pos.begin(),diffuse_pos.end());
+    occupied_hex.insert(occupied_hex.end(),particles.bound_pos.begin(),particles.bound_pos.end());
+    occupied_hex.insert(occupied_hex.end(),particles.diffuse_pos.begin(),particles.diffuse_pos.end());
 
     for(auto it=occupied_hex.begin(); it!=occupied_hex.end(); ++it)
     {
@@ -88,28 +88,96 @@ int create_particle(std::vector<int> &diffuse_pos,std::vector<int> &bound_pos,st
     std::cout<<"creation rand"<<rand<<"\n";
     int new_particle_pos=empty_hex[std::floor(rand)];
     std::cout<<"creation site"<<new_particle_pos<<"\n";
-    float const k_on = 0.5;
+
 
     if((rand-std::floor(rand))<k_on)// create particle
     {
-        grid[new_particle_pos]=1;
-        diffuse_pos.push_back(new_particle_pos);
+        particles.grid[new_particle_pos]=1;
+        particles.diffuse_pos.push_back(new_particle_pos);
         return new_particle_pos;
 
     }
-    else {return Nxy+1;}
+    else
+    {
+        return Nxy+1;
+    }
 }
 
+float delta_H(int const alpha, int const J, int no_dif, std::vector<int> orientation)
+{
+    return J*(-orientation.size()+(no_dif*alpha));
+}
 
 
 
 //calculate energy change by binding/unbinding a particle
 //
-void binding_attempt(std::vector<int> &bound_pos,std::array<short,Nxy> &grid, int const alpha, int const J)
+void binding_attempt(Particles &particles, int const alpha, int const J, int pos)
 {
-//    int no_bound=bound_pos.size();
+    float rand = unidist(gen)*3;
+    std::cout<<"creation rand"<<rand<<"\n";
+    int pos_orientation = std::floor(rand)-1;
+    std::vector<int> neighbors;
+    std::vector<int> orientations;
+    std::vector<int> slope_orientations;
+    std::vector<int> possible_binding_pos;
+    int no_dif = 1;
+    int no_neighbors=0;
+    int i=0;
 
+    neighbors=lattice.get_neighbors(pos);
+    for(auto it=neighbors.begin(); it!=neighbors.end(); ++it)
+    {
+        if(particles.grid[*it]==1)
+        {
 
+            float rand_a = (rand-std::floor(rand))*3;
+            int orientation_a = std::floor(rand_a)-1;
+            int slope_a = lattice.slope[i];
+            if(((pos_orientation+slope_a) * (orientation_a+slope_a))!=0)
+            {
+                orientations.push_back(orientation_a);
+                slope_orientations.push_back(slope_a);
+                possible_binding_pos.push_back(*it);
+
+                no_dif++;
+            }
+
+        }
+        if(particles.grid[*it]!=0 && particles.grid[*it]!=1)
+        {
+            int orientation_a = particles.grid[*it]-3;
+            int slope_a = lattice.slope[i];
+            if(((pos_orientation+slope_a) * (orientation_a+slope_a))!=0)
+            {
+                orientations.push_back(orientation_a);
+                slope_orientations.push_back(slope_a);
+                possible_binding_pos.push_back(*it);
+            }
+        }
+
+        i++;
+    }
+    std::cout<<"\n pos orientation "<<pos_orientation;
+    std::cout<<"\n orientation ";
+    for (auto iter = orientations.begin(); iter !=orientations.end(); ++iter)
+    {
+        std::cout << *iter << ","<<' ';
+    }
+    std::cout<<"\n slope_orientation ";
+    for (auto iter = slope_orientations.begin(); iter !=slope_orientations.end(); ++iter)
+    {
+        std::cout << *iter << ","<<' ';
+    }
+    std::cout<<"\n possible_binding_pos ";
+    for (auto iter = possible_binding_pos.begin(); iter !=possible_binding_pos.end(); ++iter)
+    {
+        std::cout << *iter << ","<<' ';
+    }
+    std::cout<<"\n no of diff "<<no_dif;
+    std::cout<<"\n";
+
+    float delta = delta_H(alpha,J,no_dif,orientations);
 
 
 }
@@ -127,8 +195,8 @@ int main()
     int MC_counter = 0;
 
 //constants for reaction:
-//    int const alpha=1;
-//    int const J=1;
+    int const alpha=1;
+    int const J=1;
 
 // Input and Output arrays
 
@@ -137,11 +205,10 @@ int main()
 
     particles.grid[1]=1;
 //    particles.grid[2]=1;
-//    particles.grid[3]=1;
-//    particles.grid[4]=3;
-//    particles.grid[5]=2;
-//    particles.grid[6]=3;
-
+    particles.grid[3]=1;
+    particles.grid[9]=3;
+    particles.grid[5]=3;
+    particles.grid[10]=3;
 
     particles.get_diffuse_pos();
     particles.get_bound_pos();
@@ -150,10 +217,10 @@ int main()
     while(MC_counter<MC_steps)
     {
 
-        std::cout << MC_counter <<'\n';
+        std::cout <<"counter"<< MC_counter <<'\n';
 //step 1: Move diffusive particles
 
-        site=diffuse(particles.diffuse_pos,particles.grid);
+        site=diffuse(particles);
         std::cout<<"site"<<site<<"\n";
 //if move is rejected check if it binds or not
 
@@ -162,11 +229,12 @@ int main()
 
 //step 2: Check and create a new particles
 
-        new_particle_site=create_particle(particles.diffuse_pos,particles.bound_pos,particles.grid);
-        std::cout<<"new particle created"<<new_particle_site<<"\n";
+        new_particle_site=create_particle(particles);
+        std::cout<<"new particle created"<<" "<<new_particle_site<<"\n";
 //step 3: bind and unbind
 //BINDING
 //first take site and check if particle moved adjacent to particle and perform binding_attempt
+        binding_attempt(particles,alpha,J,13);
 
 //second take new_particle_site: if zero skip, if non-zero check if adjacent to particle and perform binding_attempt
 
@@ -176,6 +244,7 @@ int main()
 
 
         MC_counter++;
+
     }
     for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
     {

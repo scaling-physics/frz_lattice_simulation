@@ -20,7 +20,7 @@ const int Nxy = Nx*Ny;
 int mod(int a, int b)
 {
     int r;
-    return r=a%b>0 ? a%b: std::abs(b)+a%b;
+    return r=a%b>=0 ? a%b: std::abs(b)+a%b;
 }
 
 class Lattice
@@ -31,6 +31,7 @@ private:
 
 
 public:
+    std::array<int,6> slope;
 
 
 
@@ -62,6 +63,7 @@ public:
 
     std::vector<int> get_neighbors(int pos)
     {
+        int j=0;
         std::vector<int> neighbors;
         std::array<int,2> coord;
         coord = get_index(pos);
@@ -76,17 +78,26 @@ public:
             if(x-1>=0)
             {
                 neighbors.push_back(get_single_index(x-1,y));
-                neighbors.push_back(get_single_index(x-1,(y+1)%Ny));
-                neighbors.push_back(get_single_index(x-1,(Ny+y-1)%Ny));
+                slope[j]=0;
+                neighbors.push_back(get_single_index(x-1,mod(y+1,Ny)));
+                slope[j+1]=-1;
+                neighbors.push_back(get_single_index(x-1,mod(y-1,Ny)));
+                slope[j+2]=1;
+                j=3;
             }
 
         if(x+1<Nx)
         {
             neighbors.push_back(get_single_index(x+1,y));
+            slope[j]=0;
+            j++;
         }
 
-        neighbors.push_back(get_single_index(x,(y+1)%Ny));
-        neighbors.push_back(get_single_index(x,(Ny+y-1)%Ny));
+        neighbors.push_back(get_single_index(x,mod(y+1,Ny)));
+        slope[j]=1;
+        j++;
+        neighbors.push_back(get_single_index(x,mod(y-1,Ny)));
+        slope[j]=-1;
 
     }
 
@@ -96,24 +107,36 @@ public:
         if(x-1>=0)
         {
             neighbors.push_back(get_single_index(x-1,y));
+            slope[j]=0;
+            j++;
         }
 
         if(x+1<Nx)
         {
             neighbors.push_back(get_single_index(x+1,y));
-            neighbors.push_back(get_single_index(x+1,(y+1)%Ny));
-            neighbors.push_back(get_single_index(x+1,(Ny+y-1)%Ny));
+            slope[j]=0;
+            j++;
+            neighbors.push_back(get_single_index(x+1,mod(y+1,Ny)));
+            slope[j]=1;
+            j++;
+            neighbors.push_back(get_single_index(x+1,mod(y-1,Ny)));
+            slope[j]=-1;
+            j++;
         }
 
-        neighbors.push_back(get_single_index(x,(y+1)%Ny));
-        neighbors.push_back(get_single_index(x,(Ny+y-1)%Ny));
+        neighbors.push_back(get_single_index(x,mod(y+1,Ny)));
+        slope[j]=-1;
+        j++;
+        neighbors.push_back(get_single_index(x,mod(y-1,Ny)));
+        slope[j]=1;
 
 
 
     }
-    sort(neighbors.begin(),neighbors.end());
+    //sort(neighbors.begin(),neighbors.end());
     return neighbors;
 }
+
 
 
 };
