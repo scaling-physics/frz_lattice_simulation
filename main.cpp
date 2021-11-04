@@ -32,28 +32,29 @@ int diffuse(Particles &particles)
 //randomely choose diffuse_pos
 
 
-    float rand = unidist(gen)*particles.diffuse_pos.size();
+    double  rand= unidist(gen);
+    int ind=rand*particles.diffuse_pos.size();
     std::cout<<"rand"<<rand<<"\n";
-    int particle_pos = particles.diffuse_pos[std::floor(rand)] ;
+    int particle_pos = particles.diffuse_pos[ind] ;
     std::cout<<"particle"<<particle_pos<<"\n";
 //choose random direction
-    std::vector<int> neighbors_dif;
-    neighbors_dif=lattice.get_neighbors(particle_pos);
+    Neighbours neighbors_dif=lattice.get_neighbors(particle_pos);
 
+    double rand2=rand-ind;
+    int dir=rand2*neighbors_dif.positions.size();
 
-    int new_pos =neighbors_dif[ std::floor(neighbors_dif.size()*(rand - std::floor(rand)))];
+    int new_pos =neighbors_dif.positions[dir];
     std::cout<<"new_pos"<<new_pos<<"\n";
 //check if new hex is occupied
     if(particles.grid[new_pos]==0)// accept move
     {
         particles.grid[particle_pos]=0;
         particles.grid[new_pos]=1;
-        particles.diffuse_pos[std::floor(rand)]=new_pos;
+        particles.diffuse_pos[ind]=new_pos;
         //NEED TO UPDATE DIFFUSE_pos!!!!!!
         return new_pos;
 
     }
-
     else
     {
         return particle_pos;
@@ -69,7 +70,7 @@ int diffuse(Particles &particles)
 //Do I need to check how full the grid is? Set concentration?delete particles randomely?
 int create_particle(Particles &particles)
 {
-    float const k_on = 0.5;
+    double const k_on = 0.5;
     std::vector<int> empty_hex(Nxy);
     for(int x = 0; x < Nxy; ++x)
     {
@@ -84,7 +85,7 @@ int create_particle(Particles &particles)
     {
         empty_hex.erase(std::remove(empty_hex.begin(),empty_hex.end(),*it),empty_hex.end());
     }
-    float rand = unidist(gen)*(empty_hex.size());
+    double rand = unidist(gen)*(empty_hex.size());
     std::cout<<"creation rand"<<rand<<"\n";
     int new_particle_pos=empty_hex[std::floor(rand)];
     std::cout<<"creation site"<<new_particle_pos<<"\n";
@@ -103,9 +104,9 @@ int create_particle(Particles &particles)
     }
 }
 
-float delta_H(int const alpha, int const J, int no_dif, std::vector<int> orientation)
+double delta_H(int const alpha, int const J, int no_dif, std::vector<int> orientations)
 {
-    return J*(-orientation.size()+(no_dif*alpha));
+    return J*(-orientations.size()+(no_dif*alpha));
 }
 
 
@@ -114,44 +115,46 @@ float delta_H(int const alpha, int const J, int no_dif, std::vector<int> orienta
 //
 void binding_attempt(Particles &particles, int const alpha, int const J, int pos)
 {
-    float rand = unidist(gen)*3;
-    std::cout<<"creation rand"<<rand<<"\n";
-    int pos_orientation = std::floor(rand)-1;
-    std::vector<int> neighbors;
+    double rand=unidist(gen);
+    int ori = rand*3-1;
+    //std::cout<<"creation rand"<<rand<<"\n";
+
     std::vector<int> orientations;
-    std::vector<int> slope_orientations;
+    std::vector<int> slopes;
     std::vector<int> possible_binding_pos;
+
     int no_dif = 1;
-    int no_neighbors=0;
     int i=0;
 
-    neighbors=lattice.get_neighbors(pos);
-    for(auto it=neighbors.begin(); it!=neighbors.end(); ++it)
-    {
-        if(particles.grid[*it]==1)
-        {
+    Neighbours neighbors=lattice.get_neighbors(pos);
+    int orientation_a=ori;
 
-            float rand_a = (rand-std::floor(rand))*3;
-            int orientation_a = std::floor(rand_a)-1;
-            int slope_a = lattice.slope[i];
-            if(((pos_orientation+slope_a) * (orientation_a+slope_a))!=0)
+
+    for(auto it=neighbors.positions.begin(); it!=neighbors.positions.end(); ++it)
+    {
+        if(particles.grid[*it]==1)//if a neighbor is diffuse
+        {
+            rand=(rand-orientation_a);
+            orientation_a = rand*3-1;
+            int slope_a = neighbors.slope[i];
+            if(((ori+slope_a) * (orientation_a+slope_a))!=0)
             {
                 orientations.push_back(orientation_a);
-                slope_orientations.push_back(slope_a);
+                //slopes.push_back(slope_a);
                 possible_binding_pos.push_back(*it);
 
                 no_dif++;
             }
 
         }
-        if(particles.grid[*it]!=0 && particles.grid[*it]!=1)
+        if(particles.grid[*it]>1)
         {
-            int orientation_a = particles.grid[*it]-3;
+            orientation_a = particles.grid[*it]-3;
             int slope_a = lattice.slope[i];
             if(((pos_orientation+slope_a) * (orientation_a+slope_a))!=0)
             {
                 orientations.push_back(orientation_a);
-                slope_orientations.push_back(slope_a);
+                //slope_orientations.push_back(slope_a);
                 possible_binding_pos.push_back(*it);
             }
         }
@@ -177,7 +180,7 @@ void binding_attempt(Particles &particles, int const alpha, int const J, int pos
     std::cout<<"\n no of diff "<<no_dif;
     std::cout<<"\n";
 
-    float delta = delta_H(alpha,J,no_dif,orientations);
+    double delta = delta_H(alpha,J,no_dif,orientations);
     std::cout<<"delta "<< delta<< "\n";
 
 
