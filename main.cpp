@@ -158,7 +158,7 @@ void binding_attempt(Particles &particles, int const alpha, int const J, int pos
 
         i++;
     }
-    std::cout<<"\n pos orientation "<<pos_orientation;
+    std::cout<<"pos orientation "<<pos_orientation;
     std::cout<<"\n orientation ";
     for (auto iter = orientations.begin(); iter !=orientations.end(); ++iter)
     {
@@ -178,6 +178,7 @@ void binding_attempt(Particles &particles, int const alpha, int const J, int pos
     std::cout<<"\n";
 
     float delta = delta_H(alpha,J,no_dif,orientations);
+    std::cout<<"delta "<< delta<< "\n";
 
 
 }
@@ -217,7 +218,7 @@ int main()
     while(MC_counter<MC_steps)
     {
 
-        std::cout <<"counter"<< MC_counter <<'\n';
+        std::cout <<"\n counter"<< MC_counter <<'\n';
 //step 1: Move diffusive particles
 
         site=diffuse(particles);
