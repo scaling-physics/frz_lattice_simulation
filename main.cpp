@@ -20,12 +20,32 @@ unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().cou
 std::mt19937_64 gen(seed);
 std::uniform_real_distribution<double> unidist(0.0,1.0);
 
+inline static float fast_exp (float x)
+ {
+     //if(x<-1000) return 0.0;
+   volatile union {
+     float f;
+     unsigned int i;
+   } cvt;
+
+   /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
+   float t = x * 1.442695041f;
+   float fi = floorf (t);
+   float f = t - fi;
+   int i = (int)fi;
+   cvt.f = (0.3371894346f * f + 0.657636276f) * f + 1.00172476f; /* compute 2^f */
+   cvt.i += (i << 23);                                          /* scale by 2^i */
+   return cvt.f;
+ }
+
+
 
 
 // fct takes position of diffuse particle: attempts to move one at random,
 //if move goes to a empty lattice point is accepted
 // updated diffuse_pos and grid
 //RETURN (new) particle position
+
 
 int diffuse(Particles &particles)
 {
@@ -106,7 +126,8 @@ int create_particle(Particles &particles)
 
 double delta_H(int const alpha, int const J, int no_dif, std::vector<int> orientations)
 {
-    return J*(-orientations.size()+(no_dif*alpha));
+    double delta_E=J*(-orientations.size()+(no_dif*alpha));
+    return delta_E<0.0f ? 1.0 : fast_exp(-delta_E);
 }
 
 
@@ -136,7 +157,7 @@ void binding_attempt(Particles &particles, int const alpha, int const J, int pos
         {
             rand=(rand-orientation_a);
             orientation_a = rand*3-1;
-            int slope_a = neighbors.slope[i];
+            int slope_a = neighbors.slopes[i];
             if(((ori+slope_a) * (orientation_a+slope_a))!=0)
             {
                 orientations.push_back(orientation_a);
@@ -151,7 +172,7 @@ void binding_attempt(Particles &particles, int const alpha, int const J, int pos
         {
             orientation_a = particles.grid[*it]-3;
             int slope_a = lattice.slope[i];
-            if(((pos_orientation+slope_a) * (orientation_a+slope_a))!=0)
+            if(((ori+slope_a) * (orientation_a+slope_a))!=0)
             {
                 orientations.push_back(orientation_a);
                 //slope_orientations.push_back(slope_a);
@@ -161,27 +182,27 @@ void binding_attempt(Particles &particles, int const alpha, int const J, int pos
 
         i++;
     }
-    std::cout<<"pos orientation "<<pos_orientation;
+    std::cout<<"pos orientation "<<ori;
     std::cout<<"\n orientation ";
     for (auto iter = orientations.begin(); iter !=orientations.end(); ++iter)
     {
         std::cout << *iter << ","<<' ';
     }
-    std::cout<<"\n slope_orientation ";
-    for (auto iter = slope_orientations.begin(); iter !=slope_orientations.end(); ++iter)
-    {
-        std::cout << *iter << ","<<' ';
-    }
+//    std::cout<<"\n slope_orientation ";
+//    for (auto iter = slope_orientations.begin(); iter !=slope_orientations.end(); ++iter)
+//    {
+//        std::cout << *iter << ","<<' ';
+//    }
     std::cout<<"\n possible_binding_pos ";
     for (auto iter = possible_binding_pos.begin(); iter !=possible_binding_pos.end(); ++iter)
     {
         std::cout << *iter << ","<<' ';
     }
-    std::cout<<"\n no of diff "<<no_dif;
+    std::cout<<"\n no of diff "<< no_dif;
     std::cout<<"\n";
 
     double delta = delta_H(alpha,J,no_dif,orientations);
-    std::cout<<"delta "<< delta<< "\n";
+    std::cout<<"delta "<< delta << "\n";
 
 
 }
