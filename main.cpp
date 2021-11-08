@@ -124,9 +124,10 @@ int create_particle(Particles &particles)
     }
 }
 
-double delta_H(int const alpha, int const J, int no_dif, std::vector<int> orientations)
+double delta_H(double const alpha, double const J, int no_dif, std::vector<int> orientations)
 {
-    double delta_E=J*(-orientations.size()+(no_dif*alpha));
+    std::cout<<"\n no_dif "<<no_dif<<"\n ori_size "<< orientations.size()<<"\n";
+    double delta_E=(-1*J)*(orientations.size()-(no_dif*alpha));
     return delta_E<0.0f ? 1.0 : exp(-delta_E);
 }
 
@@ -207,22 +208,20 @@ void binding_attempt(Particles &particles, int const alpha, int const J, int pos
     {
         double delta = delta_H(alpha,J,no_dif,orientations);
         std::cout<<"delta "<< delta << "\n";
-        rand = rand-orientation_a;
-
+        rand =unidist(gen);
+        std::cout<<"\n rand "<<rand;
         //the binding attempt is succesful if rand < delta_E
         if(rand<delta)
         {
             std::cout<<"success \n";
             particles.grid[pos]=ori+3;
             int i=0;
+            std::remove(particles.diffuse_pos.begin(), particles.diffuse_pos.end(), pos);
+            particles.bound_pos.push_back(pos);
             for(auto it=possible_binding_pos.begin(); it!=possible_binding_pos.end(); ++it)
             {
                 particles.grid[*it]=orientations[i]+3;
-                auto search_pos=std::find(particles.diffuse_pos.begin(), particles.diffuse_pos.end(), *it);
-                if( *search_pos==*it)
-                {
-                    particles.diffuse_pos.erase(search_pos);
-                }
+                std::remove(particles.diffuse_pos.begin(), particles.diffuse_pos.end(), *it);
                 if(!(std::find(particles.bound_pos.begin(), particles.bound_pos.end(), *it) != particles.bound_pos.end()))
                 {
                     particles.bound_pos.push_back(*it);
@@ -244,21 +243,21 @@ void binding_attempt(Particles &particles, int const alpha, int const J, int pos
 
 int main()
 {
-    const int MC_steps = 10; // number of Monte Carlo Steps
+    const int MC_steps = 1; // number of Monte Carlo Steps
     int MC_counter = 0;
 
 //constants for reaction:
-    int const alpha=1;
-    int const J=1;
+    double const alpha=1;
+    double const J=1;
 
 // Input and Output arrays
 
     int site;
     int new_particle_site;
 
-    particles.grid[1]=1;
-    particles.grid[2]=1;
-    particles.grid[3]=1;
+    particles.grid[13]=1;
+//    particles.grid[2]=1;
+//    particles.grid[3]=1;
     particles.grid[9]=3;
     particles.grid[5]=3;
     particles.grid[10]=3;
@@ -273,8 +272,8 @@ int main()
         std::cout <<"\n counter"<< MC_counter <<'\n';
 //step 1: Move diffusive particles
 
-        site=diffuse(particles);
-        std::cout<<"site"<<site<<"\n";
+//        site=diffuse(particles);
+//        std::cout<<"site"<<site<<"\n";
 
 
 
@@ -282,16 +281,15 @@ int main()
 
 //step 2: Check and create a new particles
 
-        new_particle_site=create_particle(particles);
-        std::cout<<"new particle created"<<" "<<new_particle_site<<"\n";
+//        new_particle_site=create_particle(particles);
+//        std::cout<<"new particle created"<<" "<<new_particle_site<<"\n";
 
 
 //step 3: bind and unbind
 //BINDING
-//first take site and check if particle moved adjacent to particle and perform binding_attempt
         binding_attempt(particles,alpha,J,13);
 
-//second take new_particle_site: if zero skip, if non-zero check if adjacent to particle and perform binding_attempt
+
 
 
 //UNBINDING
@@ -304,6 +302,10 @@ int main()
     for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
     {
         std::cout << *iter << "\n"<<' ';
+    }
+    for (auto iter = particles.diffuse_pos.begin(); iter !=particles.diffuse_pos.end(); ++iter)
+    {
+        std::cout << *iter << ","<<' ';
     }
     return 0;
 };
