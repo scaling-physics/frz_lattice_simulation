@@ -16,9 +16,38 @@ class Particles
 private:
 
 public:
-    std::array<short,Nxy> grid{0}; //0 if empty, 1 if occupied but diffuse; orientation if occupied and bound
-    std::vector<int> diffuse_pos; //reference to position of diffuse particles
-    std::vector<int> bound_pos; //reference to position of bound particles
+    std::array<short,Nxy> grid{0}; //0 if empty, ind+1 if occupied
+    std::vector<int> positions;
+    std::vector<int> orientations;
+    
+    //std::vector<int> diffuse_pos; //reference to position of diffuse particles
+    //std::vector<int> bound_pos; //reference to position of bound particles
+
+    inline bool is_free{int pos}{
+        return grid[pos]==0;
+    }
+
+    inline bool is_diffuse(int ind){
+        return orientations[ind]==0;
+    }
+
+    inline bool is_bound(int ind){
+        return orientations[ind]>0;
+    }
+
+    inline int get_index(int pos){
+        return grid[pos]-1;
+    }
+
+
+
+
+
+
+
+
+
+
 
     void get_diffuse_pos()
     {
