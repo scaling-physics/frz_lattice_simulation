@@ -39,50 +39,6 @@ inline static float fast_exp (float x)
     return cvt.f;
 }
 
-
-
-
-// fct takes position of diffuse particle: attempts to move one at random,
-//if move goes to a empty lattice point is accepted
-// updated diffuse_pos and grid
-//RETURN (new) particle position
-
-
-int diffuse(Particles &particles)
-{
-//randomely choose diffuse_pos
-
-
-    double  rand= unidist(gen)*particles.diffuse_pos.size();
-    int ind=rand;
-    std::cout<<"rand"<<rand<<"\n";
-    int particle_pos = particles.diffuse_pos[ind] ;
-    std::cout<<"particle"<<particle_pos<<"\n";
-//choose random direction
-    Neighbours neighbors_dif=lattice.get_neighbors(particle_pos);
-
-    double rand2=(rand-ind)*neighbors_dif.positions.size();
-    int dir=rand2;
-    int new_pos =neighbors_dif.positions[dir];
-    std::cout<<"new_pos"<<new_pos<<"\n";
-//check if new hex is occupied
-    if(particles.grid[new_pos]==0)// accept move
-    {
-        particles.grid[particle_pos]=0;
-        particles.grid[new_pos]=1;
-        particles.diffuse_pos[ind]=new_pos;
-        //NEED TO UPDATE DIFFUSE_pos!!!!!!
-        return new_pos;
-
-    }
-    else
-    {
-        return particle_pos;
-    }
-
-}
-
-
 // find empty hexes (without neighbors?)
 // randomely create a particle with k_on/
 //RETURN updated grid and diffuse position
@@ -124,115 +80,13 @@ int create_particle(Particles &particles)
     }
 }
 
-double delta_H(double const alpha, double const J, int no_dif, std::vector<int> orientations)
-{
-    std::cout<<"\n no_dif "<<no_dif<<"\n ori_size "<< orientations.size()<<"\n";
-    double delta_E=(-1*J)*(orientations.size()-(no_dif*alpha));
-    return delta_E<0.0f ? 1.0 : exp(-delta_E);
-}
+
 
 
 
 //calculate energy change by binding/unbinding a particle
 //
-void binding_attempt(Particles &particles, int const alpha, int const J, int pos)
-{
-    double rand=unidist(gen)*3-1;
-    int ori = rand;
-    //std::cout<<"creation rand"<<rand<<"\n";
 
-    std::vector<int> orientations;
-    std::vector<int> slopes;
-    std::vector<int> possible_binding_pos;
-
-    int no_dif = 1;
-    int i=0;
-
-    Neighbours neighbors=lattice.get_neighbors(pos);
-    int orientation_a=ori;
-
-
-    for(auto it=neighbors.positions.begin(); it!=neighbors.positions.end(); ++it)
-    {
-        if(particles.grid[*it]==1)//if a neighbor is diffuse
-        {
-            rand=(rand-orientation_a)*3-1;
-            orientation_a = rand;
-            int slope_a = neighbors.slopes[i];
-            if(((ori+slope_a) * (orientation_a+slope_a))!=0)
-            {
-                orientations.push_back(orientation_a);
-                //slopes.push_back(slope_a);
-                possible_binding_pos.push_back(*it);
-
-                no_dif++;
-            }
-
-        }
-        if(particles.grid[*it]>1)
-        {
-            orientation_a = particles.grid[*it]-3;
-            int slope_a = neighbors.slopes[i];
-            if(((ori+slope_a) * (orientation_a+slope_a))!=0)
-            {
-                orientations.push_back(orientation_a);
-                //slope_orientations.push_back(slope_a);
-                possible_binding_pos.push_back(*it);
-            }
-        }
-
-        i++;
-    }
-    std::cout<<"pos orientation "<<ori;
-    std::cout<<"\n orientation ";
-    for (auto iter = orientations.begin(); iter !=orientations.end(); ++iter)
-    {
-        std::cout << *iter << ","<<' ';
-    }
-//    std::cout<<"\n slope_orientation ";
-//    for (auto iter = slope_orientations.begin(); iter !=slope_orientations.end(); ++iter)
-//    {
-//        std::cout << *iter << ","<<' ';
-//    }
-    std::cout<<"\n possible_binding_pos ";
-    for (auto iter = possible_binding_pos.begin(); iter !=possible_binding_pos.end(); ++iter)
-    {
-        std::cout << *iter << ","<<' ';
-    }
-    std::cout<<"\n no of diff "<< no_dif;
-    std::cout<<"\n";
-
-
-
-    if(orientations.size()>0)
-    {
-        double delta = delta_H(alpha,J,no_dif,orientations);
-        std::cout<<"delta "<< delta << "\n";
-        rand =unidist(gen);
-        std::cout<<"\n rand "<<rand;
-        //the binding attempt is succesful if rand < delta_E
-        if(rand<delta)
-        {
-            std::cout<<"success \n";
-            particles.grid[pos]=ori+3;
-            int i=0;
-            std::remove(particles.diffuse_pos.begin(), particles.diffuse_pos.end(), pos);
-            particles.bound_pos.push_back(pos);
-            for(auto it=possible_binding_pos.begin(); it!=possible_binding_pos.end(); ++it)
-            {
-                particles.grid[*it]=orientations[i]+3;
-                std::remove(particles.diffuse_pos.begin(), particles.diffuse_pos.end(), *it);
-                if(!(std::find(particles.bound_pos.begin(), particles.bound_pos.end(), *it) != particles.bound_pos.end()))
-                {
-                    particles.bound_pos.push_back(*it);
-                }
-                i++;
-            }
-
-        }
-    }
-
-}
 
 //somehow a negative 3 appears
 
@@ -245,6 +99,7 @@ int main()
 {
     const int MC_steps = 1; // number of Monte Carlo Steps
     int MC_counter = 0;
+    double rand;
 
 //constants for reaction:
     double const alpha=1;
@@ -270,24 +125,42 @@ int main()
     {
 
         std::cout <<"\n counter"<< MC_counter <<'\n';
-//step 1: Move diffusive particles
 
-//        site=diffuse(particles);
-//        std::cout<<"site"<<site<<"\n";
+        //choose random particle
+        rand = unidist(gen)*particles.positions.size();
+        std::cout<<"rand"<<rand<<"\n";
+        int ind=rand;
+        rand=rand-ind;
+
+        if(particles.is_diffuse(ind))
+        {
 
 
 
+//Move diffusive particles
+
+        site=particles.diffuse(rand);
+        std::cout<<"site"<<site<<"\n";
+
+//BINDING
+        particles.binding_attempt(alpha,J,site,rand);
 
 
-//step 2: Check and create a new particles
+        }
+        if(particles.is_bound(ind))
+        {
+// UNBINDING ATTEMPT
+        }
 
 //        new_particle_site=create_particle(particles);
 //        std::cout<<"new particle created"<<" "<<new_particle_site<<"\n";
 
+        if(MC_steps%100==0)
+        {
+        //CREATION ATTEMPT
 
-//step 3: bind and unbind
-//BINDING
-        binding_attempt(particles,alpha,J,13);
+        }
+
 
 
 
