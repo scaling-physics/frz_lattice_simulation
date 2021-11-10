@@ -123,7 +123,26 @@ int main()
 
     while(MC_counter<MC_steps)
     {
+        if(MC_steps%100==0)
+        {
+        // select a random hex on grid:
+        double rand_size = unidist(gen) * Nxy;
+        int pos = rand_size;
+        double rand = rand_size-pos;
+        //CREATION ATTEMPT
+        if(particles.is_free(pos))
+        {
 
+        }
+
+        //DESTRUCTION ATTEMPT
+        if(particles.is_diffuse(particles.get_index(pos)))
+        {
+
+        }
+
+
+        }
         std::cout <<"\n counter"<< MC_counter <<'\n';
 
         //choose random particle
@@ -139,7 +158,7 @@ int main()
 
 //Move diffusive particles
 
-        site=particles.diffuse(rand);
+        site=particles.diffuse(rand, ind);
         std::cout<<"site"<<site<<"\n";
 
 //BINDING
@@ -155,11 +174,7 @@ int main()
 //        new_particle_site=create_particle(particles);
 //        std::cout<<"new particle created"<<" "<<new_particle_site<<"\n";
 
-        if(MC_steps%100==0)
-        {
-        //CREATION ATTEMPT
 
-        }
 
 
 

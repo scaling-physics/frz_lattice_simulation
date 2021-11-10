@@ -43,64 +43,44 @@ public:
         return grid[pos]-1;
     }
 
-
-
-
-
-
-
-
-
-
-
-//    void get_diffuse_pos()
-//    {
-//        for (int j=0; j<Nxy; j++)
-//        {
-//            if (grid[j]==1)
-//            {
-//                if(!(std::find(diffuse_pos.begin(), diffuse_pos.end(), j) != diffuse_pos.end()))
-//                {
-//                    diffuse_pos.push_back(j);
-//                }
-//            }
-//        }
-//        //sort(diffuse_pos.begin(),diffuse_pos.end());
-//    }
-//
-//    void get_bound_pos()
-//    {
-//        for (int j=0; j<Nxy; j++)
-//        {
-//            if (grid[j]>1)
-//            {
-//                if(!(std::find(bound_pos.begin(), bound_pos.end(), j) != bound_pos.end()))
-//                {
-//                    bound_pos.push_back(j);
-//                }
-//            }
-//        }
-//        sort(bound_pos.begin(),bound_pos.end());
-//    }
-
-//DIFFUSE PARTICLES
-    int diffuse(double &rand)
+//CREATION ATTEMPT
+    void creation_attempt(int pos, double rand)
     {
-//randomely choose diffuse_pos
-        double rand_size = rand*positions.size();
-        int ind=rand_size;
-        rand = rand_size-ind;
+        int k_on=0.5;
+        if(rand<k_on)
+        {
+            positions.push_back(pos);
+            orientations.push_back(0);
+            grid[pos]=positions.back()+1;
+        }
+    }
+//DESTRUCTION ATTEMPT
+    void destruction_attempt(int pos,double rand)
+    {
+        int k_off=0.5;
+        if(rand<k_off)
+        {
+            int ind = get_index(pos);
+            grid[pos]=0;
+            positions.erase(ind);
+            orientations.erase(ind);
+        }
+    }
+//DIFFUSE PARTICLES
+    int diffuse(double &rand, int ind)
+    {
+        // get diffuse particle
         int particle_pos = positions[ind] ;
         std::cout<<"particle"<<particle_pos<<"\n";
-//choose random direction
+        //choose random direction
         Neighbours neighbors_dif=lattice.get_neighbors(particle_pos);
 
-        rand_size=rand*neighbors_dif.positions.size();
+        double rand_size=rand*neighbors_dif.positions.size();
         int dir=rand;
         rand = rand_size-dir;
         int new_pos = neighbors_dif.positions[dir];
         std::cout<<"new_pos"<<new_pos<<"\n";
-//check if new hex is occupied
+        //check if new hex is occupied
         if(is_free(new_pos))// accept move
         {
             grid[particle_pos]=0;
@@ -115,6 +95,7 @@ public:
         }
     }
 
+//DELTA_H
     double delta_H(double const alpha, double const J, int no_dif, std::vector<int> ori_neighbors)
     {
         std::cout<<"\n no_dif "<<no_dif<<"\n ori_size "<< ori_neighbors.size()<<"\n";
@@ -122,8 +103,8 @@ public:
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
     }
 
-
-    void binding_attempt(int const alpha, int const J, int pos,double &rand)
+//BINDING ATTEMPT
+    void binding_attempt(int const alpha, int const J, int pos, double &rand)
     {
         double rand_size = rand*3;
         int ori = rand_size-1;
@@ -216,9 +197,31 @@ public:
 
     }
 
-    void unbinding_attempt(int const alpha, int const J, int pos,double &rand)
+//UNBINDING ATTEMPT
+    void unbinding_attempt(int const alpha, int const J, int ind,double &rand)
     {
-
+        // get bound particle
+        int particle_pos = positions[ind];
+        int ori = orientations[ind];
+        Neighbours neighbors=lattice.get_neighbors(pos);
+        std::vector<int> ori_neighbors;
+        std::vector<int> possible_binding_pos;
+        int i=0;
+        for(auto it=neighbors.positions.begin(); it!=neighbors.positions.end(); ++it)
+        {
+            if(is_bound(get_index(*it)))
+            {
+                orientation_a = orientations[get_index(*it)]-2;
+                int slope_a = neighbors.slopes[i];
+                if(((ori+slope_a) * (orientation_a+slope_a))!=0)
+                {
+                    ori_neighbors.push_back(orientation_a);
+                    //slope_orientations.push_back(slope_a);
+                    possible_binding_pos.push_back(*it);
+                }
+            }
+            i++;
+        }
     }
 
 };
