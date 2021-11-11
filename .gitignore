@@ -1,0 +1,7 @@
+*.o
+*.cbp
+*.depend
+*.layout
+*.exe
+frz/bin/Debug/frz
+
