@@ -38,9 +38,30 @@ public:
         return orientations[ind]>0;
     }
 
-    inline int get_index(int pos)
+    inline int get_ind(int pos)
     {
         return grid[pos]-1;
+    }
+
+    int count_bound_neighbors(int pos, int ori)
+    {
+        Neighbours n=lattice.get_neighbors(pos);
+        int count_bound = 0;
+        int i=0;
+
+        for(auto it=n.positions.begin(); it!=n.positions.end(); ++it)
+        {
+            if(is_bound(get_ind(*it)))
+            {
+                int orientation_a = orientations[get_ind(*it)]-2;
+                int slope_a = n.slopes[i];
+                if(((ori+slope_a) * (orientation_a+slope_a))!=0)
+                {
+                    count_bound++;
+                }
+            }
+            i++;
+        }
     }
 
 //CREATION ATTEMPT
@@ -60,10 +81,10 @@ public:
         int k_off=0.5;
         if(rand<k_off)
         {
-            int ind = get_index(pos);
+            int ind = get_ind(pos);
             grid[pos]=0;
-            positions.erase(ind);
-            orientations.erase(ind);
+            positions.erase(positions.begin()+ind);
+            orientations.erase(orientations.begin()+ind);
         }
     }
 //DIFFUSE PARTICLES
@@ -116,6 +137,7 @@ public:
         std::vector<int> possible_binding_pos;
 
         int no_dif = 1;
+        int no_bonds = 0;
         int i=0;
 
         Neighbours neighbors=lattice.get_neighbors(pos);
@@ -124,7 +146,7 @@ public:
 
         for(auto it=neighbors.positions.begin(); it!=neighbors.positions.end(); ++it)
         {
-            if(is_diffuse(get_index(*it)))//if a neighbor is diffuse
+            if(is_diffuse(get_ind(*it)))//if a neighbor is diffuse
             {
                 rand_size=(rand)*3;
                 orientation_a = rand_size-1;
@@ -132,6 +154,7 @@ public:
                 int slope_a = neighbors.slopes[i];
                 if(((ori+slope_a) * (orientation_a+slope_a))!=0)
                 {
+                    no_bonds++;
                     ori_neighbors.push_back(orientation_a);
                     //slopes.push_back(slope_a);
                     possible_binding_pos.push_back(*it);
@@ -140,12 +163,13 @@ public:
                 }
 
             }
-            if(is_bound(get_index(*it)))
+            if(is_bound(get_ind(*it)))
             {
-                orientation_a = orientations[get_index(*it)]-2;
+                orientation_a = orientations[get_ind(*it)]-2;
                 int slope_a = neighbors.slopes[i];
                 if(((ori+slope_a) * (orientation_a+slope_a))!=0)
                 {
+                    no_bonds++;
                     ori_neighbors.push_back(orientation_a);
                     //slope_orientations.push_back(slope_a);
                     possible_binding_pos.push_back(*it);
@@ -184,11 +208,11 @@ public:
             if(rand<delta)
             {
                 std::cout<<"success \n";
-                orientations[get_index(pos)]=ori+2;
+                orientations[get_ind(pos)]=ori+2;
                 int i=0;
                 for(auto it=possible_binding_pos.begin(); it!=possible_binding_pos.end(); ++it)
                 {
-                    orientations[get_index(*it)]=ori_neighbors[i]+2;
+                    orientations[get_ind(*it)]=ori_neighbors[i]+2;
                     i++;
                 }
 
@@ -209,9 +233,9 @@ public:
         int i=0;
         for(auto it=neighbors.positions.begin(); it!=neighbors.positions.end(); ++it)
         {
-            if(is_bound(get_index(*it)))
+            if(is_bound(get_ind(*it)))
             {
-                orientation_a = orientations[get_index(*it)]-2;
+                int orientation_a = orientations[get_ind(*it)]-2;
                 int slope_a = neighbors.slopes[i];
                 if(((ori+slope_a) * (orientation_a+slope_a))!=0)
                 {
