@@ -42,7 +42,7 @@ public:
     {
         return grid[pos]-1;
     }
-
+//COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
     int count_bound_neighbors(int pos, int ori)
     {
         Neighbours n=lattice.get_neighbors(pos);
@@ -67,25 +67,28 @@ public:
 //CREATION ATTEMPT
     void creation_attempt(int pos, double rand)
     {
-        int k_on=0.5;
-        if(rand<k_on)
+        double const k_on=0.5;
+        if(rand<=k_on)
         {
+            std::cout<<"particle created"<<"\n";
             positions.push_back(pos);
             orientations.push_back(0);
-            grid[pos]=positions.back()+1;
+            grid[pos]=positions.size();
         }
     }
 //DESTRUCTION ATTEMPT
     void destruction_attempt(int pos,double rand)
     {
-        int k_off=0.5;
+        double const  k_off=0.5;
         if(rand<k_off)
         {
+            std::cout<<"particle destroyed"<<"\n";
             int ind = get_ind(pos);
             grid[pos]=0;
             positions.erase(positions.begin()+ind);
             orientations.erase(orientations.begin()+ind);
         }
+        else{}
     }
 //DIFFUSE PARTICLES
     int diffuse(double &rand, int ind)
@@ -227,7 +230,7 @@ public:
         // get bound particle
         int particle_pos = positions[ind];
         int ori = orientations[ind];
-        Neighbours neighbors=lattice.get_neighbors(pos);
+        Neighbours neighbors=lattice.get_neighbors(particle_pos);
         std::vector<int> ori_neighbors;
         std::vector<int> possible_binding_pos;
         int i=0;
