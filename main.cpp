@@ -21,13 +21,24 @@ unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().cou
 std::mt19937_64 gen(seed);
 std::uniform_real_distribution<double> unidist(0.0,1.0);
 
-void init(Particles particles)
+void init(Particles &particles)
 {
+    particles.grid[5]=1;
+    particles.grid[9]=2;
+    particles.grid[10]=3;
 
+    particles.positions.push_back(5);
+    particles.positions.push_back(9);
+    particles.positions.push_back(10);
+
+    particles.orientations.push_back(2);
+    particles.orientations.push_back(2);
+    particles.orientations.push_back(2);
 }
 void print_container(const std::vector<int>& c)
 {
-    for (auto &i : c) {
+    for (auto &i : c)
+    {
         std::cout << i << " ";
     }
     std::cout << '\n';
@@ -46,38 +57,50 @@ int main()
 // Input and Output arrays
 
     int site;
+    init(particles);
 
     while(MC_counter<MC_steps)
     {
         std::cout <<"counter"<< MC_counter <<'\n';
         if(MC_steps%1==0)
         {
-        // select a random hex on grid:
-        double rand_size = unidist(gen) * Nxy;
-        int pos = rand_size;
-        double rand = rand_size-pos;
-        std::cout<<"pos "<<pos<<"\n";
-        std::cout<<"rand "<<rand<<"\n";
-        //DESTRUCTION ATTEMPT
-        if(particles.is_diffuse(particles.get_ind(pos)))
-        {
-            std::cout<<"diffuse "<<"\n";
-            particles.destruction_attempt(pos,rand);
+            // select a random hex on grid:
+            double rand_size = unidist(gen) * Nxy;
+            int pos = rand_size;
+            double rand = rand_size-pos;
+            std::cout<<"pos "<<pos<<"\n";
+            std::cout<<"rand "<<rand<<"\n";
+
+
+
+
+            //CREATION ATTEMPT
+            if(particles.is_free(pos))
+            {
+                std::cout<<"free"<<"\n";
+                particles.creation_attempt(pos,rand);
+                print_container(particles.positions);
+            }
 
         }
 
-
-
-        //CREATION ATTEMPT
-        if(particles.is_free(pos))
-        {
-            std::cout<<"free"<<"\n";
-            particles.creation_attempt(pos,rand);
-            print_container(particles.positions);
-        }
-
-
-        }
+//        if(MC_steps%1==0)
+//        {
+//        // select a random hex on grid:
+//        double rand_size = unidist(gen) * Nxy;
+//        int pos = rand_size;
+//        double rand = rand_size-pos;
+//        std::cout<<"pos "<<pos<<"\n";
+//        std::cout<<"rand "<<rand<<"\n";
+//        //DESTRUCTION ATTEMPT
+//        if(particles.is_diffuse(particles.get_ind(pos)))
+//        {
+//            std::cout<<"diffuse "<<"\n";
+//            particles.destruction_attempt(pos,rand);
+//
+//        }
+//
+//        }
         //choose random particle
 //        rand = unidist(gen)*particles.positions.size();
 //        std::cout<<"rand"<<rand<<"\n";

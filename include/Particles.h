@@ -43,11 +43,12 @@ public:
         return grid[pos]-1;
     }
 //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
-    int count_bound_neighbors(int pos, int ori)
+    int count_bound_neighbors(int pos, int orientation)
     {
         Neighbours n=lattice.get_neighbors(pos);
         int count_bound = 0;
         int i=0;
+        int ori = orientation -2;
 
         for(auto it=n.positions.begin(); it!=n.positions.end(); ++it)
         {
@@ -62,6 +63,7 @@ public:
             }
             i++;
         }
+        std::cout<<count_bound<<"\n";
     }
 
 //CREATION ATTEMPT
