@@ -26,14 +26,17 @@ void init(Particles &particles)
     particles.grid[5]=1;
     particles.grid[9]=2;
     particles.grid[10]=3;
+    particles.grid[13]=4;
 
     particles.positions.push_back(5);
     particles.positions.push_back(9);
     particles.positions.push_back(10);
+    particles.positions.push_back(13);
 
     particles.orientations.push_back(2);
     particles.orientations.push_back(2);
     particles.orientations.push_back(2);
+    particles.orientations.push_back(0);
 }
 void print_container(const std::vector<int>& c)
 {
@@ -46,12 +49,12 @@ void print_container(const std::vector<int>& c)
 
 int main()
 {
-    const int MC_steps = 3; // number of Monte Carlo Steps
+    const int MC_steps = 1; // number of Monte Carlo Steps
     int MC_counter = 0;
     double rand;
 
 //constants for reaction:
-    double const alpha=1;
+    double const alpha=0.5;
     double const J=1;
 
 // Input and Output arrays
@@ -65,79 +68,67 @@ int main()
         if(MC_steps%1==0)
         {
             // select a random hex on grid:
-            double rand_size = unidist(gen) * Nxy;
-            int pos = rand_size;
-            double rand = rand_size-pos;
-            std::cout<<"pos "<<pos<<"\n";
-            std::cout<<"rand "<<rand<<"\n";
+            double rand_size1 = unidist(gen) * Nxy;
+            int pos1 = rand_size1;
+            double rand1 = rand_size1-pos1;
+//            std::cout<<"pos "<<pos<<"\n";
+//            std::cout<<"rand "<<rand<<"\n";
 
 
 
 
             //CREATION ATTEMPT
-            if(particles.is_free(pos))
+            if(particles.is_free(pos1))
             {
                 std::cout<<"free"<<"\n";
-                particles.creation_attempt(pos,rand);
+                particles.creation_attempt(pos1,rand1);
                 print_container(particles.positions);
+                print_container(particles.orientations);
+
             }
+
+
+
+            //DESTRUCTION ATTEMPT
+            else if(particles.is_diffuse(particles.get_ind(pos1)))
+            {
+                std::cout<<"diffuse "<<"\n";
+                particles.destruction_attempt(pos1,rand1);
+
+            }
+        }
+
+//      choose random particle
+        rand = unidist(gen)*particles.positions.size();
+//        std::cout<<"rand"<<rand<<"\n";
+        int ind=rand;
+        std::cout<<ind<<"\n";
+        rand=rand-ind;
+
+        if(particles.is_diffuse(ind))
+        {
+
+//Move diffusive particles
+
+            site=particles.diffuse(rand, ind);
+            print_container(particles.positions);
+            print_container(particles.orientations);
+
+//BINDING
+            particles.binding_attempt(alpha,J,site,rand);
+            print_container(particles.positions);
+            print_container(particles.orientations);
+
 
         }
 
-//        if(MC_steps%1==0)
-//        {
-//        // select a random hex on grid:
-//        double rand_size = unidist(gen) * Nxy;
-//        int pos = rand_size;
-//        double rand = rand_size-pos;
-//        std::cout<<"pos "<<pos<<"\n";
-//        std::cout<<"rand "<<rand<<"\n";
-//        //DESTRUCTION ATTEMPT
-//        if(particles.is_diffuse(particles.get_ind(pos)))
-//        {
-//            std::cout<<"diffuse "<<"\n";
-//            particles.destruction_attempt(pos,rand);
-//
-//        }
-//
-//        }
-        //choose random particle
-//        rand = unidist(gen)*particles.positions.size();
-//        std::cout<<"rand"<<rand<<"\n";
-//        int ind=rand;
-//        rand=rand-ind;
-//
-//        if(particles.is_diffuse(ind))
-//        {
-//
-//
-//
-////Move diffusive particles
-//
-//        site=particles.diffuse(rand, ind);
-//        std::cout<<"site"<<site<<"\n";
-//
-////BINDING
-//        particles.binding_attempt(alpha,J,site,rand);
-//
-//
-//        }
-//        if(particles.is_bound(ind))
-//        {
-//// UNBINDING ATTEMPT
-//        }
-//
-////        new_particle_site=create_particle(particles);
-////        std::cout<<"new particle created"<<" "<<new_particle_site<<"\n";
-//
-//
-//
-//
-//
-//
-//
-////UNBINDING
-////perform unbinding_attempt for a random bound particle
+        else if(particles.is_bound(ind))
+        {
+// UNBINDING ATTEMPT
+            particles.unbinding_attempt(alpha,J,ind,rand);
+            print_container(particles.positions);
+            print_container(particles.orientations);
+        }
 
 
         MC_counter++;
