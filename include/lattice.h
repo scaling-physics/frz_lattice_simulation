@@ -14,7 +14,6 @@
 //declare global dimensions
 const int Nx=4;
 const int Ny=4;
-const int L=4;
 const int Nxy = Nx*Ny;
 
 int mod(int a, int b)

@@ -10,18 +10,54 @@
 #include <algorithm>
 #include "lattice.h"
 
+
+
+void print_container(const std::vector<int>& c)
+{
+    for (auto &i : c)
+    {
+        std::cout << i << " ";
+    }
+    std::cout << '\n';
+}
+
+
+
+
+
 class Particles
 
 {
 private:
 
 public:
-    std::array<short,Nxy> grid{0}; //0 if empty, ind+1 if occupied
+    std::array<short,Nxy> grid; //0 if empty, ind+1 if occupied
     std::vector<int> positions; //stores position of particles on the grid
     std::vector<int> orientations; // stores the orientations of particles in positions, 0 if diffuse, 1,2,3 if bound
+    Lattice &lattice;
 
     //std::vector<int> diffuse_pos; //reference to position of diffuse particles
     //std::vector<int> bound_pos; //reference to position of bound particles
+
+
+    Particles(Lattice &lattice):grid{0},lattice(lattice){
+
+        grid[5]=1;
+    grid[9]=2;
+    grid[10]=3;
+    grid[13]=4;
+
+    positions.push_back(5);
+    positions.push_back(9);
+    positions.push_back(10);
+    positions.push_back(13);
+
+    orientations.push_back(2);
+    orientations.push_back(2);
+    orientations.push_back(2);
+    orientations.push_back(0);
+    }
+
 
     inline bool is_free(int pos)
     {
@@ -48,20 +84,25 @@ public:
     {
         Neighbours n=lattice.get_neighbors(pos);
         int count_bound = 0;
-        int i=0;
 
-        for(auto it=n.positions.begin(); it!=n.positions.end(); ++it)
+        for(int i=0; i<n.positions.size();i++)
         {
-            if(is_bound(get_ind(*it)))
+            if(!is_free(n.positions[i])){
+
+            int ind=get_ind(n.positions[i]);
+            if(is_bound(ind))
             {
-                int orientation_a = orientations[get_ind(*it)]-2;
+                int orientation_a = orientations[ind]-2;
                 int slope_a = n.slopes[i];
                 if(((ori+slope_a) * (orientation_a+slope_a))!=0)
                 {
                     count_bound++;
                 }
             }
+
+            }
             i++;
+
         }
 //        std::cout<<count_bound<<"\n";
         return count_bound;
@@ -91,7 +132,6 @@ public:
             positions.erase(positions.begin()+ind);
             orientations.erase(orientations.begin()+ind);
         }
-        else {}
     }
 //DIFFUSE PARTICLES
     int diffuse(double &rand, int ind)
@@ -127,7 +167,7 @@ public:
 //DELTA_H
     double delta_H(double const alpha, double const J, int no_dif, int no_bonds, double a)
     {
-        std::cout<<"no_dif "<<no_dif<<"\n no_bonds "<< no_bonds<<"\n";
+        //std::cout<<"no_dif "<<no_dif<<"\n no_bonds "<< no_bonds<<"\n";
         double delta_E=(a*J)*(no_bonds-(no_dif*alpha));
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
     }
@@ -198,12 +238,12 @@ public:
         if(no_bonds>0)
         {
             double delta = delta_H(alpha,J,no_dif,no_bonds, -1);
-            std::cout<<"delta "<< delta << "\n";
-            std::cout<<"\n rand "<<rand;
+            //std::cout<<"delta "<< delta << "\n";
+            //std::cout<<"\n rand "<<rand;
             //the binding attempt is succesful if rand < delta_E
             if(rand<delta)
             {
-                std::cout<<"binding \n";
+                std::cout<<"binding "<< '\t' << ori <<'\t' <<orientations[get_ind(pos)] << '\n';
                 orientations[get_ind(pos)]=ori+2;
                 int i=0;
                 for(auto it=possible_binding_pos.begin(); it!=possible_binding_pos.end(); ++it)
@@ -222,18 +262,18 @@ public:
     {
         // get bound particle
         int particle_pos = positions[ind];
-        int ori = orientations[ind];
+        int ori = orientations[ind]-2;
         Neighbours neighbors=lattice.get_neighbors(particle_pos);
         std::vector<int> ori_neighbors;
         std::vector<int> possible_unbinding_pos;
         int i=0;
         int no_bonds=0;
         int no_dif=1;
+        //print_container(neighbors.positions);
         for(auto it=neighbors.positions.begin(); it!=neighbors.positions.end(); ++it)
         {
             int ind1 = get_ind(*it);
-            if(ind1<0){}
-            else if(is_bound(ind))
+            if(ind1>=0 && is_bound(ind1))
             {
                 int orientation_a = orientations[ind1]-2;
                 int slope_a = neighbors.slopes[i];
@@ -257,7 +297,7 @@ public:
 
         if (rand<delta_E)
         {
-            std::cout<<"unbinding"<<"\n";
+            //std::cout<<"unbinding"<<"\n";
             orientations[ind]=0;
             for(auto it=possible_unbinding_pos.begin(); it!=possible_unbinding_pos.end(); ++it)
             {
