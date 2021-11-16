@@ -143,7 +143,7 @@ public:
         Neighbours neighbors_dif=lattice.get_neighbors(particle_pos);
 
         double rand_size=rand*neighbors_dif.positions.size();
-        int dir=rand;
+        int dir=rand_size;
         rand = rand_size-dir;
         int new_pos = neighbors_dif.positions[dir];
 
