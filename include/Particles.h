@@ -31,9 +31,8 @@ class Particles
 private:
 
 public:
-    std::array<short,Nxy> grid; //0 if empty, ind+1 if occupied
+    std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
     std::vector<int> positions; //stores position of particles on the grid
-    std::vector<int> orientations; // stores the orientations of particles in positions, 0 if diffuse, 1,2,3 if bound
     Lattice &lattice;
 
     //std::vector<int> diffuse_pos; //reference to position of diffuse particles
@@ -43,55 +42,106 @@ public:
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
 
-        grid[5]=1;
-        grid[9]=2;
+        grid[5]=3;
+        grid[9]=3;
         grid[10]=3;
-        grid[13]=4;
+        grid[13]=1;
 
         positions.emplace_back(5);
         positions.emplace_back(9);
         positions.emplace_back(10);
         positions.emplace_back(13);
-
-        orientations.emplace_back(2);
-        orientations.emplace_back(2);
-        orientations.emplace_back(2);
-        orientations.emplace_back(0);
     }
 
-
-    inline bool is_free(int pos)
+    inline int get_pos(int ind)
     {
-        return grid[pos]==0;
+        return positions[ind];
     }
-
+    inline bool is_free(int ind)
+    {
+        return grid[get_pos(ind)]==0;
+    }
     inline bool is_diffuse(int ind)
     {
-        return orientations[ind]==0;
+        return grid[get_pos(ind)]==1;
     }
+
 
     inline bool is_bound(int ind)
     {
-        return orientations[ind]>0;
+        return grid[get_pos(ind)]>1;
     }
 
     inline int get_ind(int pos)
     {
-        int ind=grid[pos]-1;
-        return ind;
+//    NOT WORKING PROPERLY
+        return pos;
+
     }
     inline int get_orientation(int ind)
     {
-        return orientations[ind];
+        int ori=grid[get_pos(ind)];
+        return ori==1 ? ori : ori-3;
     }
-    inline void change_orientation(int ind, int ori)
+    inline void set_orientation(int ind, int ori)
     {
-        orientations[ind]=ori;
+        grid[get_pos(ind)]=ori;
     }
-    inline void change_pos(int old_pos,int new_pos, int ind)
+    inline void set_pos(int old_pos,int new_pos, int ind)
     {
         grid[old_pos]=0;
-        grid[new_pos]=ind+1;
+        grid[new_pos]=1;
+        positions[ind]=new_pos;
+    }
+
+//CREATION ATTEMPT
+    void creation_attempt(int pos, double rand)
+    {
+        double const k_on=0.5;
+        if(rand<=k_on)
+        {
+            std::cout<<"particle created"<<"\n";
+            positions.emplace_back(pos);
+            grid[pos]=1;
+        }
+    }
+//DESTRUCTION ATTEMPT
+    void destruction_attempt(int pos,double rand)
+    {
+        double const  k_off=0.5;
+        if(rand<k_off)
+        {
+            std::cout<<"particle destroyed"<<"\n";
+            grid[pos]=0;
+            positions.erase(std::find(begin(positions),end(positions),pos));
+        }
+    }
+//DIFFUSE PARTICLES
+    int diffuse(double &rand, int ind)
+    {
+        // get diffuse particle
+        int particle_pos = positions[ind] ;
+
+        //choose random direction
+        Neighbours neighbors_dif=lattice.get_neighbors(particle_pos);
+
+        double rand_size=rand*neighbors_dif.positions.size();
+        int dir=rand_size;
+        rand = rand_size-dir;
+        int new_pos = neighbors_dif.positions[dir];
+
+        //check if new hex is occupied
+        if(is_free(new_pos))// accept move
+        {
+            std::cout<<"particle"<<particle_pos<<"\n";
+            std::cout<<"new_pos"<<new_pos<<"\n";
+            set_pos(particle_pos,new_pos, ind);
+            return new_pos;
+        }
+        else
+        {
+            return particle_pos;
+        }
     }
 //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
     int count_bound_neighbors(int pos, int ori)
@@ -121,62 +171,6 @@ public:
         }
 //        std::cout<<count_bound<<"\n";
         return count_bound;
-    }
-
-//CREATION ATTEMPT
-    void creation_attempt(int pos, double rand)
-    {
-        double const k_on=0.5;
-        if(rand<=k_on)
-        {
-            std::cout<<"particle created"<<"\n";
-            positions.emplace_back(pos);
-            orientations.emplace_back(0);
-            grid[pos]=positions.size();
-        }
-    }
-//DESTRUCTION ATTEMPT
-    void destruction_attempt(int pos,double rand)
-    {
-        double const  k_off=0.5;
-        if(rand<k_off)
-        {
-            std::cout<<"particle destroyed"<<"\n";
-            int ind = get_ind(pos);
-            grid[pos]=0;
-            positions.erase(positions.begin()+ind);
-            orientations.erase(orientations.begin()+ind);
-        }
-    }
-//DIFFUSE PARTICLES
-    int diffuse(double &rand, int ind)
-    {
-        // get diffuse particle
-        int particle_pos = positions[ind] ;
-
-        //choose random direction
-        Neighbours neighbors_dif=lattice.get_neighbors(particle_pos);
-
-        double rand_size=rand*neighbors_dif.positions.size();
-        int dir=rand_size;
-        rand = rand_size-dir;
-        int new_pos = neighbors_dif.positions[dir];
-
-        //check if new hex is occupied
-        if(is_free(new_pos))// accept move
-        {
-            std::cout<<"particle"<<particle_pos<<"\n";
-            std::cout<<"new_pos"<<new_pos<<"\n";
-            grid[particle_pos]=0;
-            grid[new_pos]=ind+1;
-            positions[ind]=new_pos;
-            return new_pos;
-
-        }
-        else
-        {
-            return particle_pos;
-        }
     }
 
 //DELTA_H
@@ -258,13 +252,10 @@ public:
             //the binding attempt is succesful if rand < delta_E
             if(rand<delta)
             {
-                std::cout<<"binding "<< '\t' << ori <<'\t' <<orientations[get_ind(pos)] << '\n';
-                orientations[get_ind(pos)]=ori+2;
-                int i=0;
-                for(auto it=possible_binding_pos.begin(); it!=possible_binding_pos.end(); ++it)
+                set_orientation(get_ind(pos),ori+2);
+                for(int i=0;i<possible_binding_pos.size(); i++)
                 {
-                    orientations[get_ind(*it)]=ori_neighbors[i]+2;
-                    i++;
+                    set_orientation(get_ind(possible_binding_pos[i]),ori_neighbors[i]+2);
                 }
 
             }
@@ -313,11 +304,10 @@ public:
         if (rand<delta_E)
         {
             //std::cout<<"unbinding"<<"\n";
-            orientations[ind]=0;
-            for(auto it=possible_unbinding_pos.begin(); it!=possible_unbinding_pos.end(); ++it)
+            set_orientation(ind,0);
+            for(int i=0;i<possible_unbinding_pos.size();i++)
             {
-                orientations[get_ind(*it)]=0;
-                i++;
+                set_orientation(get_ind(possible_unbinding_pos[i]),0);
             }
 
         }

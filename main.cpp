@@ -26,7 +26,7 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
 
 int main()
 {
-    const int MC_steps = 50; // number of Monte Carlo Steps
+    const int MC_steps = 2; // number of Monte Carlo Steps
     int MC_counter = 0;
     double rand;
 
@@ -62,8 +62,6 @@ int main()
                 //std::cout<<"free"<<"\n";
                 particles.creation_attempt(pos1,rand1);
                 print_container(particles.positions);
-                print_container(particles.orientations);
-
             }
 
 
@@ -91,12 +89,12 @@ int main()
 
             site=particles.diffuse(rand, ind);
             print_container(particles.positions);
-            print_container(particles.orientations);
+
 
 //BINDING
             particles.binding_attempt(alpha,J,site,rand);
             print_container(particles.positions);
-            print_container(particles.orientations);
+
 
 
         }
@@ -106,7 +104,7 @@ int main()
 // UNBINDING ATTEMPT
             particles.unbinding_attempt(alpha,J,ind,rand);
             print_container(particles.positions);
-            print_container(particles.orientations);
+
         }
 
 
