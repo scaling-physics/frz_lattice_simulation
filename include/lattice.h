@@ -83,25 +83,25 @@ public:
         {
             if(x-1>=0)
             {
-                n.positions.push_back(get_single_index(x-1,y));
-                n.slopes.push_back(0);
-                n.positions.push_back(get_single_index(x-1,mod(y+1,Ny)));
-                n.slopes.push_back(-1);
-                n.positions.push_back(get_single_index(x-1,mod(y-1,Ny)));
-                n.slopes.push_back(1);
+                n.positions.emplace_back(get_single_index(x-1,y));
+                n.slopes.emplace_back(0);
+                n.positions.emplace_back(get_single_index(x-1,mod(y+1,Ny)));
+                n.slopes.emplace_back(-1);
+                n.positions.emplace_back(get_single_index(x-1,mod(y-1,Ny)));
+                n.slopes.emplace_back(1);
             }
 
         if(x+1<Nx)
         {
-            n.positions.push_back(get_single_index(x+1,y));
-            n.slopes.push_back(0);
+            n.positions.emplace_back(get_single_index(x+1,y));
+            n.slopes.emplace_back(0);
         }
 
-        n.positions.push_back(get_single_index(x,mod(y+1,Ny)));
-        n.slopes.push_back(1);
+        n.positions.emplace_back(get_single_index(x,mod(y+1,Ny)));
+        n.slopes.emplace_back(1);
 
-        n.positions.push_back(get_single_index(x,mod(y-1,Ny)));
-        n.slopes.push_back(-1);
+        n.positions.emplace_back(get_single_index(x,mod(y-1,Ny)));
+        n.slopes.emplace_back(-1);
     }
 
 
@@ -109,24 +109,24 @@ public:
     {
         if(x-1>=0)
         {
-            n.positions.push_back(get_single_index(x-1,y));
-            n.slopes.push_back(0);
+            n.positions.emplace_back(get_single_index(x-1,y));
+            n.slopes.emplace_back(0);
         }
 
         if(x+1<Nx)
         {
-            n.positions.push_back(get_single_index(x+1,y));
-            n.slopes.push_back(0);
-            n.positions.push_back(get_single_index(x+1,mod(y+1,Ny)));
-            n.slopes.push_back(1);
-            n.positions.push_back(get_single_index(x+1,mod(y-1,Ny)));
-            n.slopes.push_back(-1);
+            n.positions.emplace_back(get_single_index(x+1,y));
+            n.slopes.emplace_back(0);
+            n.positions.emplace_back(get_single_index(x+1,mod(y+1,Ny)));
+            n.slopes.emplace_back(1);
+            n.positions.emplace_back(get_single_index(x+1,mod(y-1,Ny)));
+            n.slopes.emplace_back(-1);
         }
 
-        n.positions.push_back(get_single_index(x,mod(y+1,Ny)));
-        n.slopes.push_back(-1);
-        n.positions.push_back(get_single_index(x,mod(y-1,Ny)));
-        n.slopes.push_back(1);
+        n.positions.emplace_back(get_single_index(x,mod(y+1,Ny)));
+        n.slopes.emplace_back(-1);
+        n.positions.emplace_back(get_single_index(x,mod(y-1,Ny)));
+        n.slopes.emplace_back(1);
 
 
 

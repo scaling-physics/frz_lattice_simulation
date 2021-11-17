@@ -40,22 +40,23 @@ public:
     //std::vector<int> bound_pos; //reference to position of bound particles
 
 
-    Particles(Lattice &lattice):grid{0},lattice(lattice){
+    Particles(Lattice &lattice):grid{0},lattice(lattice)
+    {
 
         grid[5]=1;
-    grid[9]=2;
-    grid[10]=3;
-    grid[13]=4;
+        grid[9]=2;
+        grid[10]=3;
+        grid[13]=4;
 
-    positions.push_back(5);
-    positions.push_back(9);
-    positions.push_back(10);
-    positions.push_back(13);
+        positions.emplace_back(5);
+        positions.emplace_back(9);
+        positions.emplace_back(10);
+        positions.emplace_back(13);
 
-    orientations.push_back(2);
-    orientations.push_back(2);
-    orientations.push_back(2);
-    orientations.push_back(0);
+        orientations.emplace_back(2);
+        orientations.emplace_back(2);
+        orientations.emplace_back(2);
+        orientations.emplace_back(0);
     }
 
 
@@ -79,26 +80,40 @@ public:
         int ind=grid[pos]-1;
         return ind;
     }
+    inline int get_orientation(int ind)
+    {
+        return orientations[ind];
+    }
+    inline void change_orientation(int ind, int ori)
+    {
+        orientations[ind]=ori;
+    }
+    inline void change_pos(int old_pos,int new_pos, int ind)
+    {
+        grid[old_pos]=0;
+        grid[new_pos]=ind+1;
+    }
 //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
     int count_bound_neighbors(int pos, int ori)
     {
         Neighbours n=lattice.get_neighbors(pos);
         int count_bound = 0;
 
-        for(int i=0; i<n.positions.size();i++)
+        for(int i=0; i<n.positions.size(); i++)
         {
-            if(!is_free(n.positions[i])){
-
-            int ind=get_ind(n.positions[i]);
-            if(is_bound(ind))
+            if(!is_free(n.positions[i]))
             {
-                int orientation_a = orientations[ind]-2;
-                int slope_a = n.slopes[i];
-                if(((ori+slope_a) * (orientation_a+slope_a))!=0)
+
+                int ind=get_ind(n.positions[i]);
+                if(is_bound(ind))
                 {
-                    count_bound++;
+                    int orientation_a = get_orientation(ind)-2;
+                    int slope_a = n.slopes[i];
+                    if(((ori+slope_a) * (orientation_a+slope_a))!=0)
+                    {
+                        count_bound++;
+                    }
                 }
-            }
 
             }
             i++;
@@ -115,8 +130,8 @@ public:
         if(rand<=k_on)
         {
             std::cout<<"particle created"<<"\n";
-            positions.push_back(pos);
-            orientations.push_back(0);
+            positions.emplace_back(pos);
+            orientations.emplace_back(0);
             grid[pos]=positions.size();
         }
     }
@@ -196,7 +211,7 @@ public:
         for(auto it=neighbors.positions.begin(); it!=neighbors.positions.end(); ++it)
         {
             int ind = get_ind(*it);
-            if(ind<0){}
+            if(ind<0) {}
             else if(is_diffuse(ind))//if a neighbor is diffuse
             {
                 rand_size=(rand)*3;
@@ -209,8 +224,8 @@ public:
                 if(((ori+slope_a) * (orientation_a+slope_a))!=0)
                 {
                     no_bonds++;
-                    ori_neighbors.push_back(orientation_a);
-                    possible_binding_pos.push_back(*it);
+                    ori_neighbors.emplace_back(orientation_a);
+                    possible_binding_pos.emplace_back(*it);
 
                     no_dif++;
                     //check if diffuse neighbor has bound neighbors
@@ -221,15 +236,15 @@ public:
             }
             else if(is_bound(ind))
             {
-                orientation_a = orientations[ind]-2;
+                orientation_a = get_orientation(ind)-2;
                 int slope_a = neighbors.slopes[i];
                 std::cout<<"neighbor_bound "<<*it<<"\n";
                 std::cout<<"ori "<<orientation_a<<"\n";
                 if(((ori+slope_a) * (orientation_a+slope_a))!=0)
                 {
                     no_bonds++;
-                    ori_neighbors.push_back(orientation_a);
-                    possible_binding_pos.push_back(*it);
+                    ori_neighbors.emplace_back(orientation_a);
+                    possible_binding_pos.emplace_back(*it);
                 }
             }
 
@@ -262,7 +277,7 @@ public:
     {
         // get bound particle
         int particle_pos = positions[ind];
-        int ori = orientations[ind]-2;
+        int ori = get_orientation(ind)-2;
         Neighbours neighbors=lattice.get_neighbors(particle_pos);
         std::vector<int> ori_neighbors;
         std::vector<int> possible_unbinding_pos;
@@ -275,18 +290,18 @@ public:
             int ind1 = get_ind(*it);
             if(ind1>=0 && is_bound(ind1))
             {
-                int orientation_a = orientations[ind1]-2;
+                int orientation_a = get_orientation(ind1)-2;
                 int slope_a = neighbors.slopes[i];
                 if(((ori+slope_a) * (orientation_a+slope_a))!=0)
                 {
-//                    ori_neighbors.push_back(orientation_a);
+//                    ori_neighbors.emplace_back(orientation_a);
                     no_bonds++;
                     int no_neigh_bound = count_bound_neighbors(*it,orientation_a);
 
                     if (no_neigh_bound==1)
                     {
                         no_dif++;
-                        possible_unbinding_pos.push_back(*it);
+                        possible_unbinding_pos.emplace_back(*it);
                     }
                 }
             }
