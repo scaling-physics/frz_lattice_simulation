@@ -26,7 +26,7 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
 
 int main()
 {
-    const int MC_steps = 2; // number of Monte Carlo Steps
+    const int MC_steps = 20000; // number of Monte Carlo Steps
     int MC_counter = 0;
     double rand;
 
@@ -44,7 +44,7 @@ int main()
     while(MC_counter<MC_steps)
     {
         std::cout <<"counter"<< MC_counter <<'\n';
-        if(MC_steps%1==0)
+        if(MC_steps%10==0)
         {
             // select a random hex on grid:
             double rand_size1 = unidist(gen) * Nxy;
@@ -61,7 +61,7 @@ int main()
             {
                 //std::cout<<"free"<<"\n";
                 particles.creation_attempt(pos1,rand1);
-                print_container(particles.positions);
+//                print_container(particles.positions);
             }
 
 
@@ -79,31 +79,30 @@ int main()
         rand = unidist(gen)*particles.positions.size();
 //        std::cout<<"rand"<<rand<<"\n";
         int ind=rand;
-        std::cout<<ind<<"\n";
         rand=rand-ind;
 
-        if(particles.is_diffuse(ind))
+        if(particles.is_diffuse(particles.get_pos(ind)))
         {
 
 //Move diffusive particles
 
-            site=particles.diffuse(rand, ind);
-            print_container(particles.positions);
+            particles.diffuse(rand, ind);
+//            print_container(particles.positions);
 
 
 //BINDING
-            particles.binding_attempt(alpha,J,site,rand);
-            print_container(particles.positions);
+            particles.binding_attempt(alpha,J,ind,rand);
+//            print_container(particles.positions);
 
 
 
         }
 
-        else if(particles.is_bound(ind))
+        else if(particles.is_bound(particles.get_pos(ind)))
         {
 // UNBINDING ATTEMPT
             particles.unbinding_attempt(alpha,J,ind,rand);
-            print_container(particles.positions);
+//            print_container(particles.positions);
 
         }
 
@@ -112,10 +111,10 @@ int main()
         std::cout << particles.positions.size() << '\n';
 
     }
-    for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
-    {
-        //std::cout << *iter << "\n"<<' ';
-    }
+//    for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
+//    {
+//        //std::cout << *iter << "\n"<<' ';
+//    }
 
     return 0;
 };
