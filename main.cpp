@@ -26,7 +26,7 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
 
 int main()
 {
-    const int MC_steps = 20000; // number of Monte Carlo Steps
+    const int MC_steps = 200; // number of Monte Carlo Steps
     int MC_counter = 0;
     double rand;
 
@@ -34,12 +34,11 @@ int main()
     double const alpha=0.5;
     double const J=1.0;
 
-// Input and Output arrays
-
-    int site;
-
     Lattice lattice;
     Particles particles(lattice);
+
+    std::ofstream MyFile("grid.txt");
+    MyFile << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
 
     while(MC_counter<MC_steps)
     {
@@ -52,8 +51,6 @@ int main()
             double rand1 = rand_size1-pos1;
 //            std::cout<<"pos "<<pos<<"\n";
 //            std::cout<<"rand "<<rand<<"\n";
-
-
 
 
             //CREATION ATTEMPT
@@ -106,7 +103,15 @@ int main()
 
         }
 
-
+        if (MyFile.is_open())
+        {
+            for(int count = 0; count < Nxy; count ++)
+            {
+                MyFile << particles.grid[count] << " " ;
+            }
+            MyFile << "\n";
+        }
+        else std::cout << "Unable to open file";
         MC_counter++;
         std::cout << particles.positions.size() << '\n';
 
@@ -115,6 +120,6 @@ int main()
 //    {
 //        //std::cout << *iter << "\n"<<' ';
 //    }
-
+    MyFile.close();
     return 0;
 };

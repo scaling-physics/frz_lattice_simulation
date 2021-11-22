@@ -62,16 +62,23 @@ public:
 
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
-
-        grid[5]=3;
-        grid[9]=3;
-        grid[10]=3;
-        grid[13]=1;
-
-        positions.emplace_back(5);
-        positions.emplace_back(9);
-        positions.emplace_back(10);
-        positions.emplace_back(13);
+        for(int i=0; i<Nxy; i++)
+        {
+            if(i%3==0)
+            {
+                grid[i]=1;
+                positions.emplace_back(i);
+            }
+        }
+//        grid[5]=3;
+//        grid[9]=3;
+//        grid[10]=3;
+//        grid[13]=1;
+//
+//        positions.emplace_back(5);
+//        positions.emplace_back(9);
+//        positions.emplace_back(10);
+//        positions.emplace_back(13);
     }
 
     inline int get_pos(int ind)
@@ -142,7 +149,7 @@ public:
         }
     }
 //DIFFUSE PARTICLES
-    int diffuse(double &rand, int ind)
+    void diffuse(double &rand, int ind)
     {
         // get diffuse particle
         int particle_pos = positions[ind] ;
@@ -254,10 +261,9 @@ public:
         rand=rand_size-rand_int;
 
 
-
+        interactions.num_bonds=0;
+        interactions.num_diffuse=1;
         Neighbours neighbors=lattice.get_neighbors(pos);
-        int orientation_a;
-
         if(d_n.diffuse_neighbors.size()>0)
         {
             for(unsigned int i=0; i<d_n.diffuse_neighbors.size(); i++)
@@ -268,7 +274,7 @@ public:
                     interactions.orientations.emplace_back(d_n.orientations[i]);
                     interactions.num_bonds++;
                     interactions.num_diffuse++;
-                    interactions.num_diffuse=interactions.num_bonds+count_bound_neighbors(d_n.diffuse_neighbors[i],d_n.orientations[i]);
+                    interactions.num_bonds=interactions.num_bonds+count_bound_neighbors(d_n.diffuse_neighbors[i],d_n.orientations[i]);
 
                 }
             }
@@ -347,49 +353,53 @@ public:
     void unbinding_attempt(int const alpha, int const J, int ind,double &rand)
     {
         // get bound particle
-        int particle_pos = positions[ind];
-        int ori = get_orientation(ind)-2;
+        int particle_pos = get_pos(ind);
+        int ori = get_orientation(particle_pos);
         Neighbours neighbors=lattice.get_neighbors(particle_pos);
-        std::vector<int> ori_neighbors;
-        std::vector<int> possible_unbinding_pos;
-        int i=0;
-        int num_bonds=0;
-        int num_dif=1;
-        //print_container(neighbors.positions);
-            {
-                int orientation_a = get_orientation(ind1)-2;
-                int slope_a = neighbors.slopes[i];
-                if(((ori+slope_a) * (orientation_a+slope_a))!=0)
-                {
-//                    ori_neighbors.emplace_back(orientation_a);
-                    num_bonds++;
-                    int num_neigh_bound = count_bound_neighbors(*it,orientation_a);
 
-                    if (num_neigh_bound==1)
+        Interactions interactions;
+        interactions.num_bonds=0;
+        interactions.num_diffuse=1;
+        Bound_Neighbors b_n=get_bound_neighbors(ind);
+
+
+        if(b_n.bound_neighbors.size()>0)
+        {
+            for (unsigned int i=0; i<b_n.bound_neighbors.size(); i++)
+            {
+                if(is_interaction_allowed(ori,b_n.orientations[i],b_n.slopes[i]))
+                {
+                    interactions.orientations.emplace_back(b_n.orientations[i]);
+                    interactions.num_bonds++;
+
+                    int bound_neigh_of_neigh = count_bound_neighbors(b_n.bound_neighbors[i],b_n.orientations[i]);
+                    if(bound_neigh_of_neigh==1)
                     {
-                        num_dif++;
-                        possible_unbinding_pos.emplace_back(*it);
+                        interactions.possible_interaction_pos.emplace_back(b_n.bound_neighbors[i]);
+                        interactions.num_diffuse++;
                     }
+
                 }
             }
-            i++;
         }
 
-        double delta_E =delta_H(alpha,J,num_dif,num_bonds, 1);
+        double delta_E =delta_H(alpha,J,interactions.num_diffuse,interactions.num_bonds, 1);
 
         if (rand<delta_E)
         {
             std::cout<<"unbinding"<<"\n";
-            set_orientation(ind,0);
-            for(unsigned int i=0; i<possible_unbinding_pos.size(); i++)
+            set_orientation(particle_pos,1);
+            if(interactions.possible_interaction_pos.size()>0)
             {
-                set_orientation(get_ind(possible_unbinding_pos[i]),0);
+                for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
+                {
+                    set_orientation(interactions.possible_interaction_pos[i],1);
+                }
             }
 
         }
     }
 
 };
-
 
 #endif // PARTICLES_H
