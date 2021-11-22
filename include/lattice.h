@@ -74,7 +74,11 @@ public:
 
         std::array<int,2> coord{get_index(pos)};
 
-        int x=coord[0];
+        int x=c
+        for(auto it=neighbors.positions.begin(); it!=neighbors.positions.end(); ++it)
+        {
+            int ind1 = get_ind(*it);
+            if(ind1>=0 && is_bound(ind1))oord[0];
         int y= coord[1];
 
 
