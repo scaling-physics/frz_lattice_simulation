@@ -64,7 +64,8 @@ public:
     {
         for(int i=0; i<Nxy; i++)
         {
-            if(i%10==0)
+            double rand=unidist(gen);
+            if(rand<0.1)
             {
                 grid[i]=1;
                 positions.emplace_back(i);
@@ -152,21 +153,19 @@ public:
     void diffuse(double &rand, int ind)
     {
         // get diffuse particle
-        int particle_pos = positions[ind] ;
+        int particle_pos = get_pos(ind) ;
 
         //choose random direction
-        Neighbours neighbors_dif=lattice.get_neighbors(particle_pos);
+        Neighbours n=lattice.get_neighbors(particle_pos);
 
-        double rand_size=rand*neighbors_dif.positions.size();
+        double rand_size=rand*n.positions.size();
         int dir=rand_size;
         rand = rand_size-dir;
-        int new_pos = neighbors_dif.positions[dir];
+        int new_pos = n.positions[dir];
 
         //check if new hex is occupied
         if(is_free(new_pos))// accept move
         {
-//            std::cout<<"particle"<<particle_pos<<"\n";
-//            std::cout<<"new_pos"<<new_pos<<"\n";
             set_pos(particle_pos,new_pos, ind);
         }
     }
@@ -178,23 +177,13 @@ public:
 
         for(unsigned int i=0; i<n.positions.size(); i++)
         {
-            if(!is_free(n.positions[i]))
+            if(is_bound(n.positions[i]))
             {
-
-                int ind=get_ind(n.positions[i]);
-                if(is_bound(ind))
+                if(is_interaction_allowed(ori,get_orientation(n.positions[i]),n.slopes[i]))
                 {
-                    int orientation_a = get_orientation(ind)-2;
-                    int slope_a = n.slopes[i];
-                    if(((ori+slope_a) * (orientation_a+slope_a))!=0)
-                    {
-                        count_bound++;
-                    }
+                    count_bound++;
                 }
-
             }
-            i++;
-
         }
 //        std::cout<<count_bound<<"\n";
         return count_bound;
@@ -205,17 +194,14 @@ public:
         Diffuse_Neighbors d_n;
         int pos = get_pos(ind);
         Neighbours n=lattice.get_neighbors(pos);
-        std::vector<int> diffuse_neighbors;
-        double rand_size;
-        int ori;
         for(unsigned int i=0; i<n.positions.size(); i++)
         {
             if(is_diffuse(n.positions[i]))
             {
                 d_n.diffuse_neighbors.emplace_back(n.positions[i]);
                 d_n.slopes.emplace_back(n.slopes[i]);
-                rand_size = rand*3;
-                ori = rand_size;
+                double rand_size = rand*3;
+                int ori = rand_size;
                 rand=rand_size-ori;
                 d_n.orientations.emplace_back(ori-1);
             }

@@ -56,7 +56,7 @@ public:
 
     int get_single_index(int x, int y)
     {
-        int index = y*Ny+x;
+        int index = y*Nx+x;
         return index;
 
     }

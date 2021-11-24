@@ -36,18 +36,18 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
 
     int main()
     {
-        const int MC_steps = 20000; // number of Monte Carlo Steps
+        const int MC_steps = pow(10,5); // number of Monte Carlo Steps
         int MC_counter = 0;
         double rand;
 
 //constants for reaction:
         double const alpha=0.0;
-        double const J=-1000;
+        double const J=1;
 
         Lattice lattice;
         Particles particles(lattice);
 
-        std::ofstream MyFile("grid_J_-1000_alpha_0.txt");
+        std::ofstream MyFile("grid_J_1_alpha_0.txt");
         MyFile << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
 
         while(MC_counter<MC_steps)
