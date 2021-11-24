@@ -125,11 +125,11 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
             MC_counter++;
             std::cout << particles.positions.size() << '\n';
 
-            if(MC_counter%100==0)
-            {
-                std::cout<<"counter "<<MC_counter<<"\n";
-                std::cout<<
-            }
+//            if(MC_counter%100==0)
+//            {
+//                std::cout<<"counter "<<MC_counter<<"\n";
+//                std::cout<<
+//            }
 
         }
 //    for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
