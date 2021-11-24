@@ -64,7 +64,7 @@ public:
     {
         for(int i=0; i<Nxy; i++)
         {
-            if(i%3==0)
+            if(i%10==0)
             {
                 grid[i]=1;
                 positions.emplace_back(i);
@@ -129,7 +129,7 @@ public:
 //CREATION ATTEMPT
     void creation_attempt(int pos, double rand)
     {
-        double const k_on=0.5;
+        double const k_on=0.05;
         if(rand<=k_on)
         {
             std::cout<<"particle created"<<"\n";
