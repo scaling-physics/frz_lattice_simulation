@@ -3,4 +3,8 @@
 *.layout
 *.exe
 frz/bin/Debug/frz
+*.txt
+*.svg
+*.png
+*.jpg
 
