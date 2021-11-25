@@ -67,7 +67,7 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
                 if(particles.is_free(pos1))
                 {
                     //std::cout<<"free"<<"\n";
-                    particles.creation_attempt(pos1,rand1);
+                    particles.attempt_creation(pos1,rand1);
 //                print_container(particles.positions);
                 }
 
@@ -77,7 +77,7 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
                 else if(particles.is_diffuse(particles.get_ind(pos1)))
                 {
                     std::cout<<"diffuse "<<"\n";
-                    particles.destruction_attempt(pos1,rand1);
+                    particles.attempt_destruction(pos1,rand1);
 
                 }
             }
@@ -93,12 +93,12 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
 
 //Move diffusive particles
 
-                particles.diffuse(rand, ind);
+                particles.attempt_diffusion(rand, ind);
 //            print_container(particles.positions);
 
 
 //BINDING
-                particles.binding_attempt(alpha,J,ind,rand);
+                particles.attempt_binding(alpha,J,ind,rand);
 //            print_container(particles.positions);
 
 
@@ -108,7 +108,7 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
             else if(particles.is_bound(particles.get_pos(ind)))
             {
 // UNBINDING ATTEMPT
-                particles.unbinding_attempt(alpha,J,ind,rand);
+                particles.attempt_unbinding(alpha,J,ind,rand);
 //            print_container(particles.positions);
 
             }

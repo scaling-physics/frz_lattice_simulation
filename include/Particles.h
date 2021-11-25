@@ -28,9 +28,9 @@ struct Diffuse_Neighbors
     std::vector<int> slopes;
 };
 
-struct Bound_Neighbors
+struct Interacting_Neighbors_in_Clusters
 {
-    std::vector<int> bound_neighbors;
+    std::vector<int> interacting_neighbors;
     std::vector<int> orientations;
     std::vector<int> slopes;
 };
@@ -127,7 +127,7 @@ public:
     }
 
 //CREATION ATTEMPT
-    void creation_attempt(int pos, double rand)
+    void attempt_creation(int pos, double rand)
     {
         double const k_on=0.05;
         if(rand<=k_on)
@@ -138,7 +138,7 @@ public:
         }
     }
 //DESTRUCTION ATTEMPT
-    void destruction_attempt(int pos,double rand)
+    void attempt_destruction(int pos,double rand)
     {
         double const  k_off=0.5;
         if(rand<k_off)
@@ -149,7 +149,7 @@ public:
         }
     }
 //DIFFUSE PARTICLES
-    void diffuse(double &rand, int ind)
+    void attempt_diffusion(double &rand, int ind)
     {
         // get diffuse particle
         int particle_pos = get_pos(ind) ;
@@ -169,7 +169,7 @@ public:
         }
     }
 //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
-    int count_bound_neighbors(int pos, int ori)
+    int count_interacting_neighbors(int pos, int ori)
     {
         Neighbours n=lattice.get_neighbors(pos);
         int count_bound = 0;
@@ -187,7 +187,7 @@ public:
         return count_bound;
     }
 //GET DIFFUSE NEIGHBORS, RANDOMELY ASSIGN A ORIENTATION & GET THEIR SLOPES
-    Diffuse_Neighbors get_diffuse_neighbors(int ind, double &rand)
+    Diffuse_Neighbors get_setup_diffuse_neighbors(int ind, double &rand)
     {
         Diffuse_Neighbors d_n;
         int pos = get_pos(ind);
@@ -207,21 +207,21 @@ public:
         return d_n;
     }
 //GET BOUND NEIGHBORS, THEIR ORIENTATIONS AND THEIR SLOPES
-    Bound_Neighbors get_bound_neighbors(int ind)
+    Interacting_Neighbors_in_Clusters get_interacting_neighbors_in_cluster(int ind)
     {
-        Bound_Neighbors b_n;
+        Interacting_Neighbors_in_Clusters i_n;
         int pos = get_pos(ind);
         Neighbours n=lattice.get_neighbors(pos);
         for(unsigned int i=0; i<n.positions.size(); i++)
         {
             if(is_bound(n.positions[i]))
             {
-                b_n.bound_neighbors.emplace_back(n.positions[i]);
-                b_n.orientations.emplace_back(get_orientation(n.positions[i]));
-                b_n.slopes.emplace_back(n.slopes[i]);
+                i_n.interacting_neighbors.emplace_back(n.positions[i]);
+                i_n.orientations.emplace_back(get_orientation(n.positions[i]));
+                i_n.slopes.emplace_back(n.slopes[i]);
             }
         }
-        return b_n;
+        return i_n;
     }
 
 //DELTA_H
@@ -232,17 +232,19 @@ public:
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
     }
 //BINDING ATTEMPT
-    void binding_attempt(int const alpha, int const J, int ind, double &rand)
+    void attempt_binding(int const alpha, int const J, int ind, double &rand)
     {
         int pos = get_pos(ind);
-        Interactions interactions;
-        Diffuse_Neighbors d_n=get_diffuse_neighbors(ind,rand);
-        Bound_Neighbors b_n=get_bound_neighbors(ind);
-
         double rand_size = rand*3;
         int rand_int = rand_size;
         int ori = rand_int-1;
         rand=rand_size-rand_int;
+
+        Interactions interactions;
+        Diffuse_Neighbors d_n=get_setup_diffuse_neighbors(ind,rand);
+        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind);
+
+
 
 
         interactions.num_bonds=0;
@@ -258,19 +260,19 @@ public:
                     interactions.orientations.emplace_back(d_n.orientations[i]);
                     interactions.num_bonds++;
                     interactions.num_diffuse++;
-                    interactions.num_bonds=interactions.num_bonds+count_bound_neighbors(d_n.diffuse_neighbors[i],d_n.orientations[i]);
+                    interactions.num_bonds=interactions.num_bonds+count_interacting_neighbors(d_n.diffuse_neighbors[i],d_n.orientations[i])-1;
 
                 }
             }
         }
-        if(b_n.bound_neighbors.size()>0)
+        if(i_n.interacting_neighbors.size()>0)
         {
-            for(unsigned int i=0; i<b_n.bound_neighbors.size(); i++)
+            for(unsigned int i=0; i<i_n.interacting_neighbors.size(); i++)
             {
-                if(is_interaction_allowed(ori,b_n.orientations[i],b_n.slopes[i]))
+                if(is_interaction_allowed(ori,i_n.orientations[i],i_n.slopes[i]))
                 {
-                    interactions.orientations.emplace_back(b_n.orientations[i]);
-                    interactions.possible_interaction_pos.emplace_back(b_n.bound_neighbors[i]);
+                    interactions.orientations.emplace_back(i_n.orientations[i]);
+                    interactions.possible_interaction_pos.emplace_back(i_n.interacting_neighbors[i]);
                     interactions.num_bonds++;
                 }
             }
@@ -334,7 +336,7 @@ public:
     }
 
 //UNBINDING ATTEMPT
-    void unbinding_attempt(int const alpha, int const J, int ind,double &rand)
+    void attempt_unbinding(int const alpha, int const J, int ind,double &rand)
     {
         // get bound particle
         int particle_pos = get_pos(ind);
@@ -344,22 +346,22 @@ public:
         Interactions interactions;
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
-        Bound_Neighbors b_n=get_bound_neighbors(ind);
+        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind);
 
 
-        if(b_n.bound_neighbors.size()>0)
+        if(i_n.interacting_neighbors.size()>0)
         {
-            for (unsigned int i=0; i<b_n.bound_neighbors.size(); i++)
+            for (unsigned int i=0; i<i_n.interacting_neighbors.size(); i++)
             {
-                if(is_interaction_allowed(ori,b_n.orientations[i],b_n.slopes[i]))
+                if(is_interaction_allowed(ori,i_n.orientations[i],i_n.slopes[i]))
                 {
-                    interactions.orientations.emplace_back(b_n.orientations[i]);
+//                    interactions.orientations.emplace_back(i_n.orientations[i]);
                     interactions.num_bonds++;
 
-                    int bound_neigh_of_neigh = count_bound_neighbors(b_n.bound_neighbors[i],b_n.orientations[i]);
+                    int bound_neigh_of_neigh = count_interacting_neighbors(i_n.interacting_neighbors[i],i_n.orientations[i]);
                     if(bound_neigh_of_neigh==1)
                     {
-                        interactions.possible_interaction_pos.emplace_back(b_n.bound_neighbors[i]);
+                        interactions.possible_interaction_pos.emplace_back(i_n.interacting_neighbors[i]);
                         interactions.num_diffuse++;
                     }
 
