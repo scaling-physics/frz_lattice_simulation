@@ -64,8 +64,8 @@ public:
     {
         for(int i=0; i<Nxy; i++)
         {
-            double rand=unidist(gen);
-            if(rand<0.1)
+            //double rand=unidist(gen);
+            if(i%10==0)
             {
                 grid[i]=1;
                 positions.emplace_back(i);
@@ -105,7 +105,6 @@ public:
     {
 //    NOT WORKING PROPERLY
         return pos;
-
     }
     inline int get_orientation(int pos)
     {
@@ -185,7 +184,6 @@ public:
                 }
             }
         }
-//        std::cout<<count_bound<<"\n";
         return count_bound;
     }
 //GET DIFFUSE NEIGHBORS, RANDOMELY ASSIGN A ORIENTATION & GET THEIR SLOPES
@@ -341,7 +339,7 @@ public:
         // get bound particle
         int particle_pos = get_pos(ind);
         int ori = get_orientation(particle_pos);
-        Neighbours neighbors=lattice.get_neighbors(particle_pos);
+        //Neighbours neighbors=lattice.get_neighbors(particle_pos);
 
         Interactions interactions;
         interactions.num_bonds=0;
