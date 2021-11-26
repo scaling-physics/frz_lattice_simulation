@@ -76,7 +76,7 @@ std::uniform_real_distribution<double> unidist(0.0,1.0);
                 //DESTRUCTION ATTEMPT
                 else if(particles.is_diffuse(particles.get_ind(pos1)))
                 {
-                    std::cout<<"diffuse "<<"\n";
+                    //std::cout<<"diffuse "<<"\n";
                     particles.attempt_destruction(pos1,rand1);
 
                 }

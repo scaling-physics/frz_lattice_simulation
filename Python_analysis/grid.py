@@ -15,7 +15,7 @@ p = Path('/home/hannohennighausen/Documents/frz_lattice_model')
 
 #%%
 
-grid = np.loadtxt('/home/hannohennighausen/Documents/frz_lattice_model/grid_J_-1000_alpha_0.txt', skiprows=99899)
+grid = np.loadtxt('/home/hannohennighausen/Documents/frz_lattice_model/grid_J_1_alpha_0.txt', skiprows=99899)
 #%%
 
 def color(a,b,c):
