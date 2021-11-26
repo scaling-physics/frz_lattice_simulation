@@ -10,7 +10,9 @@
 #include <algorithm>
 #include "lattice.h"
 
-
+unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
+std::mt19937_64 gen(seed);
+std::uniform_real_distribution<double> unidist(0.0,1.0);
 
 void print_container(const std::vector<int>& c)
 {
@@ -62,15 +64,30 @@ public:
 
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
-        for(int i=0; i<Nxy; i++)
+        int initial_setup = Nxy*0.1;
+        for (int i=0; i<initial_setup; i++)
         {
-            //double rand=unidist(gen);
-            if(i%10==0)
+            double rand=unidist(gen);
+            int pos = rand*Nxy;
+            if(grid[pos]==0)
             {
-                grid[i]=1;
-                positions.emplace_back(i);
+                grid[pos]=1;
+                positions.emplace_back(pos);
+            }
+            else
+            {
+                i--;
             }
         }
+//        for(int i=0; i<Nxy; i++)
+//        {
+//            //double rand=unidist(gen);
+//            if(i%2==0)
+//            {
+//                grid[i]=1;
+//                positions.emplace_back(i);
+//            }
+//        }
 //        grid[5]=3;
 //        grid[9]=3;
 //        grid[10]=3;
@@ -207,7 +224,7 @@ public:
         return d_n;
     }
 //GET BOUND NEIGHBORS, THEIR ORIENTATIONS AND THEIR SLOPES
-    Interacting_Neighbors_in_Clusters get_interacting_neighbors_in_cluster(int ind)
+    Interacting_Neighbors_in_Clusters get_interacting_neighbors_in_cluster(int ind, int ori)
     {
         Interacting_Neighbors_in_Clusters i_n;
         int pos = get_pos(ind);
@@ -216,9 +233,13 @@ public:
         {
             if(is_bound(n.positions[i]))
             {
-                i_n.interacting_neighbors.emplace_back(n.positions[i]);
-                i_n.orientations.emplace_back(get_orientation(n.positions[i]));
-                i_n.slopes.emplace_back(n.slopes[i]);
+                if(is_interaction_allowed(ori, get_orientation(n.positions[i]),n.slopes[i]))
+                {
+                    i_n.interacting_neighbors.emplace_back(n.positions[i]);
+                    i_n.orientations.emplace_back(get_orientation(n.positions[i]));
+                    i_n.slopes.emplace_back(n.slopes[i]);
+                }
+
             }
         }
         return i_n;
@@ -242,7 +263,8 @@ public:
 
         Interactions interactions;
         Diffuse_Neighbors d_n=get_setup_diffuse_neighbors(ind,rand);
-        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind);
+
+        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, ori);
 
 
 
@@ -260,8 +282,16 @@ public:
                     interactions.orientations.emplace_back(d_n.orientations[i]);
                     interactions.num_bonds++;
                     interactions.num_diffuse++;
-                    interactions.num_bonds=interactions.num_bonds+count_interacting_neighbors(d_n.diffuse_neighbors[i],d_n.orientations[i])-1;
+                    int bound_neigh_of_neigh = count_interacting_neighbors(d_n.diffuse_neighbors[i],d_n.orientations[i]);
 
+                    if(bound_neigh_of_neigh>1)
+                    {
+                        interactions.num_bonds=interactions.num_bonds+(bound_neigh_of_neigh-1);
+                    }
+                    if(interactions.num_bonds==0)
+                    {
+
+                    }
                 }
             }
         }
@@ -269,52 +299,11 @@ public:
         {
             for(unsigned int i=0; i<i_n.interacting_neighbors.size(); i++)
             {
-                if(is_interaction_allowed(ori,i_n.orientations[i],i_n.slopes[i]))
-                {
-                    interactions.orientations.emplace_back(i_n.orientations[i]);
-                    interactions.possible_interaction_pos.emplace_back(i_n.interacting_neighbors[i]);
-                    interactions.num_bonds++;
-                }
+                interactions.orientations.emplace_back(i_n.orientations[i]);
+                interactions.possible_interaction_pos.emplace_back(i_n.interacting_neighbors[i]);
+                interactions.num_bonds++;
             }
         }
-//            else if(is_diffuse(ind))//if a neighbor is diffuse
-//            {
-//                rand_size=(rand)*3;
-//                rand_int=rand_size;
-//                orientation_a = rand_int-1;
-//                rand = rand_size-rand_int;
-//                int slope_a = neighbors.slopes[i];
-////                std::cout<<"neighbor_dif "<<*it<<"\n";
-////                std::cout<<"ori "<<orientation_a<<"\n";
-//                if(((ori+slope_a) * (orientation_a+slope_a))!=0)
-//                {
-//                    num_bonds++;
-//                    ori_neighbors.emplace_back(orientation_a);
-//                    possible_binding_pos.emplace_back(*it);
-//
-//                    num_dif++;
-//                    //check if diffuse neighbor has bound neighbors
-//                    int num_neigh_bound = count_bound_neighbors(*it,orientation_a);
-//                    num_bonds=num_bonds+num_neigh_bound;
-//                }
-//
-//            }
-//            else if(is_bound(ind))
-//            {
-//                orientation_a = get_orientation(ind)-2;
-//                int slope_a = neighbors.slopes[i];
-////                std::cout<<"neighbor_bound "<<*it<<"\n";
-////                std::cout<<"ori "<<orientation_a<<"\n";
-//                if(((ori+slope_a) * (orientation_a+slope_a))!=0)
-//                {
-//                    num_bonds++;
-//                    ori_neighbors.emplace_back(orientation_a);
-//                    possible_binding_pos.emplace_back(*it);
-//                }
-//            }
-//
-//            i++;
-//        }
         if(interactions.num_bonds>0)
         {
             double delta = delta_H(alpha,J,interactions.num_diffuse,interactions.num_bonds, -1);
@@ -328,6 +317,7 @@ public:
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],interactions.orientations[i]+3);
+
                 }
 
             }
@@ -346,26 +336,24 @@ public:
         Interactions interactions;
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
-        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind);
+        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, ori);
 
 
         if(i_n.interacting_neighbors.size()>0)
         {
             for (unsigned int i=0; i<i_n.interacting_neighbors.size(); i++)
             {
-                if(is_interaction_allowed(ori,i_n.orientations[i],i_n.slopes[i]))
-                {
 //                    interactions.orientations.emplace_back(i_n.orientations[i]);
-                    interactions.num_bonds++;
+                interactions.num_bonds++;
 
-                    int bound_neigh_of_neigh = count_interacting_neighbors(i_n.interacting_neighbors[i],i_n.orientations[i]);
-                    if(bound_neigh_of_neigh==1)
-                    {
-                        interactions.possible_interaction_pos.emplace_back(i_n.interacting_neighbors[i]);
-                        interactions.num_diffuse++;
-                    }
-
+                int bound_neigh_of_neigh = count_interacting_neighbors(i_n.interacting_neighbors[i],i_n.orientations[i]);
+                if(bound_neigh_of_neigh==1)
+                {
+                    interactions.possible_interaction_pos.emplace_back(i_n.interacting_neighbors[i]);
+                    interactions.num_diffuse++;
                 }
+
+
             }
         }
 
@@ -386,6 +374,21 @@ public:
         }
     }
 
+    void label(int ind, int i,std::vector<int> &labels)
+    {
+        labels[ind]=i;
+        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind)));
+        for(inds : i_n.interacting_neighbors )
+        {
+            if(labels[inds]==0)
+            {
+                label(inds,i,labels);
+            }
+        }
+    }
+
 };
+
+
 
 #endif // PARTICLES_H

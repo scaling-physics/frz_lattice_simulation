@@ -15,7 +15,8 @@ p = Path('/home/hannohennighausen/Documents/frz_lattice_model')
 
 #%%
 
-grid = np.loadtxt('/home/hannohennighausen/Documents/frz_lattice_model/grid_J_-1000_alpha_0.txt', skiprows=99899)
+#grid = np.loadtxt('/home/hannohennighausen/Documents/frz_lattice_model/grid_J_-1000_alpha_0.txt', skiprows=99899)
+grid = np.loadtxt('C:/Users/hanno/OneDrive/Documents/HannoTablet/Physics/Marburg/Murray_Praktikum/frz_lattice_model/grid_rand_J_1_alpha_0.txt', skiprows=99899)
 #%%
 
 def color(a,b,c):
@@ -46,5 +47,5 @@ for row in range(100):
     hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=colors,do_plot=True)
     centers_x = hex_centers[:, 0]
     centers_x = hex_centers[:, 1]
-    plt.savefig(f'1_grid_19899+{row}.svg')
+    plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
     plt.show()
