@@ -64,7 +64,7 @@ public:
 
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
-        int initial_setup = Nxy*0.1;
+        int initial_setup = Nxy*0.5;
         for (int i=0; i<initial_setup; i++)
         {
             double rand=unidist(gen);
@@ -374,18 +374,18 @@ public:
         }
     }
 
-    void label(int ind, int i,std::vector<int> &labels)
-    {
-        labels[ind]=i;
-        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind)));
-        for(inds : i_n.interacting_neighbors )
-        {
-            if(labels[inds]==0)
-            {
-                label(inds,i,labels);
-            }
-        }
-    }
+//    void label(int ind, int i,std::vector<int> &labels)
+//    {
+//        labels[ind]=i;
+//        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind)));
+//        for(inds : i_n.interacting_neighbors )
+//        {
+//            if(labels[inds]==0)
+//            {
+//                label(inds,i,labels);
+//            }
+//        }
+//    }
 
 };
 

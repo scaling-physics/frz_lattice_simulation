@@ -23,7 +23,7 @@
 
 int main()
 {
-    const int MC_steps = pow(10,5); // number of Monte Carlo Steps
+    const int MC_steps = pow(10,7); // number of Monte Carlo Steps
     int MC_counter = 0;
     double rand;
     double rand_size;
@@ -58,16 +58,6 @@ int main()
                 particles.attempt_creation(pos1,rand1);
 //                print_container(particles.positions);
             }
-
-
-<<<<<<< HEAD
-=======
-                //DESTRUCTION ATTEMPT
-                else if(particles.is_diffuse(particles.get_ind(pos1)))
-                {
-                    //std::cout<<"diffuse "<<"\n";
-                    particles.attempt_destruction(pos1,rand1);
->>>>>>> c0fd3be14163456219c941fa061b6349d8568fe6
 
             //DESTRUCTION ATTEMPT
             else if(particles.is_diffuse(particles.get_ind(pos1)))
