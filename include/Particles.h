@@ -64,7 +64,7 @@ public:
 
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
-        int initial_setup = Nxy*0.5;
+        int initial_setup = Nxy*0.1;
         for (int i=0; i<initial_setup; i++)
         {
             double rand=unidist(gen);
@@ -374,18 +374,60 @@ public:
         }
     }
 
-//    void label(int ind, int i,std::vector<int> &labels)
-//    {
-//        labels[ind]=i;
-//        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind)));
-//        for(inds : i_n.interacting_neighbors )
-//        {
-//            if(labels[inds]==0)
-//            {
-//                label(inds,i,labels);
-//            }
-//        }
-//    }
+    void label(int ind, int i,std::vector<int> &labels)
+    {
+        labels[ind]=i;
+        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind)));
+        for(auto inds : i_n.interacting_neighbors )
+        {
+            if(labels[inds]==0)
+            {
+                label(inds,i,labels);
+            }
+        }
+    }
+    std::vector<int> orientations_vec()
+    {
+        std::vector<int> orientations_vector;
+
+        for(unsigned int index=0;index<positions.size(); index++)
+        {
+        orientations_vector.emplace_back(grid[get_pos(index)]);
+        }
+
+        return orientations_vector;
+    }
+
+    void print(std::ofstream &out)
+    {
+        std::stringstream buffer;
+        std::vector<int> ori_vec=orientations_vec();
+
+//        buffer << t << '\t';
+        for(auto const &x: positions)
+        {
+            buffer << x<< '\t';
+        }
+        for(auto const &y: ori_vec)
+        {
+            buffer << y<< '\t';
+        }
+        buffer << '\n';
+        out << buffer.str();
+    }
+
+    void print_labels(std::ofstream &out,std::vector<int> &labels)
+    {
+        std::stringstream buffer;
+        for(auto &x:labels)
+        {
+            buffer << x<< '\t';
+        }
+        buffer << '\n';
+        out << buffer.str();
+    }
+
+
 
 };
 

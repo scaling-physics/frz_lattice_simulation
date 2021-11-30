@@ -15,12 +15,6 @@
 
 //random number generator
 
-
-
-
-
-
-
 int main()
 {
     const int MC_steps = pow(10,7); // number of Monte Carlo Steps
@@ -35,36 +29,37 @@ int main()
     Lattice lattice;
     Particles particles(lattice);
 
-    std::ofstream MyFile("grid_rand_J_1_alpha_0.txt");
+    std::ofstream MyFile("grid_ori_pos.txt");
+    std::ofstream File_Labels("labels.txt");
     MyFile << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
 
     while(MC_counter<MC_steps)
     {
         std::cout <<"counter"<< MC_counter <<'\n';
-        if(MC_counter%10==0)
-        {
-            // select a random hex on grid:
-            double rand_size1 = unidist(gen) * Nxy;
-            int pos1 = rand_size1;
-            double rand1 = rand_size1-pos1;
-//            std::cout<<"pos "<<pos<<"\n";
-//            std::cout<<"rand "<<rand<<"\n";
-
-
-            //CREATION ATTEMPT
-            if(particles.is_free(pos1))
-            {
-                //std::cout<<"free"<<"\n";
-                particles.attempt_creation(pos1,rand1);
-//                print_container(particles.positions);
-            }
-
-            //DESTRUCTION ATTEMPT
-            else if(particles.is_diffuse(particles.get_ind(pos1)))
-            {
-                particles.attempt_destruction(pos1,rand1);
-            }
-        }
+//        if(MC_counter%10==0)
+//        {
+//            // select a random hex on grid:
+//            double rand_size1 = unidist(gen) * Nxy;
+//            int pos1 = rand_size1;
+//            double rand1 = rand_size1-pos1;
+////            std::cout<<"pos "<<pos<<"\n";
+////            std::cout<<"rand "<<rand<<"\n";
+//
+//
+//            //CREATION ATTEMPT
+//            if(particles.is_free(pos1))
+//            {
+//                //std::cout<<"free"<<"\n";
+//                particles.attempt_creation(pos1,rand1);
+////                print_container(particles.positions);
+//            }
+//
+//            //DESTRUCTION ATTEMPT
+//            else if(particles.is_diffuse(particles.get_ind(pos1)))
+//            {
+//                particles.attempt_destruction(pos1,rand1);
+//            }
+//        }
 
 //      choose random particle
         rand = unidist(gen);
@@ -97,15 +92,36 @@ int main()
 
         }
 
-        if (MyFile.is_open())
+        if (MC_counter>1 && MC_counter%1000==0)
         {
-            for(int count = 0; count < Nxy; count ++)
+            std::vector<int> labels(particles.positions.size(),0);
+            int i =1;
+            for (unsigned int index=0; index < particles.positions.size(); index++)
             {
-                MyFile << particles.grid[count] << " " ;
+                if(particles.is_bound(particles.get_pos(index)) && labels[index]==0)
+                {
+                    particles.label(index,i,labels);
+                    i++;
+                }
             }
-            MyFile << "\n";
+
+            std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
+            print_container(labels);
+            particles.print_labels(File_Labels,labels);
+
         }
-        else std::cout << "Unable to open file";
+
+
+        particles.print(MyFile);
+//        if (MyFile.is_open())
+//        {
+//            for(int count = 0; count < Nxy; count ++)
+//            {
+//                MyFile << particles.grid[count] << " " ;
+//            }
+//            MyFile << "\n";
+//        }
+//        else std::cout << "Unable to open file";
         MC_counter++;
         std::cout << particles.positions.size() << '\n';
 
