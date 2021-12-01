@@ -51,9 +51,10 @@ class Particles
 
 {
 private:
+    std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
 
 public:
-    std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
+
     std::vector<int> positions; //stores position of particles on the grid
     Lattice &lattice;
 
@@ -64,11 +65,11 @@ public:
 
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
-        int initial_setup = Nxy*0.1;
+        int initial_setup = Nxy*0.2;
         for (int i=0; i<initial_setup; i++)
         {
-            double rand=unidist(gen);
-            int pos = rand*Nxy;
+            double random=unidist(gen);
+            int pos = random*Nxy;
             if(grid[pos]==0)
             {
                 grid[pos]=1;
@@ -88,9 +89,9 @@ public:
 //                positions.emplace_back(i);
 //            }
 //        }
-//        grid[5]=3;
-//        grid[9]=3;
-//        grid[10]=3;
+//        grid[5]=1;
+//        grid[9]=1;
+//        grid[10]=1;
 //        grid[13]=1;
 //
 //        positions.emplace_back(5);
@@ -160,7 +161,7 @@ public:
         double const  k_off=0.5;
         if(rand<k_off)
         {
-            std::cout<<"particle destroyed"<<"\n";
+//            std::cout<<"particle destroyed"<<"\n";
             grid[pos]=0;
             positions.erase(std::find(begin(positions),end(positions),pos));
         }
@@ -219,7 +220,12 @@ public:
                 int ori = rand_size;
                 rand=rand_size-ori;
                 d_n.orientations.emplace_back(ori-1);
+
             }
+            if(d_n.orientations.size() != d_n.diffuse_neighbors.size())
+                {
+
+                }
         }
         return d_n;
     }
@@ -253,7 +259,7 @@ public:
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
     }
 //BINDING ATTEMPT
-    void attempt_binding(int const alpha, int const J, int ind, double &rand)
+    void attempt_binding(double const alpha, double const J, int ind, double &rand)
     {
         int pos = get_pos(ind);
         double rand_size = rand*3;
@@ -312,7 +318,7 @@ public:
             //the binding attempt is succesful if rand < delta_E
             if(rand<delta)
             {
-                std::cout<<"binding"<<"\n";
+//                std::cout<<"binding"<<"\n";
                 set_orientation(pos,ori+3);
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
@@ -326,7 +332,7 @@ public:
     }
 
 //UNBINDING ATTEMPT
-    void attempt_unbinding(int const alpha, int const J, int ind,double &rand)
+    void attempt_unbinding(double const alpha, double const J, int ind,double &rand)
     {
         // get bound particle
         int particle_pos = get_pos(ind);
@@ -361,7 +367,7 @@ public:
 
         if (rand<delta_E)
         {
-            std::cout<<"unbinding"<<"\n";
+//            std::cout<<"unbinding"<<"\n";
             set_orientation(particle_pos,1);
             if(interactions.possible_interaction_pos.size()>0)
             {
@@ -420,6 +426,17 @@ public:
     {
         std::stringstream buffer;
         for(auto &x:labels)
+        {
+            buffer << x<< '\t';
+        }
+        buffer << '\n';
+        out << buffer.str();
+    }
+
+    void print_grid(std::ofstream &out)
+    {
+        std::stringstream buffer;
+        for(auto &x:grid)
         {
             buffer << x<< '\t';
         }

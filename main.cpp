@@ -17,25 +17,27 @@
 
 int main()
 {
-    const int MC_steps = pow(10,7); // number of Monte Carlo Steps
+    const int MC_steps = pow(10,8); // number of Monte Carlo Steps
+//    const int MC_steps =500;
     int MC_counter = 0;
     double rand;
     double rand_size;
 
 //constants for reaction:
-    double const alpha=0.0;
+    double const alpha=0.05;
     double const J=1;
 
     Lattice lattice;
     Particles particles(lattice);
 
-    std::ofstream MyFile("grid_ori_pos.txt");
-    std::ofstream File_Labels("labels.txt");
-    MyFile << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
-
+//    std::ofstream MyFile("grid_ori_pos.txt");
+//    std::ofstream File_Labels("labels.txt");
+    std::ofstream File_grid("grid_J_large_half.txt");
+//    MyFile << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
+    File_grid << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
     while(MC_counter<MC_steps)
     {
-        std::cout <<"counter"<< MC_counter <<'\n';
+//        std::cout <<"counter"<< MC_counter <<'\n';
 //        if(MC_counter%10==0)
 //        {
 //            // select a random hex on grid:
@@ -92,27 +94,28 @@ int main()
 
         }
 
-        if (MC_counter>1 && MC_counter%1000==0)
-        {
-            std::vector<int> labels(particles.positions.size(),0);
-            int i =1;
-            for (unsigned int index=0; index < particles.positions.size(); index++)
-            {
-                if(particles.is_bound(particles.get_pos(index)) && labels[index]==0)
-                {
-                    particles.label(index,i,labels);
-                    i++;
-                }
-            }
+//        if (MC_counter>1 && MC_counter%1000==0)
+//        {
+//            std::vector<int> labels(particles.positions.size(),0);
+//            int i =1;
+//            for (unsigned int index=0; index < particles.positions.size(); index++)
+//            {
+//                if(particles.is_bound(particles.get_pos(index)) && labels[index]==0)
+//                {
+//                    particles.label(index,i,labels);
+//                    i++;
+//                }
+//            }
+//
+//            std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
+//            print_container(labels);
+//            particles.print_labels(File_Labels,labels);
+//
+//        }
 
-            std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
-            print_container(labels);
-            particles.print_labels(File_Labels,labels);
 
-        }
+//        particles.print(MyFile);
 
-
-        particles.print(MyFile);
 //        if (MyFile.is_open())
 //        {
 //            for(int count = 0; count < Nxy; count ++)
@@ -123,7 +126,7 @@ int main()
 //        }
 //        else std::cout << "Unable to open file";
         MC_counter++;
-        std::cout << particles.positions.size() << '\n';
+//        std::cout << particles.positions.size() << '\n';
 
 //            if(MC_counter%100==0)
 //            {
@@ -132,10 +135,11 @@ int main()
 //            }
 
     }
+    particles.print_grid(File_grid);
 //    for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
 //    {
 //        //std::cout << *iter << "\n"<<' ';
 //    }
-    MyFile.close();
+    File_grid.close();
     return 0;
 };
