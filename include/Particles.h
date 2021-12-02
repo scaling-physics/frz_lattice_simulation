@@ -10,6 +10,14 @@
 #include <algorithm>
 #include "lattice.h"
 
+int unbinding_attempt=0;
+int unbinding_succ=0;
+int binding_attempt=0;
+int binding_succ=0;
+int diffuse_attempt=0;
+int diffuse_succ=0;
+
+double density;
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
 std::uniform_real_distribution<double> unidist(0.0,1.0);
@@ -65,7 +73,7 @@ public:
 
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
-        int initial_setup = Nxy*0.2;
+        int initial_setup = Nxy*density;
         for (int i=0; i<initial_setup; i++)
         {
             double random=unidist(gen);
@@ -141,7 +149,7 @@ public:
     }
     inline bool is_interaction_allowed(int ori_1, int ori_2, int slope)
     {
-        return ((ori_1 + slope)*(ori_2+slope))!=0;
+        return (((ori_1 + slope)*(ori_2+slope))!=0 && ori_1 != ori_2);
     }
 
 //CREATION ATTEMPT
@@ -170,6 +178,7 @@ public:
     void attempt_diffusion(double &rand, int ind)
     {
         // get diffuse particle
+        diffuse_attempt++;
         int particle_pos = get_pos(ind) ;
 
         //choose random direction
@@ -184,6 +193,7 @@ public:
         if(is_free(new_pos))// accept move
         {
             set_pos(particle_pos,new_pos, ind);
+            diffuse_succ++;
         }
     }
 //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
@@ -223,9 +233,9 @@ public:
 
             }
             if(d_n.orientations.size() != d_n.diffuse_neighbors.size())
-                {
+            {
 
-                }
+            }
         }
         return d_n;
     }
@@ -272,9 +282,6 @@ public:
 
         Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, ori);
 
-
-
-
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
         Neighbours neighbors=lattice.get_neighbors(pos);
@@ -312,6 +319,7 @@ public:
         }
         if(interactions.num_bonds>0)
         {
+            binding_attempt++;
             double delta = delta_H(alpha,J,interactions.num_diffuse,interactions.num_bonds, -1);
             //std::cout<<"delta "<< delta << "\n";
             //std::cout<<"\n rand "<<rand;
@@ -319,6 +327,7 @@ public:
             if(rand<delta)
             {
 //                std::cout<<"binding"<<"\n";
+                binding_succ++;
                 set_orientation(pos,ori+3);
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
@@ -335,6 +344,7 @@ public:
     void attempt_unbinding(double const alpha, double const J, int ind,double &rand)
     {
         // get bound particle
+        unbinding_attempt++;
         int particle_pos = get_pos(ind);
         int ori = get_orientation(particle_pos);
         //Neighbours neighbors=lattice.get_neighbors(particle_pos);
@@ -369,6 +379,7 @@ public:
         {
 //            std::cout<<"unbinding"<<"\n";
             set_orientation(particle_pos,1);
+            unbinding_succ++;
             if(interactions.possible_interaction_pos.size()>0)
             {
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
@@ -384,21 +395,28 @@ public:
     {
         labels[ind]=i;
         Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind)));
-        for(auto inds : i_n.interacting_neighbors )
+        for(auto pos : i_n.interacting_neighbors )
         {
-            if(labels[inds]==0)
+            auto it= (std::find(begin(positions),end(positions),pos));
+            if(it!= positions.end())
             {
-                label(inds,i,labels);
+                int inds = it-positions.begin();
+                if(labels[inds]==0)
+                {
+                    label(inds,i,labels);
+                }
             }
+
         }
     }
+
     std::vector<int> orientations_vec()
     {
         std::vector<int> orientations_vector;
 
-        for(unsigned int index=0;index<positions.size(); index++)
+        for(unsigned int index=0; index<positions.size(); index++)
         {
-        orientations_vector.emplace_back(grid[get_pos(index)]);
+            orientations_vector.emplace_back(grid[get_pos(index)]);
         }
 
         return orientations_vector;
@@ -414,12 +432,15 @@ public:
         {
             buffer << x<< '\t';
         }
-        for(auto const &y: ori_vec)
-        {
-            buffer << y<< '\t';
-        }
         buffer << '\n';
         out << buffer.str();
+        std::stringstream buffer1;
+        for(auto const &y: ori_vec)
+        {
+            buffer1 << y<< '\t';
+        }
+        buffer1 << '\n';
+        out << buffer1.str();
     }
 
     void print_labels(std::ofstream &out,std::vector<int> &labels)

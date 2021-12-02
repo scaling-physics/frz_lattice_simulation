@@ -101,7 +101,7 @@ plt.plot(MC,dif_part)
 plt.plot(MC,particles_in_clusters)
 plt.show()
 #%%
-grid_full = np.loadtxt('/home/hannohennighausen/Documents/frz_lattice_model/grid_J_large_half.txt', skiprows=1)
+grid_full = np.loadtxt('/home/hannohennighausen/Documents/frz_lattice_model/grid_J_large_half_0.txt', skiprows=1)
 for x in range(2500):
     if grid_full[x]==0:
         colors[x]=color(0,0,0)
@@ -117,6 +117,55 @@ for x in range(2500):
     
 plt.figure(figsize=(20,15))
 hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=colors,do_plot=True)
+centers_x = hex_centers[:, 0]
+centers_x = hex_centers[:, 1]
+#plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
+
+plt.show()
+#%%
+
+labels = np.loadtxt('/home/hannohennighausen/Documents/frz_lattice_model/labels.txt',dtype=int)
+colors_labels = np.zeros([50*50,3])
+coloring_labels = np.zeros([50*50,3])
+labels_name = np.zeros(50*50)
+#%%
+i=0
+j=0
+Cluster_num = np.max(labels[0])+20
+for x in labels[1]:
+    if labels[0,j]==0:
+        coloring_labels[x]=[195/255,192/255,192/255] 
+    else:
+        coloring_labels[x]=[1,0.5+labels[0,j]/Cluster_num,0]
+    j+=1
+
+
+for x in labels[1]:
+
+    # else:
+    #     coloring_labels[x]=[195/255,192/255,192/255]
+        # labels_name[x]=labels[0,i]
+    if labels[2,i]==1:
+        colors_labels[x]=[195/255,192/255,192/255]  
+    elif labels[2,i]==2:
+        colors_labels[x]=[0, 1, 0]
+    elif labels[2,i]==3:
+        colors_labels[x]=[1,0,0]
+    elif labels[2,i]==4:
+        colors_labels[x]=[0,0,1]
+    i+=1
+    
+
+plt.figure(figsize=(20,15))
+hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=colors_labels,do_plot=True)
+centers_x = hex_centers[:, 0]
+centers_x = hex_centers[:, 1]
+#plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
+
+plt.show()
+
+plt.figure(figsize=(20,15))
+hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=coloring_labels,do_plot=True)
 centers_x = hex_centers[:, 0]
 centers_x = hex_centers[:, 1]
 #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')

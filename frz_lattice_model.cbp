@@ -13,8 +13,6 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="/home/hannohennighausen/Documents/frz_lattice_model/" />
-					<Add directory="include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -32,6 +30,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="include" />
 		</Compiler>
 		<Unit filename="include/Particles.h" />
 		<Unit filename="include/definitions.h" />
