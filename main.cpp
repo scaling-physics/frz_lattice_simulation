@@ -19,21 +19,24 @@ int main(int argc,char *argv[])
 {
 
     double J,alpha;
+    int slurm_index;
     if(argc==3)
     {
         J= atof(argv[1]);
         alpha = atof(argv[2]);
         density = atof(argv[3]);
+        slurm_index = atof(argv[3]);
     }
     else
     {
         alpha=0.5;
-        J=2;
+        J=1;
         density = 0.2;
+        slurm_index = 0;
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = pow(10,8); // number of Monte Carlo Steps
+    const int MC_steps = pow(10,4); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
     double rand;
@@ -41,26 +44,27 @@ int main(int argc,char *argv[])
 
     Lattice lattice;
     Particles particles(lattice);
-/////////////////////////////
-//    std::ostringstream fn;
-//    fn << "output_" << k << "_" << index << ".txt";//k_un << "_" << k << ".txt";
-//    ofstream out;
-//    out.open(fn.str());
-//    std::ostringstream fn2;
-//    fn2 << "outputbridges_" << k << "_" << index << ".txt";// k_un << "_" << k << ".txt";
-//    ofstream out2;
-//    out2.open(fn2.str());
-//
-//    out << Nx << '\t' << Ny << '\t' << Nz << '\n';
-/////////////////////////////
+///////////////////////////
+    std::ostringstream fn;
+    fn << "output_" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    std::ofstream out;
+    out.open(fn.str());
+    std::ostringstream fn2;
+    fn2 << "outputlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    std::ofstream out2;
+    out2.open(fn2.str());
+
+    out << Nx << '\t' << Ny << '\t' <<'\n';
+    out2 << Nx << '\t' << Ny << '\t' <<'\n';
+///////////////////////////
 
 
 
-    std::ofstream MyFile("counters_J=1_alpha=0_8.txt");
-    std::ofstream File_Labels("labels.txt");
-    std::ofstream File_grid("grid_J_large_half_0.txt");
-//    MyFile << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
-    File_grid << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
+    std::ofstream MyFile("counters.txt");
+//    std::ofstream File_Labels("labels.txt");
+//    std::ofstream File_grid("grid_J_large_half_0.txt");
+////    MyFile << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
+//    File_grid << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
     while(MC_counter<MC_steps)
     {
 //        std::cout <<"counter"<< MC_counter <<'\n';
@@ -119,6 +123,26 @@ int main(int argc,char *argv[])
 //            print_container(particles.positions);
 
         }
+        if(MC_counter%10==0)
+        {
+            std::vector<int> labels(particles.positions.size(),0);
+            int label_i = 1;
+            for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
+            {
+                if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
+                {
+                    particles.label(label_index,label_i,labels);
+                    label_i++;
+                }
+            }
+
+//            std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
+//            print_container(labels);
+            particles.print_labels(out2,labels);
+            particles.print(out2);
+        }
+
+
 
 //        particles.print(MyFile);
 
@@ -142,28 +166,27 @@ int main(int argc,char *argv[])
 
     }
 //
-    std::vector<int> labels(particles.positions.size(),0);
-    int label_i = 1;
-    for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
-    {
-        if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
-        {
-            particles.label(label_index,label_i,labels);
-            label_i++;
-        }
-    }
-
-    std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
-    print_container(labels);
-    particles.print_labels(File_Labels,labels);
-    particles.print(File_Labels);
-
-    particles.print_grid(File_grid);
+//    std::vector<int> labels(particles.positions.size(),0);
+//    int label_i = 1;
+//    for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
+//    {
+//        if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
+//        {
+//            particles.label(label_index,label_i,labels);
+//            label_i++;
+//        }
+//    }
+//
+//    std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
+//    print_container(labels);
+//    particles.print_labels(out2,labels);
+//    particles.print(out2);
+//
+    particles.print_grid(out);
 //    for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
 //    {
 //        //std::cout << *iter << "\n"<<' ';
 //    }
-    File_grid.close();
     std::cout<<"diffuse attempt "<<diffuse_attempt<<"\n";
     std::cout<<"diffuse succ "<<diffuse_succ<<"\n";
     double dif_rat = static_cast<double>(diffuse_succ)/diffuse_attempt;
