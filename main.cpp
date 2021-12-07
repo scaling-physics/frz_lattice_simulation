@@ -20,7 +20,7 @@ int main(int argc,char *argv[])
 
     double J,alpha;
     int slurm_index;
-    if(argc==3)
+    if(argc==5)
     {
         J= atof(argv[1]);
         alpha = atof(argv[2]);
