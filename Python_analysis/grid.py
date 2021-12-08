@@ -123,7 +123,7 @@ p = Path('/home/hannohennighausen/Documents/frz_lattice_model')
 
 # plt.show()
 #%%
-J1=[1,2]
+J1=[0.1,0.5,1,2]
 alpha1=[0,0.2,0.5]
 density=0.2
 #%%
@@ -172,6 +172,7 @@ for J in J1:
             cluster_size_distribution = np.bincount(cluster_size[1:])    
             plt.figure()
             plt.bar(np.arange(cluster_size_distribution.size), cluster_size_distribution)
+            plt.ylim((0,80))
             plt.suptitle('cluster size distribution')
             plt.title(f'J={J}, alpha={alpha},density={density}')
             plt.savefig(f'{counter}_size_dist_at_{step}_{J}_{alpha}_{density}.svg')
@@ -206,23 +207,23 @@ for J in J1:
                 i+=1
                 
 
-            plt.figure(figsize=(20,15))
-            hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=colors_labels,do_plot=True)
-            centers_x = hex_centers[:, 0]
-            centers_x = hex_centers[:, 1]
-            #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
-            plt.savefig(f'{counter}_labels_{step}_{J}_{alpha}_{density}.svg')
+            # plt.figure(figsize=(20,15))
+            # hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=colors_labels,do_plot=True)
+            # centers_x = hex_centers[:, 0]
+            # centers_x = hex_centers[:, 1]
+            # #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
+            # plt.savefig(f'{counter}_labels_{step}_{J}_{alpha}_{density}.svg')
 
-            plt.show()
+            # plt.show()
 
-            plt.figure(figsize=(20,15))
-            hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=coloring_labels,do_plot=True)
-            centers_x = hex_centers[:, 0]
-            centers_x = hex_centers[:, 1]
-            #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
-            plt.savefig(f'{counter}_ori_{step}_{J}_{alpha}_{density}.svg')
+            # plt.figure(figsize=(20,15))
+            # hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=coloring_labels,do_plot=True)
+            # centers_x = hex_centers[:, 0]
+            # centers_x = hex_centers[:, 1]
+            # #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
+            # plt.savefig(f'{counter}_ori_{step}_{J}_{alpha}_{density}.svg')
 
-            plt.show()
+            # plt.show()
         counter+=1
 #%%
 
