@@ -32,11 +32,11 @@ int main(int argc,char *argv[])
         alpha=0.5;
         J=4;
         density = 0.2;
-        slurm_index = 0;
+        slurm_index = 10;
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = pow(10,7); // number of Monte Carlo Steps
+    const int MC_steps = pow(10,9); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
     double rand;
@@ -123,7 +123,7 @@ int main(int argc,char *argv[])
 //            print_container(particles.positions);
 
         }
-        if(MC_counter%1000==0)
+        if(MC_counter%10000000==0)
         {
             std::vector<int> labels(particles.positions.size(),0);
             int label_i = 1;

@@ -123,7 +123,7 @@ p = Path('/home/hannohennighausen/Documents/frz_lattice_model')
 
 # plt.show()
 #%%
-J1=[0.1,0.5,1,2]
+J1=[0.1,0.5,1,2,2.5,3,3.5,4,4.5,5,6,7,8]
 alpha1=[0,0.2,0.5]
 density=0.2
 #%%
@@ -134,11 +134,13 @@ for J in J1:
         
         labels_name = np.zeros(50*50)
         
+        saved_steps = int(labels.shape[0]/3)
+        
         num_of_clusters=[]
         part_in_clusters=[]
         part_dif=[]
         avg_cluster_size=[]
-        for i in range(1000):
+        for i in range(saved_steps):
             
             num_of_clusters=np.append(num_of_clusters,np.max(labels[i*3]))
             q=0
@@ -153,58 +155,56 @@ for J in J1:
             part_dif=np.append(part_dif,p)
         
         
-        plt.figure()
-        plt.plot(np.arange(1000),num_of_clusters,label = 'num of clusters')
-        plt.plot(np.arange(1000),part_in_clusters,label = 'particles in clusters')
-        plt.plot(np.arange(1000),part_dif,label = 'diffuse particles')
-        plt.xlim((0,1000))
-        plt.vlines([100,500,950], 0, 400, colors='r',linestyles='dashed')
-        plt.xlabel('MC_steps *10')
-        plt.title(f'J={J}, alpha={alpha},density={density}')
-        plt.legend()
-        plt.savefig(f'{counter}_{J}_{alpha}_{density}.svg')
-        plt.show()
-        
-        
-        steps=[100,500,950]
-        for step in steps:
-            cluster_size = np.bincount(labels[step*3])
-            cluster_size_distribution = np.bincount(cluster_size[1:])    
-            plt.figure()
-            plt.bar(np.arange(cluster_size_distribution.size), cluster_size_distribution)
-            plt.ylim((0,80))
-            plt.suptitle('cluster size distribution')
-            plt.title(f'J={J}, alpha={alpha},density={density}')
-            plt.savefig(f'{counter}_size_dist_at_{step}_{J}_{alpha}_{density}.svg')
-            plt.show()
+        # plt.figure()
+        # plt.plot(np.arange(saved_steps),num_of_clusters,label = 'num of clusters')
+        # plt.plot(np.arange(saved_steps),part_in_clusters,label = 'particles in clusters')
+        # plt.plot(np.arange(saved_steps),part_dif,label = 'diffuse particles')
+        # plt.xlim((0,saved_steps))
+        # plt.vlines([100,500,950], 0, 400, colors='r',linestyles='dashed')
+        # plt.xlabel('MC_steps *10')
+        # plt.title(f'J={J}, alpha={alpha},density={density}')
+        # plt.legend()
+        # plt.savefig(f'{counter}_{J}_{alpha}_{density}.svg')
+        # plt.show()
+        # steps=[100,500,950,1500,5000,9500]
+        # for step in steps:
+        #     cluster_size = np.bincount(labels[step*3])
+        #     cluster_size_distribution = np.bincount(cluster_size[1:])
+        #     # plt.figure()
+        #     # plt.bar(np.arange(cluster_size_distribution.size), cluster_size_distribution)
+        #     # plt.ylim((0,55))
+        #     # plt.suptitle('cluster size distribution')
+        #     # plt.title(f'J={J}, alpha={alpha},density={density}')
+        #     # plt.savefig(f'{counter}_size_dist_at_{step}_{J}_{alpha}_{density}.svg')
+        #     # plt.show()
             
-            colors_labels = np.zeros([50*50,3])
-            coloring_labels = np.zeros([50*50,3])
-            i=0
-            j=0
-            Cluster_num = np.max(labels[step*3])+20
-            for x in labels[step*3+1]:
-                if labels[step*3,j]==0:
-                    coloring_labels[x]=[195/255,192/255,192/255] 
-                else:
-                    coloring_labels[x]=[1,0.5+labels[0,j]/Cluster_num,0]
-                j+=1
+        #     colors_labels = np.zeros([50*50,3])
+        #     coloring_labels = np.zeros([50*50,3])
+        #     i=0
+        #     j=0
+        #     Cluster_num = np.max(labels[step*3])+20
+        #     for x in labels[step*3+1]:
+        #         if labels[step*3,j]==0:
+        #             coloring_labels[x]=[195/255,192/255,192/255] 
+        #         else:
+        #             coloring_labels[x]=[1,labels[step*3,j]/Cluster_num,0]
+        #         j+=1
 
 
-            for x in labels[step*3+1]:
+        #     for x in labels[step*3+1]:
 
-                # else:
-                #     coloring_labels[x]=[195/255,192/255,192/255]
-                    # labels_name[x]=labels[0,i]
-                if labels[step*3+2,i]==1:
-                    colors_labels[x]=[195/255,192/255,192/255]  
-                elif labels[step*3+2,i]==2:
-                    colors_labels[x]=[0, 1, 0]
-                elif labels[step*3+2,i]==3:
-                    colors_labels[x]=[1,0,0]
-                elif labels[step*3+2,i]==4:
-                    colors_labels[x]=[0,0,1]
-                i+=1
+        #         # else:
+        #         #     coloring_labels[x]=[195/255,192/255,192/255]
+        #             # labels_name[x]=labels[0,i]
+        #         if labels[step*3+2,i]==1:
+        #             colors_labels[x]=[195/255,192/255,192/255]  
+        #         elif labels[step*3+2,i]==2:
+        #             colors_labels[x]=[0, 1, 0]
+        #         elif labels[step*3+2,i]==3:
+        #             colors_labels[x]=[1,0,0]
+        #         elif labels[step*3+2,i]==4:
+        #             colors_labels[x]=[0,0,1]
+        #         i+=1
                 
 
             # plt.figure(figsize=(20,15))
@@ -224,32 +224,52 @@ for J in J1:
             # plt.savefig(f'{counter}_ori_{step}_{J}_{alpha}_{density}.svg')
 
             # plt.show()
+        mean_cluster_size=[]
+        median_cluster_size=[]
+        steps=np.arange(0,saved_steps,100)
+        for step in steps:
+            cluster_size = np.bincount(labels[step*3])
+            cluster_size_distribution = np.bincount(cluster_size[1:])
+            mean_cluster_size=np.append(mean_cluster_size,np.mean(cluster_size_distribution))
+            median_cluster_size=np.append(median_cluster_size,np.median(cluster_size_distribution))
+        plt.figure()
+        plt.plot(steps,mean_cluster_size,label='mean', marker='.',linestyle='')
+        plt.plot(steps,median_cluster_size,label='median', marker='.',linestyle='')
+        plt.suptitle('cluster size')
+        plt.title(f'J={J}, alpha={alpha},density={density}')
+        plt.legend()
+        plt.savefig(f'{counter}_mean_cluster_size_{step}_{J}_{alpha}_{density}.svg')
+        plt.show()
+        
         counter+=1
 #%%
-
+saved_steps = int(labels.shape[0]/3)
+stepping=99
 i=0
 j=0
-Cluster_num = np.max(labels[999*3])+20
-for x in labels[999*3+1]:
-    if labels[999*3,j]==0:
+Cluster_num = np.max(labels[stepping*3])+20
+colors_labels = np.zeros([50*50,3])
+coloring_labels = np.zeros([50*50,3])
+for x in labels[stepping*3+1]:
+    if labels[stepping*3,j]==0:
         coloring_labels[x]=[195/255,192/255,192/255] 
     else:
         coloring_labels[x]=[1,0.5+labels[0,j]/Cluster_num,0]
     j+=1
 
 
-for x in labels[999*3+1]:
+for x in labels[stepping*3+1]:
 
     # else:
     #     coloring_labels[x]=[195/255,192/255,192/255]
         # labels_name[x]=labels[0,i]
-    if labels[999*3+2,i]==1:
+    if labels[stepping*3+2,i]==1:
         colors_labels[x]=[195/255,192/255,192/255]  
-    elif labels[999*3+2,i]==2:
+    elif labels[stepping*3+2,i]==2:
         colors_labels[x]=[0, 1, 0]
-    elif labels[999*3+2,i]==3:
+    elif labels[stepping*3+2,i]==3:
         colors_labels[x]=[1,0,0]
-    elif labels[999*3+2,i]==4:
+    elif labels[stepping*3+2,i]==4:
         colors_labels[x]=[0,0,1]
     i+=1
     
@@ -268,4 +288,47 @@ centers_x = hex_centers[:, 0]
 centers_x = hex_centers[:, 1]
 #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
 
+plt.show()
+
+
+#%%
+J=4
+alpha=0.5
+density=0.2
+
+labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/outputlabels_{J}_{alpha}_{density}_10.txt',dtype=int,skiprows=1)
+#%%
+
+labels_name = np.zeros(50*50)
+
+
+num_of_clusters=[]
+part_in_clusters=[]
+part_dif=[]
+avg_cluster_size=[]
+for i in range(10000):
+    
+    num_of_clusters=np.append(num_of_clusters,np.max(labels[i*3]))
+    q=0
+    p=0
+    for j in range(500):
+        if labels[i*3+2,j]>1:
+            
+            q+=1
+        if labels[i*3+2,j]==1:
+            p+=1
+    part_in_clusters=np.append(part_in_clusters,q)
+    part_dif=np.append(part_dif,p)
+
+
+plt.figure()
+plt.plot(np.arange(10000),num_of_clusters,label = 'num of clusters')
+plt.plot(np.arange(10000),part_in_clusters,label = 'particles in clusters')
+plt.plot(np.arange(10000),part_dif,label = 'diffuse particles')
+plt.xlim((0,10000))
+plt.vlines([100,500,950], 0, 400, colors='r',linestyles='dashed')
+plt.xlabel('MC_steps *10')
+plt.title(f'J={J}, alpha={alpha},density={density}')
+plt.legend()
+plt.savefig(f'{counter}_{J}_{alpha}_{density}.svg')
 plt.show()
