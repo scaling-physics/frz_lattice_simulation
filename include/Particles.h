@@ -17,6 +17,9 @@ int binding_succ=0;
 int diffuse_attempt=0;
 int diffuse_succ=0;
 
+double const k_on=0.05;
+double const  k_off=0.5;
+
 double density;
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
@@ -73,8 +76,10 @@ public:
 
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
-        int initial_setup = Nxy*density;
-        for (int i=0; i<initial_setup; i++)
+        int initial_num = Nxy*density;
+        positions.reserve(initial_num);
+
+        for (int i=0; i<initial_num; i++)
         {
             double random=unidist(gen);
             int pos = random*Nxy;
@@ -108,54 +113,46 @@ public:
 //        positions.emplace_back(13);
     }
 
-    inline int get_pos(int ind)
+    inline int get_pos(const int ind) const
     {
         return positions[ind];
     }
-    inline bool is_free(int pos)
+    inline bool is_free(const int pos) const
     {
         return grid[pos]==0;
     }
-    inline bool is_diffuse(int pos)
+    inline bool is_diffuse(const int pos) const
     {
         return grid[pos]==1;
     }
-
-
-    inline bool is_bound(int pos)
+    inline bool is_bound(const int pos) const
     {
         return grid[pos]>1;
     }
-
-    inline int get_ind(int pos)
-    {
-//    NOT WORKING PROPERLY
-        return pos;
-    }
-    inline int get_orientation(int pos)
+    inline int get_orientation(const int pos) const
     {
         int ori=grid[pos];
-        return ori==1 ? ori : ori-3;
+        assert(is_bound(pos));
+        return ori-3;
     }
-    inline void set_orientation(int pos, int ori)
+    inline void set_orientation(const int pos, const int ori)
     {
         grid[pos]=ori;
     }
-    inline void set_pos(int old_pos,int new_pos, int ind)
+    inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
         grid[old_pos]=0;
         grid[new_pos]=1;
         positions[ind]=new_pos;
     }
-    inline bool is_interaction_allowed(int ori_1, int ori_2, int slope)
+    inline bool is_interaction_allowed(const int ori_1, const int ori_2, const int slope) const
     {
-        return (((ori_1 + slope)*(ori_2+slope))!=0 && ori_1 != ori_2);
+        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
     }
 
 //CREATION ATTEMPT
-    void attempt_creation(int pos, double rand)
+    void attempt_creation(const int pos, const double &rand)
     {
-        double const k_on=0.05;
         if(rand<=k_on)
         {
             std::cout<<"particle created"<<"\n";
@@ -164,9 +161,8 @@ public:
         }
     }
 //DESTRUCTION ATTEMPT
-    void attempt_destruction(int pos,double rand)
+    void attempt_destruction(const int pos,const double &rand)
     {
-        double const  k_off=0.5;
         if(rand<k_off)
         {
 //            std::cout<<"particle destroyed"<<"\n";
@@ -175,7 +171,7 @@ public:
         }
     }
 //DIFFUSE PARTICLES
-    void attempt_diffusion(double &rand, int ind)
+    void attempt_diffusion(const int ind, double &rand)
     {
         // get diffuse particle
         diffuse_attempt++;
@@ -197,7 +193,7 @@ public:
         }
     }
 //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
-    int count_interacting_neighbors(int pos, int ori)
+    int count_interacting_neighbors(const int pos, const int ori) const
     {
         Neighbours n=lattice.get_neighbors(pos);
         int count_bound = 0;
@@ -215,7 +211,7 @@ public:
         return count_bound;
     }
 //GET DIFFUSE NEIGHBORS, RANDOMELY ASSIGN A ORIENTATION & GET THEIR SLOPES
-    Diffuse_Neighbors get_setup_diffuse_neighbors(int ind, double &rand)
+    Diffuse_Neighbors get_setup_diffuse_neighbors(const int ind, double &rand) const
     {
         Diffuse_Neighbors d_n;
         int pos = get_pos(ind);
@@ -240,7 +236,7 @@ public:
         return d_n;
     }
 //GET BOUND NEIGHBORS, THEIR ORIENTATIONS AND THEIR SLOPES
-    Interacting_Neighbors_in_Clusters get_interacting_neighbors_in_cluster(int ind, int ori)
+    Interacting_Neighbors_in_Clusters get_interacting_neighbors_in_cluster(const int ind, const int ori) const
     {
         Interacting_Neighbors_in_Clusters i_n;
         int pos = get_pos(ind);
@@ -262,7 +258,7 @@ public:
     }
 
 //DELTA_H
-    double delta_H(double const alpha, double const J, int num_dif, int num_bonds, double a)
+    double delta_H(double const alpha, double const J, int num_dif, int num_bonds, double a) const
     {
         //std::cout<<"num_dif "<<num_dif<<"\n num_bonds "<< num_bonds<<"\n";
         double delta_E=(a*J)*(num_bonds-(num_dif*alpha));
@@ -391,7 +387,7 @@ public:
         }
     }
 
-    void label(int ind, int i,std::vector<int> &labels)
+    void label(int ind, int i,std::vector<int> &labels) const
     {
         labels[ind]=i;
         Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind)));
@@ -410,7 +406,7 @@ public:
         }
     }
 
-    std::vector<int> orientations_vec()
+    std::vector<int> orientations_vec() const
     {
         std::vector<int> orientations_vector;
 
@@ -422,7 +418,7 @@ public:
         return orientations_vector;
     }
 
-    void print(std::ofstream &out)
+    void print(std::ofstream &out) const
     {
         std::stringstream buffer;
         std::vector<int> ori_vec=orientations_vec();
@@ -443,7 +439,7 @@ public:
         out << buffer1.str();
     }
 
-    void print_labels(std::ofstream &out,std::vector<int> &labels)
+    void print_labels(std::ofstream &out,std::vector<int> &labels) const
     {
         std::stringstream buffer;
         for(auto &x:labels)
@@ -454,7 +450,7 @@ public:
         out << buffer.str();
     }
 
-    void print_grid(std::ofstream &out)
+    void print_grid(std::ofstream &out) const
     {
         std::stringstream buffer;
         for(auto &x:grid)

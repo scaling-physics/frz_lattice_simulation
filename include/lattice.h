@@ -18,8 +18,8 @@ const int Nxy = Nx*Ny;
 
 int mod(int a, int b)
 {
-    int r;
-    return r=a%b>=0 ? a%b: std::abs(b)+a%b;
+    int r=a%b;
+    return r>=0 ? r: std::abs(b)+r;
 }
 
 
@@ -38,11 +38,8 @@ private:
 
 
 public:
-    std::array<int,6> slope;
 
-
-
-    std::array<int,2> get_index(int const pos)
+    inline std::array<int,2> get_coord(const int pos) const
     {
         //transform 1d array into 2d notation
         int x=pos%Nx;
@@ -54,32 +51,30 @@ public:
         return coord;
     }
 
-    int get_single_index(int x, int y)
+    inline int get_single_index(const int x, const int y) const
     {
         int index = y*Nx+x;
         return index;
-
     }
 
-    bool is_in_lattice(std::array<int,2> coord)
+    inline bool is_in_lattice(const std::array<int,2> coord) const
     {
         int x=coord[0];
         int y= coord[1];
         return ( (unsigned int)x<Nx && (unsigned int)y<Ny );//negative values are looped around to big numbers by the cast to unsigned. In this way, only one inequality is required.
     }
 
-    Neighbours get_neighbors(int pos)
+    Neighbours get_neighbors(const int pos) const
     {
         Neighbours n;
 
-        std::array<int,2> coord{get_index(pos)};
+        std::array<int,2> coord{get_coord(pos)};
 
         int x=coord[0];
-        int y= coord[1];
+        int y=coord[1];
 
 
-
-        if(y%2==0)
+        if(y%2==0) //if the position is in an even row, which protude on the left side
         {
             if(x-1>=0)
             {
@@ -105,7 +100,7 @@ public:
     }
 
 
-    else
+    else //if the position is in an odd row, which protude on the right side
     {
         if(x-1>=0)
         {

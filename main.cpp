@@ -8,6 +8,9 @@
 # include <random>
 #include <algorithm>
 
+# define NDEBUG //comment out to turn on assert.
+# include <assert.h>	// for assert()
+
 #include "lattice.h"
 #include "Particles.h"
 #include "definitions.h"
@@ -25,7 +28,7 @@ int main(int argc,char *argv[])
         J= atof(argv[1]);
         alpha = atof(argv[2]);
         density = atof(argv[3]);
-        slurm_index = atof(argv[3]);
+        slurm_index = atof(argv[4]);
     }
     else
     {
@@ -36,7 +39,7 @@ int main(int argc,char *argv[])
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = 5*pow(10,8); // number of Monte Carlo Steps
+    const int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
     double rand;
@@ -104,7 +107,7 @@ int main(int argc,char *argv[])
 
 //Move diffusive particles
 
-            particles.attempt_diffusion(rand, ind);
+            particles.attempt_diffusion(ind, rand);
 //            print_container(particles.positions);
 
 
