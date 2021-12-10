@@ -244,17 +244,17 @@ for J in J1:
         counter+=1
 #%%
 saved_steps = int(labels.shape[0]/3)
-stepping=99
+stepping=17
 i=0
 j=0
-Cluster_num = np.max(labels[stepping*3])+20
+Cluster_num = np.max(labels[stepping*3])+8
 colors_labels = np.zeros([50*50,3])
 coloring_labels = np.zeros([50*50,3])
 for x in labels[stepping*3+1]:
     if labels[stepping*3,j]==0:
         coloring_labels[x]=[195/255,192/255,192/255] 
     else:
-        coloring_labels[x]=[1,0.5+labels[0,j]/Cluster_num,0]
+        coloring_labels[x]=[1,labels[stepping*3,j]/Cluster_num,0]
     j+=1
 
 
@@ -290,13 +290,12 @@ centers_x = hex_centers[:, 1]
 
 plt.show()
 
-
 #%%
 J=4
 alpha=0.5
 density=0.2
 
-labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/outputlabels_{J}_{alpha}_{density}_10.txt',dtype=int,skiprows=1)
+labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/outputlabels_{J}_{alpha}_{density}_11.txt',dtype=int,skiprows=1)
 #%%
 
 labels_name = np.zeros(50*50)

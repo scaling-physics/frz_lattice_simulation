@@ -32,11 +32,11 @@ int main(int argc,char *argv[])
         alpha=0.5;
         J=4;
         density = 0.2;
-        slurm_index = 10;
+        slurm_index = 11;
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = pow(10,9); // number of Monte Carlo Steps
+    const int MC_steps = 5*pow(10,8); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
     double rand;
