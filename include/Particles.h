@@ -77,7 +77,7 @@ public:
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
         int initial_num = Nxy*density;
-        positions.reserve(initial_num);
+        positions.resize(initial_num);
 
         for (int i=0; i<initial_num; i++)
         {
@@ -86,7 +86,7 @@ public:
             if(grid[pos]==0)
             {
                 grid[pos]=1;
-                positions.emplace_back(pos);
+                positions[i]=pos;
             }
             else
             {
@@ -178,7 +178,7 @@ public:
         int particle_pos = get_pos(ind) ;
 
         //choose random direction
-        Neighbours n=lattice.get_neighbors(particle_pos);
+        Neighbours n(lattice.get_neighbors(particle_pos));
 
         double rand_size=rand*n.positions.size();
         int dir=rand_size;
@@ -195,18 +195,16 @@ public:
 //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
     int count_interacting_neighbors(const int pos, const int ori) const
     {
-        Neighbours n=lattice.get_neighbors(pos);
+        Neighbours n(lattice.get_neighbors(pos));
         int count_bound = 0;
 
         for(unsigned int i=0; i<n.positions.size(); i++)
         {
-            if(is_bound(n.positions[i]))
-            {
-                if(is_interaction_allowed(ori,get_orientation(n.positions[i]),n.slopes[i]))
+            if(is_bound(n.positions[i]) && is_interaction_allowed(ori,get_orientation(n.positions[i]),n.slopes[i]))
                 {
                     count_bound++;
                 }
-            }
+
         }
         return count_bound;
     }
@@ -215,7 +213,7 @@ public:
     {
         Diffuse_Neighbors d_n;
         int pos = get_pos(ind);
-        Neighbours n=lattice.get_neighbors(pos);
+        Neighbours n(lattice.get_neighbors(pos));
         for(unsigned int i=0; i<n.positions.size(); i++)
         {
             if(is_diffuse(n.positions[i]))
@@ -228,10 +226,6 @@ public:
                 d_n.orientations.emplace_back(ori-1);
 
             }
-            if(d_n.orientations.size() != d_n.diffuse_neighbors.size())
-            {
-
-            }
         }
         return d_n;
     }
@@ -240,19 +234,24 @@ public:
     {
         Interacting_Neighbors_in_Clusters i_n;
         int pos = get_pos(ind);
-        Neighbours n=lattice.get_neighbors(pos);
+        Neighbours n(lattice.get_neighbors(pos));
+
+        int num_neigh=count_interacting_neighbors(pos,ori);
+        i_n.interacting_neighbors.resize(num_neigh);
+        i_n.orientations.resize(num_neigh);
+        i_n.slopes.resize(num_neigh);
+
+        int j=0;
+
         for(unsigned int i=0; i<n.positions.size(); i++)
         {
-            if(is_bound(n.positions[i]))
-            {
-                if(is_interaction_allowed(ori, get_orientation(n.positions[i]),n.slopes[i]))
+            if(is_bound(n.positions[i]) && is_interaction_allowed(ori, get_orientation(n.positions[i]),n.slopes[i]))
                 {
-                    i_n.interacting_neighbors.emplace_back(n.positions[i]);
-                    i_n.orientations.emplace_back(get_orientation(n.positions[i]));
-                    i_n.slopes.emplace_back(n.slopes[i]);
+                    i_n.interacting_neighbors[j]=n.positions[i];
+                    i_n.orientations[j]=get_orientation(n.positions[i]);
+                    i_n.slopes[j]=n.slopes[i];
+                    j++;
                 }
-
-            }
         }
         return i_n;
     }
@@ -274,13 +273,13 @@ public:
         rand=rand_size-rand_int;
 
         Interactions interactions;
-        Diffuse_Neighbors d_n=get_setup_diffuse_neighbors(ind,rand);
+        Diffuse_Neighbors d_n(get_setup_diffuse_neighbors(ind,rand));
 
         Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, ori);
 
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
-        Neighbours neighbors=lattice.get_neighbors(pos);
+        Neighbours neighbors(lattice.get_neighbors(pos));
         if(d_n.diffuse_neighbors.size()>0)
         {
             for(unsigned int i=0; i<d_n.diffuse_neighbors.size(); i++)
@@ -348,7 +347,7 @@ public:
         Interactions interactions;
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
-        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, ori);
+        Interacting_Neighbors_in_Clusters i_n(get_interacting_neighbors_in_cluster(ind, ori));
 
 
         if(i_n.interacting_neighbors.size()>0)
@@ -390,7 +389,7 @@ public:
     void label(int ind, int i,std::vector<int> &labels) const
     {
         labels[ind]=i;
-        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind)));
+        Interacting_Neighbors_in_Clusters i_n(get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind))));
         for(auto pos : i_n.interacting_neighbors )
         {
             auto it= (std::find(begin(positions),end(positions),pos));
