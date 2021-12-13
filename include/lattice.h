@@ -16,7 +16,7 @@ const int Nx=50;
 const int Ny=50;
 const int Nxy = Nx*Ny;
 
-int mod(int a, int b)
+inline int mod(int a, int b)
 {
     int r=a%b;
     return r>=0 ? r: std::abs(b)+r;
@@ -74,59 +74,37 @@ public:
         int y=coord[1];
 
 
-        if(y%2==0) //if the position is in an even row, which protude on the left side
-        {
-            if(x-1>=0)
-            {
-                n.positions.emplace_back(get_single_index(x-1,y));
-                n.slopes.emplace_back(0);
-                n.positions.emplace_back(get_single_index(x-1,mod(y+1,Ny)));
-                n.slopes.emplace_back(-1);
-                n.positions.emplace_back(get_single_index(x-1,mod(y-1,Ny)));
-                n.slopes.emplace_back(1);
+        if(unsigned(x-1)<Nx-2){
+            if(y%2==0){
+            n.positions={get_single_index(x-1,y),get_single_index(x-1,mod(y+1,Ny)),get_single_index(x-1,mod(y-1,Ny)),get_single_index(x+1,y),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny))};
+            n.slopes={0,-1,1,0,1,-1};
             }
-
-        if(x+1<Nx)
-        {
-            n.positions.emplace_back(get_single_index(x+1,y));
-            n.slopes.emplace_back(0);
+            else{
+            n.positions={get_single_index(x-1,y),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny)),get_single_index(x+1,y),get_single_index(x+1,mod(y+1,Ny)),get_single_index(x+1,mod(y-1,Ny))};
+            n.slopes={0,-1,1,0,1,-1};
+            }
+        }
+        else if(x==0){
+            if(y%2==0){
+            n.positions={get_single_index(x+1,y),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny))};
+            n.slopes={0,1,-1};
+            }
+            else{
+            n.positions={get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny)),get_single_index(x+1,y),get_single_index(x+1,mod(y+1,Ny)),get_single_index(x+1,mod(y-1,Ny))};
+            n.slopes={-1,1,0,1,-1};
+            }
+        }
+        else{
+            if(y%2==0){
+            n.positions={get_single_index(x-1,y),get_single_index(x-1,mod(y+1,Ny)),get_single_index(x-1,mod(y-1,Ny)),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny))};
+            n.slopes={0,-1,1,1,-1};
+            }
+            else{
+            n.positions={get_single_index(x-1,y),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny))};
+            n.slopes={0,-1,1};
+            }
         }
 
-        n.positions.emplace_back(get_single_index(x,mod(y+1,Ny)));
-        n.slopes.emplace_back(1);
-
-        n.positions.emplace_back(get_single_index(x,mod(y-1,Ny)));
-        n.slopes.emplace_back(-1);
-    }
-
-
-    else //if the position is in an odd row, which protude on the right side
-    {
-        if(x-1>=0)
-        {
-            n.positions.emplace_back(get_single_index(x-1,y));
-            n.slopes.emplace_back(0);
-        }
-
-        if(x+1<Nx)
-        {
-            n.positions.emplace_back(get_single_index(x+1,y));
-            n.slopes.emplace_back(0);
-            n.positions.emplace_back(get_single_index(x+1,mod(y+1,Ny)));
-            n.slopes.emplace_back(1);
-            n.positions.emplace_back(get_single_index(x+1,mod(y-1,Ny)));
-            n.slopes.emplace_back(-1);
-        }
-
-        n.positions.emplace_back(get_single_index(x,mod(y+1,Ny)));
-        n.slopes.emplace_back(-1);
-        n.positions.emplace_back(get_single_index(x,mod(y-1,Ny)));
-        n.slopes.emplace_back(1);
-
-
-
-    }
-    //sort(neighbors.begin(),neighbors.end());
     return n;
 }
 
