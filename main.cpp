@@ -39,7 +39,7 @@ int main(int argc,char *argv[])
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
+    const int MC_steps = pow(10,6); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
     double rand;
@@ -49,11 +49,11 @@ int main(int argc,char *argv[])
     Particles particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "output_" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << "test_" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
     std::ostringstream fn2;
-    fn2 << "outputlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << "testlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
@@ -70,6 +70,9 @@ int main(int argc,char *argv[])
 //    File_grid << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
     while(MC_counter<MC_steps)
     {
+
+        for(unsigned int attempted_moves=0; attempted_moves<particles.positions.size(); attempted_moves++)
+        {
 //        std::cout <<"counter"<< MC_counter <<'\n';
 //        if(MC_counter%10==0)
 //        {
@@ -97,53 +100,55 @@ int main(int argc,char *argv[])
 //        }
 
 //      choose random particle
-        rand = unidist(gen);
-        rand_size = rand*particles.positions.size();
-        int ind=rand_size;
-        rand=rand_size-ind;
-        assert(rand<0);
-        if(particles.is_diffuse(particles.get_pos(ind)))
-        {
+            rand = unidist(gen);
+            rand_size = rand*particles.positions.size();
+            int ind=rand_size;
+            rand=rand_size-ind;
+            assert(rand<0);
+            if(particles.is_diffuse(particles.get_pos(ind)))
+            {
 
 //Move diffusive particles
 
-            particles.attempt_diffusion(ind, rand);
+                particles.attempt_diffusion(ind, rand);
 //            print_container(particles.positions);
 
 
 //BINDING
-            particles.attempt_binding(alpha,J,ind,rand);
+                particles.attempt_binding(alpha,J,ind,rand);
 //            print_container(particles.positions);
 
 
 
-        }
-
-        else if(particles.is_bound(particles.get_pos(ind)))
-        {
-// UNBINDING ATTEMPT
-            particles.attempt_unbinding(alpha,J,ind,rand);
-//            print_container(particles.positions);
-
-        }
-        if(MC_counter%10000000==0)
-        {
-            std::vector<int> labels(particles.positions.size(),0);
-            int label_i = 1;
-            for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
-            {
-                if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
-                {
-                    particles.label(label_index,label_i,labels);
-                    label_i++;
-                }
             }
+
+            else if(particles.is_bound(particles.get_pos(ind)))
+            {
+// UNBINDING ATTEMPT
+                particles.attempt_unbinding(alpha,J,ind,rand);
+//            print_container(particles.positions);
+
+            }
+
+        }
+        if(MC_counter%20000==0)
+            {
+                std::vector<int> labels(particles.positions.size(),0);
+                int label_i = 1;
+                for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
+                {
+                    if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
+                    {
+                        particles.label(label_index,label_i,labels);
+                        label_i++;
+                    }
+                }
 
 //            std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
 //            print_container(labels);
-            particles.print_labels(out2,labels);
-            particles.print(out2);
-        }
+                particles.print_labels(out2,labels);
+                particles.print(out2);
+            }
 
 
 
