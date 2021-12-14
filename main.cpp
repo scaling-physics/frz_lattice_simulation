@@ -7,6 +7,7 @@
 # include <chrono>
 # include <random>
 #include <algorithm>
+#include <ranges>
 
 # define NDEBUG //comment out to turn on assert.
 # include <assert.h>	// for assert()

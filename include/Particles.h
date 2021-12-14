@@ -34,19 +34,6 @@ void print_container(const std::vector<int>& c)
     std::cout << '\n';
 }
 
-struct Diffuse_Neighbors
-{
-    std::vector<int> diffuse_neighbors;
-    std::vector<int> orientations;
-    std::vector<int> slopes;
-};
-
-struct Interacting_Neighbors_in_Clusters
-{
-    std::vector<int> interacting_neighbors;
-    std::vector<int> orientations;
-    std::vector<int> slopes;
-};
 
 struct Interactions
 {
@@ -70,9 +57,6 @@ public:
     Lattice &lattice;
 
 
-    //std::vector<int> diffuse_pos; //reference to position of diffuse particles
-    //std::vector<int> bound_pos; //reference to position of bound particles
-
 
     Particles(Lattice &lattice):grid{0},lattice(lattice)
     {
@@ -93,24 +77,6 @@ public:
                 i--;
             }
         }
-//        for(int i=0; i<Nxy; i++)
-//        {
-//            //double rand=unidist(gen);
-//            if(i%2==0)
-//            {
-//                grid[i]=1;
-//                positions.emplace_back(i);
-//            }
-//        }
-//        grid[5]=1;
-//        grid[9]=1;
-//        grid[10]=1;
-//        grid[13]=1;
-//
-//        positions.emplace_back(5);
-//        positions.emplace_back(9);
-//        positions.emplace_back(10);
-//        positions.emplace_back(13);
     }
 
     inline int get_pos(const int ind) const
@@ -150,6 +116,7 @@ public:
         return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
     }
 
+
 //CREATION ATTEMPT
     void attempt_creation(const int pos, const double &rand)
     {
@@ -160,6 +127,8 @@ public:
             grid[pos]=1;
         }
     }
+
+
 //DESTRUCTION ATTEMPT
     void attempt_destruction(const int pos,const double &rand)
     {
@@ -170,6 +139,8 @@ public:
             positions.erase(std::find(begin(positions),end(positions),pos));
         }
     }
+
+
 //DIFFUSE PARTICLES
     void attempt_diffusion(const int ind, double &rand)
     {
@@ -178,12 +149,12 @@ public:
         int particle_pos = get_pos(ind) ;
 
         //choose random direction
-        Neighbours n(lattice.get_neighbors(particle_pos));
+        std::vector<Neighbour> n(lattice.get_neighbors2(particle_pos));
 
-        double rand_size=rand*n.positions.size();
+        double rand_size=rand*n.size();
         int dir=rand_size;
         rand = rand_size-dir;
-        int new_pos = n.positions[dir];
+        int new_pos = n[dir].position;
 
         //check if new hex is occupied
         if(is_free(new_pos))// accept move
@@ -192,69 +163,25 @@ public:
             diffuse_succ++;
         }
     }
+
+
 //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
     int count_interacting_neighbors(const int pos, const int ori) const
     {
-        Neighbours n(lattice.get_neighbors(pos));
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
         int count_bound = 0;
 
-        for(unsigned int i=0; i<n.positions.size(); i++)
+        for(unsigned int i=0; i<n.size(); i++)
         {
-            if(is_bound(n.positions[i]) && is_interaction_allowed(ori,get_orientation(n.positions[i]),n.slopes[i]))
-                {
-                    count_bound++;
-                }
+            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),n[i].slope))
+            {
+                count_bound++;
+            }
 
         }
         return count_bound;
     }
-//GET DIFFUSE NEIGHBORS, RANDOMELY ASSIGN A ORIENTATION & GET THEIR SLOPES
-    Diffuse_Neighbors get_setup_diffuse_neighbors(const int ind, double &rand) const
-    {
-        Diffuse_Neighbors d_n;
-        int pos = get_pos(ind);
-        Neighbours n(lattice.get_neighbors(pos));
-        for(unsigned int i=0; i<n.positions.size(); i++)
-        {
-            if(is_diffuse(n.positions[i]))
-            {
-                d_n.diffuse_neighbors.emplace_back(n.positions[i]);
-                d_n.slopes.emplace_back(n.slopes[i]);
-                double rand_size = rand*3;
-                int ori = rand_size;
-                rand=rand_size-ori;
-                d_n.orientations.emplace_back(ori-1);
 
-            }
-        }
-        return d_n;
-    }
-//GET BOUND NEIGHBORS, THEIR ORIENTATIONS AND THEIR SLOPES
-    Interacting_Neighbors_in_Clusters get_interacting_neighbors_in_cluster(const int ind, const int ori) const
-    {
-        Interacting_Neighbors_in_Clusters i_n;
-        int pos = get_pos(ind);
-        Neighbours n(lattice.get_neighbors(pos));
-
-        int num_neigh=count_interacting_neighbors(pos,ori);
-        i_n.interacting_neighbors.resize(num_neigh);
-        i_n.orientations.resize(num_neigh);
-        i_n.slopes.resize(num_neigh);
-
-        int j=0;
-
-        for(unsigned int i=0; i<n.positions.size(); i++)
-        {
-            if(is_bound(n.positions[i]) && is_interaction_allowed(ori, get_orientation(n.positions[i]),n.slopes[i]))
-                {
-                    i_n.interacting_neighbors[j]=n.positions[i];
-                    i_n.orientations[j]=get_orientation(n.positions[i]);
-                    i_n.slopes[j]=n.slopes[i];
-                    j++;
-                }
-        }
-        return i_n;
-    }
 
 //DELTA_H
     double delta_H(double const alpha, double const J, int num_dif, int num_bonds, double a) const
@@ -263,6 +190,8 @@ public:
         double delta_E=(a*J)*(num_bonds-(num_dif*alpha));
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
     }
+
+
 //BINDING ATTEMPT
     void attempt_binding(double const alpha, double const J, int ind, double &rand)
     {
@@ -273,45 +202,60 @@ public:
         rand=rand_size-rand_int;
 
         Interactions interactions;
-        Diffuse_Neighbors d_n(get_setup_diffuse_neighbors(ind,rand));
-
-        Interacting_Neighbors_in_Clusters i_n=get_interacting_neighbors_in_cluster(ind, ori);
-
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
-        Neighbours neighbors(lattice.get_neighbors(pos));
-        if(d_n.diffuse_neighbors.size()>0)
+
+
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+
+        auto _is_diffuse = [this](const Neighbour &n)
         {
-            for(unsigned int i=0; i<d_n.diffuse_neighbors.size(); i++)
+            return is_diffuse(n.position);
+        };
+        auto _get_compatible_diffuse_neighbours = [&interactions,this,&rand,ori](auto n)
+        {
+            double rand_size = rand*3;
+            int ori2 = rand_size;
+            rand=rand_size-ori2;
+            ori2--;
+            if(is_interaction_allowed(ori,ori2,n.slope))
             {
-                if(is_interaction_allowed(ori,d_n.orientations[i],d_n.slopes[i]))
+                interactions.possible_interaction_pos.emplace_back(n.position);
+                interactions.orientations.emplace_back(ori2);
+                interactions.num_bonds++;
+                interactions.num_diffuse++;
+                int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori);
+                if(bound_neigh_of_neigh>1)
                 {
-                    interactions.possible_interaction_pos.emplace_back(d_n.diffuse_neighbors[i]);
-                    interactions.orientations.emplace_back(d_n.orientations[i]);
-                    interactions.num_bonds++;
-                    interactions.num_diffuse++;
-                    int bound_neigh_of_neigh = count_interacting_neighbors(d_n.diffuse_neighbors[i],d_n.orientations[i]);
-
-                    if(bound_neigh_of_neigh>1)
-                    {
-                        interactions.num_bonds=interactions.num_bonds+(bound_neigh_of_neigh-1);
-                    }
-                    if(interactions.num_bonds==0)
-                    {
-
-                    }
+                    interactions.num_bonds=interactions.num_bonds+(bound_neigh_of_neigh-1);
                 }
             }
-        }
-        if(i_n.interacting_neighbors.size()>0)
+        };
+
+        auto s= n | std::views::filter(_is_diffuse);
+        std::ranges::for_each(s,_get_compatible_diffuse_neighbours);
+
+
+        auto _is_bound = [this](const Neighbour &n)
         {
-            for(unsigned int i=0; i<i_n.interacting_neighbors.size(); i++)
-            {
-                interactions.orientations.emplace_back(i_n.orientations[i]);
-                interactions.possible_interaction_pos.emplace_back(i_n.interacting_neighbors[i]);
-                interactions.num_bonds++;
-            }
-        }
+            return is_bound(n.position);
+        };
+        auto _is_allowed = [this,ori](const Neighbour &n)
+        {
+            return is_interaction_allowed(ori,get_orientation(n.position),n.slope);
+        };
+        auto _get_affected_particles = [&interactions,this](auto n)
+        {
+            interactions.orientations.emplace_back(get_orientation(n.position));
+            interactions.possible_interaction_pos.emplace_back(n.position);
+            interactions.num_bonds++;
+        };
+
+        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+        std::ranges::for_each(s2,_get_affected_particles);
+
+
+
         if(interactions.num_bonds>0)
         {
             binding_attempt++;
@@ -329,11 +273,10 @@ public:
                     set_orientation(interactions.possible_interaction_pos[i],interactions.orientations[i]+3);
 
                 }
-
             }
         }
-
     }
+
 
 //UNBINDING ATTEMPT
     void attempt_unbinding(double const alpha, double const J, int ind,double &rand)
@@ -342,31 +285,37 @@ public:
         unbinding_attempt++;
         int particle_pos = get_pos(ind);
         int ori = get_orientation(particle_pos);
-        //Neighbours neighbors=lattice.get_neighbors(particle_pos);
 
         Interactions interactions;
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
-        Interacting_Neighbors_in_Clusters i_n(get_interacting_neighbors_in_cluster(ind, ori));
 
+        int pos = get_pos(ind);
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
-        if(i_n.interacting_neighbors.size()>0)
+        auto _is_bound = [this](const Neighbour &n)
         {
-            for (unsigned int i=0; i<i_n.interacting_neighbors.size(); i++)
+            return is_bound(n.position);
+        };
+        auto _is_allowed = [this,ori](const Neighbour &n)
+        {
+            return is_interaction_allowed(ori,get_orientation(n.position),n.slope);
+        };
+        auto _get_affected_particles = [&interactions,this](auto n)
+        {
+            interactions.num_bonds++;
+            int bound_neigh_of_neigh = count_interacting_neighbors(n.position,get_orientation(n.position));
+            if(bound_neigh_of_neigh==1)
             {
-//                    interactions.orientations.emplace_back(i_n.orientations[i]);
-                interactions.num_bonds++;
-
-                int bound_neigh_of_neigh = count_interacting_neighbors(i_n.interacting_neighbors[i],i_n.orientations[i]);
-                if(bound_neigh_of_neigh==1)
-                {
-                    interactions.possible_interaction_pos.emplace_back(i_n.interacting_neighbors[i]);
-                    interactions.num_diffuse++;
-                }
-
-
+                interactions.possible_interaction_pos.emplace_back(n.position);
+                interactions.num_diffuse++;
             }
-        }
+        };
+
+        auto s= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+        std::ranges::for_each(s,_get_affected_particles);
+
+
 
         double delta_E =delta_H(alpha,J,interactions.num_diffuse,interactions.num_bonds, 1);
 
@@ -382,15 +331,27 @@ public:
                     set_orientation(interactions.possible_interaction_pos[i],1);
                 }
             }
-
         }
     }
+
 
     void label(int ind, int i,std::vector<int> &labels) const
     {
         labels[ind]=i;
-        Interacting_Neighbors_in_Clusters i_n(get_interacting_neighbors_in_cluster(ind, get_orientation(get_pos(ind))));
-        for(auto pos : i_n.interacting_neighbors )
+
+        int pos = get_pos(ind);
+        int ori = get_orientation(pos);
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+
+        auto _is_bound = [this](const Neighbour &n)
+        {
+            return is_bound(n.position);
+        };
+        auto _is_allowed = [this,ori](const Neighbour &n)
+        {
+            return is_interaction_allowed(ori,get_orientation(n.position),n.slope);
+        };
+        auto _label = [this,&labels,i,pos](const Neighbour &n)
         {
             auto it= (std::find(begin(positions),end(positions),pos));
             if(it!= positions.end())
@@ -401,8 +362,10 @@ public:
                     label(inds,i,labels);
                 }
             }
+        };
 
-        }
+        auto s= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+        std::ranges::for_each(s,_label);
     }
 
     std::vector<int> orientations_vec() const
