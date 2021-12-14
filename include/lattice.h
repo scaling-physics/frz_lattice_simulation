@@ -23,10 +23,16 @@ inline int mod(int a, int b)
 }
 
 
-struct Neighbours
+//struct Neighbours
+//{
+//    std::vector<int> positions;
+//    std::vector<int> slopes;
+//};
+
+struct Neighbour
 {
-    std::vector<int> positions;
-    std::vector<int> slopes;
+    int position;
+    int slope;
 };
 
 
@@ -64,9 +70,10 @@ public:
         return ( (unsigned int)x<Nx && (unsigned int)y<Ny );//negative values are looped around to big numbers by the cast to unsigned. In this way, only one inequality is required.
     }
 
-    Neighbours get_neighbors(const int pos) const
+
+    std::vector<Neighbour> get_neighbors2(const int pos) const
     {
-        Neighbours n;
+        std::vector<Neighbour> n;
 
         std::array<int,2> coord{get_coord(pos)};
 
@@ -74,39 +81,42 @@ public:
         int y=coord[1];
 
 
-        if(unsigned(x-1)<Nx-2){
-            if(y%2==0){
-            n.positions={get_single_index(x-1,y),get_single_index(x-1,mod(y+1,Ny)),get_single_index(x-1,mod(y-1,Ny)),get_single_index(x+1,y),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny))};
-            n.slopes={0,-1,1,0,1,-1};
+        if(unsigned(x-1)<Nx-2)
+        {
+            if(y%2==0)
+            {
+                n= {{get_single_index(x-1,y),0},{get_single_index(x-1,mod(y+1,Ny)),-1},{get_single_index(x-1,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
             }
-            else{
-            n.positions={get_single_index(x-1,y),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny)),get_single_index(x+1,y),get_single_index(x+1,mod(y+1,Ny)),get_single_index(x+1,mod(y-1,Ny))};
-            n.slopes={0,-1,1,0,1,-1};
-            }
-        }
-        else if(x==0){
-            if(y%2==0){
-            n.positions={get_single_index(x+1,y),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny))};
-            n.slopes={0,1,-1};
-            }
-            else{
-            n.positions={get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny)),get_single_index(x+1,y),get_single_index(x+1,mod(y+1,Ny)),get_single_index(x+1,mod(y-1,Ny))};
-            n.slopes={-1,1,0,1,-1};
+            else
+            {
+                n= {{get_single_index(x-1,y),0},{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x+1,mod(y+1,Ny)),1},{get_single_index(x+1,mod(y-1,Ny)),-1}};
             }
         }
-        else{
-            if(y%2==0){
-            n.positions={get_single_index(x-1,y),get_single_index(x-1,mod(y+1,Ny)),get_single_index(x-1,mod(y-1,Ny)),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny))};
-            n.slopes={0,-1,1,1,-1};
+        else if(x==0)
+        {
+            if(y%2==0)
+            {
+                n= {{get_single_index(x+1,y),0},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
             }
-            else{
-            n.positions={get_single_index(x-1,y),get_single_index(x,mod(y+1,Ny)),get_single_index(x,mod(y-1,Ny))};
-            n.slopes={0,-1,1};
+            else
+            {
+                n= {{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x+1,mod(y+1,Ny)),1},{get_single_index(x+1,mod(y-1,Ny)),-1}};
+            }
+        }
+        else
+        {
+            if(y%2==0)
+            {
+                n= {{get_single_index(x-1,y),0},{get_single_index(x-1,mod(y+1,Ny)),-1},{get_single_index(x-1,mod(y-1,Ny)),1},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
+            }
+            else
+            {
+                n= {{get_single_index(x-1,y),0},{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1}};
             }
         }
 
-    return n;
-}
+        return n;
+    }
 
 
 
