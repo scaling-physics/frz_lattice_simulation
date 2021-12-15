@@ -353,7 +353,7 @@ public:
         };
         auto _label = [this,&labels,i,pos](const Neighbour &n)
         {
-            auto it= (std::find(begin(positions),end(positions),pos));
+            auto it= (std::find(begin(positions),end(positions),n.position));
             if(it!= positions.end())
             {
                 int inds = it-positions.begin();

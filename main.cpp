@@ -50,11 +50,11 @@ int main(int argc,char *argv[])
     Particles particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "test_" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << "output_" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
     std::ostringstream fn2;
-    fn2 << "testlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << "outputlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
