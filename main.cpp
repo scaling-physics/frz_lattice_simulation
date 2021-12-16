@@ -50,7 +50,7 @@ int main(int argc,char *argv[])
     Particles particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "output_" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << "output_bonds" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
     std::ostringstream fn2;
@@ -134,6 +134,8 @@ int main(int argc,char *argv[])
         }
         if(MC_counter%20000==0)
             {
+
+//                std::cout<<"Number of bonds: ";
                 std::vector<int> labels(particles.positions.size(),0);
                 int label_i = 1;
                 for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
@@ -142,41 +144,20 @@ int main(int argc,char *argv[])
                     {
                         int num_bonds=0;
                         particles.label(label_index,label_i,labels,num_bonds);
-
-                        std::cout <<label_i<<": "<< num_bonds;
-//                        print_container(labels);
                         label_i++;
+//                        std::cout << num_bonds << '\t';
+                        out << num_bonds<< '\t';
                     }
                 }
 
-//            std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
+            //std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
+            std::cout<<"Number of clusters: " << std::ranges::max(labels) << '\n';
 //            print_container(labels);
+                out << '\n';
                 particles.print_labels(out2,labels);
                 particles.print(out2);
             }
-
-
-
-//        particles.print(MyFile);
-
-//        if (MyFile.is_open())
-//        {
-//            for(int count = 0; count < Nxy; count ++)
-//            {
-//                MyFile << particles.grid[count] << " " ;
-//            }
-//            MyFile << "\n";
-//        }
-//        else std::cout << "Unable to open file";
         MC_counter++;
-//        std::cout << particles.positions.size() << '\n';
-
-//            if(MC_counter%100==0)
-//            {
-//                std::cout<<"counter "<<MC_counter<<"\n";
-//                std::cout<<
-//            }
-
     }
 //
 //    std::vector<int> labels(particles.positions.size(),0);
@@ -195,7 +176,7 @@ int main(int argc,char *argv[])
 //    particles.print_labels(out2,labels);
 //    particles.print(out2);
 //
-    particles.print_grid(out);
+//    particles.print_grid(out);
 //    for (auto iter = particles.grid.begin(); iter !=particles.grid.end(); ++iter)
 //    {
 //        //std::cout << *iter << "\n"<<' ';
