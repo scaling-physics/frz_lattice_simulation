@@ -134,6 +134,8 @@ int main(int argc,char *argv[])
         }
         if(MC_counter%20000==0)
             {
+
+                std::cout<<"Number of bonds: ";
                 std::vector<int> labels(particles.positions.size(),0);
                 int label_i = 1;
                 for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
@@ -143,14 +145,14 @@ int main(int argc,char *argv[])
                         int num_bonds=0;
                         particles.label(label_index,label_i,labels,num_bonds);
                         label_i++;
-                        std::cout << num_bonds;
-                        print_container(labels);
+                        std::cout << num_bonds << '\t';
 
                     }
                 }
 
-//            std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
-//            print_container(labels);
+            //std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
+            std::cout<<"Number of clusters: " << std::ranges::max(labels) << '\n' << "Labels: ";
+            print_container(labels);
                 particles.print_labels(out2,labels);
                 particles.print(out2);
             }
