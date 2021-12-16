@@ -142,10 +142,10 @@ int main(int argc,char *argv[])
                     {
                         int num_bonds=0;
                         particles.label(label_index,label_i,labels,num_bonds);
-                        label_i++;
-                        std::cout << num_bonds;
-                        print_container(labels);
 
+                        std::cout <<label_i<<": "<< num_bonds;
+//                        print_container(labels);
+                        label_i++;
                     }
                 }
 
