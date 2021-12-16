@@ -335,7 +335,7 @@ public:
     }
 
 
-    void label(int ind, int i,std::vector<int> &labels) const
+    void label(int ind, int i,std::vector<int> &labels,int &num_bonds) const
     {
         labels[ind]=i;
 
@@ -343,15 +343,21 @@ public:
         int ori = get_orientation(pos);
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
-        auto _is_bound = [this](const Neighbour &n)
-        {
-            return is_bound(n.position);
-        };
-        auto _is_allowed = [this,ori](const Neighbour &n)
-        {
-            return is_interaction_allowed(ori,get_orientation(n.position),n.slope);
-        };
-        auto _label = [this,&labels,i,pos](const Neighbour &n)
+        auto _is_bound = [this](const Neighbour &n){return is_bound(n.position);};
+
+        auto _is_allowed = [this,ori](const Neighbour &n){return is_interaction_allowed(ori,get_orientation(n.position),n.slope);};
+
+        auto _is_labelled = [this,&labels](const Neighbour &n){
+                    auto it= (std::find(begin(positions),end(positions),n.position));
+            if(it!= positions.end())
+            {
+                int inds = it-positions.begin();
+                return labels[inds]!=0;
+            }
+            };
+
+
+        auto _label = [this,&labels,i,pos,&num_bonds](const Neighbour &n)
         {
             auto it= (std::find(begin(positions),end(positions),n.position));
             if(it!= positions.end())
@@ -359,13 +365,19 @@ public:
                 int inds = it-positions.begin();
                 if(labels[inds]==0)
                 {
-                    label(inds,i,labels);
+                    label(inds,i,labels,num_bonds);
                 }
             }
         };
 
-        auto s= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
-        std::ranges::for_each(s,_label);
+
+
+        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed) | std::views::filter(_is_labelled);
+        auto cnt = std::ranges::distance(s1);
+        num_bonds=num_bonds+cnt;
+
+        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+        std::ranges::for_each(s2,_label);
     }
 
     std::vector<int> orientations_vec() const
