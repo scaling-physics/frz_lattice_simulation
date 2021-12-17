@@ -36,7 +36,7 @@ int main(int argc,char *argv[])
         alpha=0.5;
         J=4;
         density = 0.2;
-        slurm_index = 11;
+        slurm_index = 1;
         std::cout << "Using default parameters." << '\n';
     }
 
@@ -50,11 +50,11 @@ int main(int argc,char *argv[])
     Particles particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "output_bonds" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << "rectangular_output_bonds" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
     std::ostringstream fn2;
-    fn2 << "outputlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << "rectangular_outputlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 

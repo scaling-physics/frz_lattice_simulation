@@ -94,25 +94,13 @@ for J in J_r:
         dtraj_long = {"X":X,"part_in_cluster":dpart_in_clusters,"part_dif":dpart_dif,"num_of_clusters":dnum_of_clusters}
         traj_long = pd.DataFrame(data=dtraj_long)
         
-        plt.figure()
-        plt.title(f'AVG 20 J={J}, alpha={alpha},density={density}')
-        sns.lineplot(data=traj_long,x='X',y='part_in_cluster',color='orange', ci='sd', label='part in clusters')
-        plt.legend()
-        plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/avg_part_in_clusters_{J}_{alpha}_{density}.svg')
-        plt.show()
         
-        plt.figure()
-        plt.title(f'AVG 20 J={J}, alpha={alpha},density={density}')
-        sns.lineplot(data=traj_long,x='X',y='part_dif',color='g', ci='sd',label='part dif')
-        plt.legend()
-        plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/avg_dif_part_{J}_{alpha}_{density}.svg')
-        plt.show()
-        
-        plt.figure()
-        plt.title(f'AVG 20 J={J}, alpha={alpha},density={density}')
-        sns.lineplot(data=traj_long,x='X',y='num_of_clusters',color='b', ci='sd',label='num clusters')
-        plt.legend()
-        plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/avg_num_of_clusters_{J}_{alpha}_{density}.svg')
+        fig, axs = plt.subplots(3, sharex=True, figsize=(10,8))
+        fig.suptitle(f'AVG 20 J={J}, alpha={alpha},density={density}')
+        sns.lineplot(data=traj_long,x='X',y='part_in_cluster',color='orange', ci='sd', ax=axs[0])
+        sns.lineplot(data=traj_long,x='X',y='part_dif',color='g', ci='sd',ax=axs[1])     
+        sns.lineplot(data=traj_long,x='X',y='num_of_clusters',color='b', ci='sd',ax=axs[2])
+        plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/avg_{J}_{alpha}_{density}.svg')
         plt.show()
 #%%
 
@@ -121,13 +109,13 @@ color_scale=[[0,0,1],[0,1,0],[1,0,0],[1,0,0.6],[1,0.6,0],[0.6,1,0],[0,1,0.6],[0,
              [0,0.4,0.2],[0,0.2,0.4],[0.2,0.4,0],[0.4,0,0.2],[0.4,0.2,0],[0.2,0.4,0],[0.4,0.4,0.2],[0.4,0.2,0.4],[0.2,0.4,0.4],[0.4,1,0.2],[0.4,0.2,1],[0.2,1,0.4]]
 alpha=0.5
 density=0.2
-for J in [0.5,1,1.25,1.5,1.75,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3,3.25,3.5,3.75,4]:
-    for alpha in [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5]:
+for J in [4]:
+    for alpha in [1]:
         labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/outputlabels_{J}_{alpha}_0.2_1.txt',dtype=int,skiprows=1)
         Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/image_{J}_{alpha}').mkdir( exist_ok=True)
         saved_steps = int(labels.shape[0]/3)
     
-        for step in range(1,50):
+        for step in range(0,50):
             
             # if step in [1,10,49]:
             #     cluster_size = np.bincount(labels[step*3])
@@ -270,51 +258,77 @@ for J in [0.5,1,1.25,1.5,1.75,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3,3.25,3.5,3.7
 
 #%%
 ALPHA1=[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
-mesh=np.meshgrid(ALPHA1,J_r)
+mesh=np.meshgrid(ALPHA,J_r)
 coarsening=np.zeros((len(J_r),len(ALPHA1)))
+num_dif=np.zeros((len(J_r),len(ALPHA1)))
 n=0
 
 for J in J_r:
     m=0
     for alpha in ALPHA1:
         dnum_of_clusters=[]
-        for run in range(1,15):
-            print(J,alpha,run)
-            # labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/outputlabels_{J}_{alpha}_0.2_1.txt',dtype=int,skiprows=1)
-            bonds=np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/output_bonds{J}_{alpha}_0.2_{run}.txt',skiprows=49,max_rows=1)
-            ordering=np.max(bonds)
+        dnum_dif=[]
+        for run in range(1,21):
+            # print(J,alpha,run)
+            labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/outputlabels_{J}_{alpha}_0.2_{run}.txt',dtype=int,skiprows=1)
+            u=np.bincount(labels[49*3])
+            # bonds=np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/output_bonds{J}_{alpha}_0.2_{run}.txt',skiprows=49,max_rows=1)
+            
+            ordering=u[1:].max()
             dnum_of_clusters=np.append(dnum_of_clusters,ordering)
+            dnum_dif=np.append(dnum_dif,u[0])
         coarsening[n,m]=np.mean(dnum_of_clusters)/500
+        num_dif[n,m]=np.mean(dnum_dif)
         m+=1
     n+=1
-#%%
-from matplotlib import cm
-import seaborn as sns
-fig, ax = plt.subplots()
-CS = ax.contour(ALPHA1,J_r,coarsening,levels=[0,1.2,2,5,10,20,90],cmap='summer',linestyles='solid')
-ax.clabel(CS, inline=1, fontsize=10)
-ax.set_xlabel('Alpha')
-ax.set_ylabel('J')
-ax.set_title("Contour plot of Cluster number")
-plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image/contour.jpg')
-
 plt.figure()
 ax = sns.heatmap(coarsening,xticklabels=ALPHA1,yticklabels=J_r)
 ax.invert_yaxis()
-plt.show()
-#%%
-coarsening=np.zeros((len(J_r),len(ALPHA)))
-n=0
+ax.set_xlabel("alpha")
+ax.set_ylabel("J")
+ax.set_title('(#part in largest cluster)/(#tot part)')
+plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/heatmap_numpartincluster_higheralpha.jpg')
+plt.show()    
 
-# for J in J_r:
-#     m=0
-#     for alpha in ALPHA:
-#         dnum_of_clusters=[]
-#         for run in range(1,20):
-#             labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/output_bonds{J}_{alpha}_0.2_1.txt',dtype=int,skiprows=49)
-#             num_of_clusters=np.max(labels[49*3])
-#             dnum_of_clusters=np.append(dnum_of_clusters,num_of_clusters)
-#         coarsening[n,m]=np.mean(dnum_of_clusters)
-#         m+=1
-#     n+=1
-bonds=pd.read_csv(f'/scratch2/hannohennighausen/Parameter_sweep/output_bonds4_0.5_0.2_1.txt',skiprows=49,sep="\t",keep_default_na=False,header=None)
+plt.figure()
+ax = sns.heatmap(num_dif,xticklabels=ALPHA1,yticklabels=J_r)
+ax.invert_yaxis()
+ax.set_xlabel("alpha")
+ax.set_ylabel("J")
+ax.set_title('dif part at the end')
+plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/heatmap_numdif.jpg')
+plt.show()    
+
+#%%
+ALPHA1=[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+def hamiltonian(J,alpha,num_bonds,num_part):
+    return -J*num_bonds+alpha*J*num_part
+Energy=np.zeros((len(J_r),len(ALPHA1)))
+n=0
+for J in J_r:
+    m=0
+    for alpha in ALPHA1:
+        dEnergy=[]
+        for run in range(1,21):
+            print(J,alpha,run)
+            bonds=pd.read_csv(f'/scratch2/hannohennighausen/Parameter_sweep/output_bonds{J}_{alpha}_0.2_{run}.txt',skiprows=50,sep='\t',header=None,keep_default_na=False)
+            labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/outputlabels_{J}_{alpha}_0.2_{run}.txt',dtype=int,skiprows=1)
+            u=np.bincount(labels[49*3])
+            # bonds=np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/output_bonds{J}_{alpha}_0.2_{run}.txt',skiprows=49,max_rows=1)
+            
+            ordering=hamiltonian(J,alpha,bonds.sum(axis=1),u[1:].sum())
+            dEnergy=np.append(dEnergy,ordering)
+        Energy[n,m]=np.mean(dEnergy)
+        m+=1
+    n+=1
+
+plt.figure()
+ax = sns.heatmap(Energy,xticklabels=ALPHA1,yticklabels=J_r)
+ax.invert_yaxis()
+ax.set_xlabel("alpha")
+ax.set_ylabel("J")
+ax.set_title('Energy of system')
+plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/heatmap_Energy_system.jpg')
+plt.show()    
+
+#%%
