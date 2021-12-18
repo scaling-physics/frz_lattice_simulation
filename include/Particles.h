@@ -146,7 +146,7 @@ public:
     {
         // get diffuse particle
         diffuse_attempt++;
-        int particle_pos = get_pos(ind) ;
+        int particle_pos = get_pos(ind);
 
         //choose random direction
         std::vector<Neighbour> n(lattice.get_neighbors2(particle_pos));

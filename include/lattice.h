@@ -52,8 +52,6 @@ public:
         int y=pos/Nx;
 
         std::array<int, 2> coord{x,y};
-
-
         return coord;
     }
 

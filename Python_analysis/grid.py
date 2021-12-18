@@ -110,9 +110,12 @@ color_scale=[[0,0,1],[0,1,0],[1,0,0],[1,0,0.6],[1,0.6,0],[0.6,1,0],[0,1,0.6],[0,
 alpha=0.5
 density=0.2
 for J in [4]:
-    for alpha in [1]:
-        labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/outputlabels_{J}_{alpha}_0.2_1.txt',dtype=int,skiprows=1)
-        Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/image_{J}_{alpha}').mkdir( exist_ok=True)
+    for alpha in [0.5]:
+        # labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/rectangular_outputlabels_{J}_{alpha}_0.2_11.txt',dtype=int,skiprows=1)
+        labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/rectangular_outputlabels_{J}_{alpha}_0.2_1.txt',dtype=int,skiprows=1)
+        # f"/home/hannohennighausen/Documents/frz_lattice_model/
+        Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular1_image_{J}_{alpha}').mkdir( exist_ok=True)
+        
         saved_steps = int(labels.shape[0]/3)
     
         for step in range(0,50):
@@ -128,8 +131,8 @@ for J in [4]:
             #     plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_{J}_{alpha}/hist_{step}_{J}_{alpha}_{density}.svg')
             #     plt.show()
             
-            colors_labels = np.zeros([50*50,3])
-            coloring_labels = np.zeros([50*50,3])
+            colors_labels = np.zeros([75*25,3])
+            coloring_labels = np.zeros([75*25,3])
             i=0
             j=0
             
@@ -141,13 +144,13 @@ for J in [4]:
                 j+=1
         
             plt.figure(figsize=(20,15))
-            hex_centers, _ = hex.create_hex_grid(nx= 50,ny=50, face_color=coloring_labels,do_plot=True)
+            hex_centers, _ = hex.create_hex_grid(nx= 75,ny=25, face_color=coloring_labels,do_plot=True)
             centers_x = hex_centers[:, 0]
             centers_x = hex_centers[:, 1]
             plt.suptitle(f'{step}')
             plt.title(f'J={J} alpha={alpha}')
             #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
-            plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/image_{J}_{alpha}/label_{step}.jpg')
+            plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/label_{step}.jpg')
             plt.show()
             
             # for x in labels[step*3+1]:
@@ -177,9 +180,9 @@ for J in [4]:
         
         images=[]
         for file in range(1,49):
-            im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/image_{J}_{alpha}/label_{file}.jpg")
+            im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/label_{file}.jpg")
             images.append(im)
-        iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/movies_par_sweep/movie_{J}_{alpha}.gif', images, duration=0.8)
+        iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/movie_{J}_{alpha}.gif', images, duration=0.8)
         
     
     #%%
