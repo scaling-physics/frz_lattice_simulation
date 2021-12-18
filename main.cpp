@@ -43,8 +43,8 @@ int main(int argc,char *argv[])
     const int MC_steps = pow(10,6); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
-    double rand;
-    double rand_size;
+    long double rand;
+    long double rand_size;
 
     Lattice lattice;
     Particles particles(lattice);
@@ -110,7 +110,9 @@ int main(int argc,char *argv[])
             {
 
 //Move diffusive particles
+                if(rand<0){
 
+                }
                 particles.attempt_diffusion(ind, rand);
 //            print_container(particles.positions);
 

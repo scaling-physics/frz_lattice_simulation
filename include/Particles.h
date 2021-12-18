@@ -65,7 +65,7 @@ public:
 
         for (int i=0; i<initial_num; i++)
         {
-            double random=unidist(gen);
+            long double random=unidist(gen);
             int pos = random*Nxy;
             if(grid[pos]==0)
             {
@@ -142,7 +142,7 @@ public:
 
 
 //DIFFUSE PARTICLES
-    void attempt_diffusion(const int ind, double &rand)
+    void attempt_diffusion(const int ind, long double &rand)
     {
         // get diffuse particle
         diffuse_attempt++;
@@ -151,7 +151,7 @@ public:
         //choose random direction
         std::vector<Neighbour> n(lattice.get_neighbors2(particle_pos));
 
-        double rand_size=rand*n.size();
+        long double rand_size=rand*n.size();
         int dir=rand_size;
         rand = rand_size-dir;
         int new_pos = n[dir].position;
@@ -193,10 +193,10 @@ public:
 
 
 //BINDING ATTEMPT
-    void attempt_binding(double const alpha, double const J, int ind, double &rand)
+    void attempt_binding(double const alpha, double const J, int ind, long double &rand)
     {
         int pos = get_pos(ind);
-        double rand_size = rand*3;
+        long double rand_size = rand*3;
         int rand_int = rand_size;
         int ori = rand_int-1;
         rand=rand_size-rand_int;
@@ -279,7 +279,7 @@ public:
 
 
 //UNBINDING ATTEMPT
-    void attempt_unbinding(double const alpha, double const J, int ind,double &rand)
+    void attempt_unbinding(double const alpha, double const J, int ind,long double &rand)
     {
         // get bound particle
         unbinding_attempt++;
