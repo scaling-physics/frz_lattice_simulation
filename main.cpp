@@ -14,8 +14,6 @@
 
 #include "lattice.h"
 #include "Particles.h"
-#include "definitions.h"
-//using namespace std;
 
 //random number generator
 
@@ -36,15 +34,17 @@ int main(int argc,char *argv[])
         alpha=0.5;
         J=4;
         density = 0.2;
-        slurm_index = 1;
+        slurm_index = 7;
         std::cout << "Using default parameters." << '\n';
     }
 
     const int MC_steps = pow(10,6); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
-    long double rand;
-    long double rand_size;
+//    long double rand;
+    double rand;
+//    long double rand_size;
+    double rand_size;
 
     Lattice lattice;
     Particles particles(lattice);

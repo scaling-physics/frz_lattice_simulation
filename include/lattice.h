@@ -12,7 +12,7 @@
 #include <algorithm>
 
 //declare global dimensions
-const int Nx=75;
+const int Nx=70;
 const int Ny=30;
 const int Nxy = Nx*Ny;
 
