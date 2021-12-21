@@ -21,7 +21,6 @@ dnum_of_clusters=[]
 dpart_in_clusters=[]
 dpart_dif=[]
 X=[]
-Nx,Ny=np.loadtxt(f'/scratch2/hannohennighausen/batch_4_0.5/outputlabels_2_0.5_0.2_1.txt',dtype=int,max_rows=1)
 for run in range(1,20):
             labels = np.loadtxt(f'/scratch2/hannohennighausen/batch_4_0.5/outputlabels_2_0.5_0.2_{run}.txt',dtype=int,skiprows=1)
             # print(J,alpha,run)
@@ -57,6 +56,7 @@ sns.lineplot(data=traj_long,x='X',y='part_in_cluster',color='g', ci='sd')
 plt.legend()
 plt.show()
 #%%
+#%%
 density=0.2
 for J in J_r:
     for alpha in ALPHA:
@@ -65,7 +65,6 @@ for J in J_r:
         dpart_dif=[]
         X=[]
         for run in range(1,20):
-            Nx,Ny= np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/outputlabels_{J}_{alpha}_0.2_{run}.txt',dtype=int,max_rows=1)
             labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/outputlabels_{J}_{alpha}_0.2_{run}.txt',dtype=int,skiprows=1)
             print(J,alpha,run)
             saved_steps = int(labels.shape[0]/3)
@@ -79,7 +78,7 @@ for J in J_r:
                 num_of_clusters=np.append(num_of_clusters,np.max(labels[i*3]))
                 q=0
                 p=0
-                for j in range(labels.shape[1]):
+                for j in range(500):
                     if labels[i*3+2,j]>1:
                         
                         q+=1
@@ -91,7 +90,7 @@ for J in J_r:
             dnum_of_clusters=np.append(dnum_of_clusters,num_of_clusters)
             dpart_in_clusters=np.append(dpart_in_clusters ,part_in_clusters)
             dpart_dif=np.append(dpart_dif ,part_dif)
-            X=np.append(X,np.arange(0,saved_steps,1))
+            X=np.append(X,np.arange(0,50,1))
         dtraj_long = {"X":X,"part_in_cluster":dpart_in_clusters,"part_dif":dpart_dif,"num_of_clusters":dnum_of_clusters}
         traj_long = pd.DataFrame(data=dtraj_long)
         
@@ -110,14 +109,14 @@ color_scale=[[0,0,1],[0,1,0],[1,0,0],[1,0,0.6],[1,0.6,0],[0.6,1,0],[0,1,0.6],[0,
              [0,0.4,0.2],[0,0.2,0.4],[0.2,0.4,0],[0.4,0,0.2],[0.4,0.2,0],[0.2,0.4,0],[0.4,0.4,0.2],[0.4,0.2,0.4],[0.2,0.4,0.4],[0.4,1,0.2],[0.4,0.2,1],[0.2,1,0.4]]
 alpha=0.5
 density=0.2
-for J in [4]:
+run=1
+for J in [2.5]:
     for alpha in [0.5]:
-        Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/rectangular_outputlabels_{J}_{alpha}_0.2_1.txt',dtype=int,max_rows=1)
         # labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/rectangular_outputlabels_{J}_{alpha}_0.2_11.txt',dtype=int,skiprows=1)
-        labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/rectangular_outputlabels_{J}_{alpha}_0.2_1.txt',dtype=int,skiprows=1)
+        labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/test_outputlabels_{J}_{alpha}_{density}_{run}.txt',dtype=int,skiprows=1)
         # f"/home/hannohennighausen/Documents/frz_lattice_model/
-        Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular1_image_{J}_{alpha}').mkdir( exist_ok=True)
-        
+        Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/test_{run}_image_{J}_{alpha}_{density}').mkdir( exist_ok=True)
+        Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/test_outputlabels_{J}_{alpha}_{density}_{run}.txt',dtype=int,max_rows=1)
         saved_steps = int(labels.shape[0]/3)
     
         for step in range(0,saved_steps):
@@ -133,8 +132,8 @@ for J in [4]:
             #     plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_{J}_{alpha}/hist_{step}_{J}_{alpha}_{density}.svg')
             #     plt.show()
             
-            colors_labels = np.zeros([Nx*Ny,3])
-            coloring_labels = np.zeros([Nx*Ny,3])
+            colors_labels = np.zeros([int(Nx)*int(Ny),3])
+            coloring_labels = np.zeros([int(Nx)*int(Ny),3])
             i=0
             j=0
             
@@ -146,13 +145,13 @@ for J in [4]:
                 j+=1
         
             plt.figure(figsize=(20,15))
-            hex_centers, _ = hex.create_hex_grid(nx= 40,ny=40, face_color=coloring_labels,do_plot=True)
+            hex_centers, _ = hex.create_hex_grid(nx= int(Nx),ny=int(Ny), face_color=coloring_labels,do_plot=True)
             centers_x = hex_centers[:, 0]
             centers_x = hex_centers[:, 1]
             plt.suptitle(f'{step}')
             plt.title(f'J={J} alpha={alpha}')
             #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
-            plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/label_{step}.jpg')
+            plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/test_{run}_image_{J}_{alpha}_{density}/label_{step}.jpg')
             plt.show()
             
             # for x in labels[step*3+1]:
@@ -182,9 +181,9 @@ for J in [4]:
         
         images=[]
         for file in range(1,49):
-            im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/label_{file}.jpg")
+            im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/test_{run}_image_{J}_{alpha}_{density}/label_{file}.jpg")
             images.append(im)
-        iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/movie_{J}_{alpha}.gif', images, duration=0.8)
+        iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/test_{run}_image_{J}_{alpha}_{density}/movie_{J}_{alpha}.gif', images, duration=0.8)
         
     
     #%%

@@ -43,13 +43,22 @@ struct Interactions
     int num_bonds;
 };
 
+struct Particle_Types
+{
+    int ori;
+    int frz_a_b;
+
+//    Particle_Types(){ori=0;frz_a_b=0;}
+};
+
+typedef struct particle_type;
 
 
-class Particles
+class Particle_Actions
 
 {
 private:
-    std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
+    std::array<Particle_Types,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
 
 public:
 
@@ -58,7 +67,7 @@ public:
 
 
 
-    Particles(Lattice &lattice):grid{0},lattice(lattice)
+    Particle_Actions(Lattice &lattice):grid{0},lattice(lattice)
     {
         int initial_num = Nxy*density;
         positions.resize(initial_num);
@@ -67,11 +76,15 @@ public:
         {
 //            long double random=unidist(gen);
             double random=unidist(gen);
-            int pos = random*Nxy;
-            if(grid[pos]==0)
+            double random_size = random*Nxy;
+            int pos=random_size;
+            random=random_size-pos;
+            double titration_concentration_frzb=0.5;
+            if(grid[pos].ori==0)
             {
-                grid[pos]=1;
+                grid[pos].ori=1;
                 positions[i]=pos;
+                if(random>titration_concentration_frzb){grid[pos].frz_a_b=1;}
             }
             else
             {
@@ -86,35 +99,44 @@ public:
     }
     inline bool is_free(const int pos) const
     {
-        return grid[pos]==0;
+        return grid[pos].ori==0;
     }
     inline bool is_diffuse(const int pos) const
     {
-        return grid[pos]==1;
+        return grid[pos].ori==1;
     }
     inline bool is_bound(const int pos) const
     {
-        return grid[pos]>1;
+        return grid[pos].ori>1;
     }
     inline int get_orientation(const int pos) const
     {
-        int ori=grid[pos];
+        int ori=grid[pos].ori;
         assert(is_bound(pos));
         return ori-3;
     }
+    inline int get_flag(const int pos) const
+    {
+        int flag = grid[pos].frz_a_b;
+        return flag;
+    }
     inline void set_orientation(const int pos, const int ori)
     {
-        grid[pos]=ori;
+        grid[pos].ori=ori;
     }
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
-        grid[old_pos]=0;
-        grid[new_pos]=1;
+        grid[old_pos].ori=0;
+        grid[new_pos].ori=1;
         positions[ind]=new_pos;
     }
-    inline bool is_interaction_allowed(const int ori_1, const int ori_2, const int slope) const
+    inline bool is_ori_interaction_allowed(const int ori_1, const int ori_2, const int slope) const
     {
         return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
+    }
+    inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2) const
+    {
+        return (flag_1!=1 && flag_2!=1);
     }
 
 
@@ -125,7 +147,7 @@ public:
         {
             std::cout<<"particle created"<<"\n";
             positions.emplace_back(pos);
-            grid[pos]=1;
+            grid[pos].ori=1;
         }
     }
 
@@ -136,7 +158,7 @@ public:
         if(rand<k_off)
         {
 //            std::cout<<"particle destroyed"<<"\n";
-            grid[pos]=0;
+            grid[pos].ori=0;
             positions.erase(std::find(begin(positions),end(positions),pos));
         }
     }
@@ -175,7 +197,7 @@ public:
 
         for(unsigned int i=0; i<n.size(); i++)
         {
-            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),n[i].slope))
+            if(is_bound(n[i].position) && is_ori_interaction_allowed(ori,get_orientation(n[i].position),n[i].slope) && is_frz_interaction_allowed(get_flag(pos),get_flag(n[i].position)) )
             {
                 count_bound++;
             }
@@ -220,7 +242,7 @@ public:
             int ori2 = rand_size;
             rand=rand_size-ori2;
             ori2--;
-            if(is_interaction_allowed(ori,ori2,n.slope))
+            if(is_ori_interaction_allowed(ori,ori2,n.slope))
             {
                 interactions.possible_interaction_pos.emplace_back(n.position);
                 interactions.orientations.emplace_back(ori2);
@@ -244,7 +266,11 @@ public:
         };
         auto _is_allowed = [this,ori](const Neighbour &n)
         {
-            return is_interaction_allowed(ori,get_orientation(n.position),n.slope);
+            return is_ori_interaction_allowed(ori,get_orientation(n.position),n.slope);
+        };
+        auto _is_frz_allowed = [this,pos](const Neighbour &n)
+        {
+            return is_frz_interaction_allowed(get_flag(pos),get_flag(n.position));
         };
         auto _get_affected_particles = [&interactions,this](auto n)
         {
@@ -253,7 +279,7 @@ public:
             interactions.num_bonds++;
         };
 
-        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)|std::views::filter(_is_frz_allowed);
         std::ranges::for_each(s2,_get_affected_particles);
 
 
@@ -301,7 +327,11 @@ public:
         };
         auto _is_allowed = [this,ori](const Neighbour &n)
         {
-            return is_interaction_allowed(ori,get_orientation(n.position),n.slope);
+            return is_ori_interaction_allowed(ori,get_orientation(n.position),n.slope);
+        };
+        auto _is_frz_allowed = [this,pos](const Neighbour &n)
+        {
+            return is_frz_interaction_allowed(get_flag(pos),get_flag(n.position));
         };
         auto _get_affected_particles = [&interactions,this](auto n)
         {
@@ -314,7 +344,7 @@ public:
             }
         };
 
-        auto s= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+        auto s= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)|std::views::filter(_is_frz_allowed);
         std::ranges::for_each(s,_get_affected_particles);
 
 
@@ -347,7 +377,12 @@ public:
 
         auto _is_bound = [this](const Neighbour &n){return is_bound(n.position);};
 
-        auto _is_allowed = [this,ori](const Neighbour &n){return is_interaction_allowed(ori,get_orientation(n.position),n.slope);};
+        auto _is_allowed = [this,ori](const Neighbour &n){return is_ori_interaction_allowed(ori,get_orientation(n.position),n.slope);};
+
+        auto _is_frz_allowed = [this,pos](const Neighbour &n)
+        {
+            return is_frz_interaction_allowed(get_flag(pos),get_flag(n.position));
+        };
 
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
@@ -375,11 +410,11 @@ public:
 
 
 
-        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed) | std::views::filter(_is_labelled);
+        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)|std::views::filter(_is_frz_allowed) | std::views::filter(_is_labelled);
         auto cnt = std::ranges::distance(s1);
         num_bonds=num_bonds+cnt;
 
-        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)|std::views::filter(_is_frz_allowed);
         std::ranges::for_each(s2,_label);
     }
 
@@ -432,7 +467,7 @@ public:
         std::stringstream buffer;
         for(auto &x:grid)
         {
-            buffer << x<< '\t';
+            buffer << x.ori<< '\t';
         }
         buffer << '\n';
         out << buffer.str();

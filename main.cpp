@@ -47,7 +47,7 @@ int main(int argc,char *argv[])
     double rand_size;
 
     Lattice lattice;
-    Particles particles(lattice);
+    Particle_Actions particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
     fn << "rectangular_output_bonds" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
