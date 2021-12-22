@@ -43,15 +43,16 @@ struct Interactions
     int num_bonds;
 };
 
-struct Particle_Types
+typedef struct Particle_Types
+
 {
     int ori;
     int frz_a_b;
 
-//    Particle_Types(){ori=0;frz_a_b=0;}
+    Particle_Types():ori{0},frz_a_b{0}
+    {};
 };
 
-typedef struct particle_type;
 
 
 class Particle_Actions
@@ -67,7 +68,8 @@ public:
 
 
 
-    Particle_Actions(Lattice &lattice):grid{0},lattice(lattice)
+
+    Particle_Actions(Lattice &lattice, Particle_Types p):lattice(lattice)
     {
         int initial_num = Nxy*density;
         positions.resize(initial_num);
