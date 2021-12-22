@@ -43,14 +43,11 @@ struct Interactions
     int num_bonds;
 };
 
-typedef struct Particle_Types
+struct Particle_Types
 
 {
-    int ori;
-    int frz_a_b;
-
-    Particle_Types():ori{0},frz_a_b{0}
-    {};
+    int ori=0;
+    int frz_a_b=0;
 };
 
 
@@ -59,7 +56,7 @@ class Particle_Actions
 
 {
 private:
-    std::array<Particle_Types,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
+    std::array<Particle_Types,Nxy> grid{0}; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
 
 public:
 
@@ -69,7 +66,7 @@ public:
 
 
 
-    Particle_Actions(Lattice &lattice, Particle_Types p):lattice(lattice)
+    Particle_Actions(Lattice &lattice):lattice{lattice}
     {
         int initial_num = Nxy*density;
         positions.resize(initial_num);
@@ -394,6 +391,8 @@ public:
                 int inds = it-positions.begin();
                 return labels[inds]!=0;
             }
+            std::cout << "error";
+            return false;
         };
 
 
@@ -426,7 +425,7 @@ public:
 
         for(unsigned int index=0; index<positions.size(); index++)
         {
-            orientations_vector.emplace_back(grid[get_pos(index)]);
+            orientations_vector.emplace_back(grid[get_pos(index)].ori);
         }
 
         return orientations_vector;
