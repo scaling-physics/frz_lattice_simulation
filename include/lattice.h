@@ -78,40 +78,75 @@ public:
         int x=coord[0];
         int y=coord[1];
 
-
         if(unsigned(x-1)<Nx-2)
         {
             if(y%2==0)
             {
-                n= {{get_single_index(x-1,y),0},{get_single_index(x-1,mod(y+1,Ny)),-1},{get_single_index(x-1,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
+                n= {{get_single_index(x-1,y),4},{get_single_index(x-1,mod(y+1,Ny)),3},{get_single_index(x-1,mod(y-1,Ny)),5},{get_single_index(x+1,y),1},{get_single_index(x,mod(y+1,Ny)),2},{get_single_index(x,mod(y-1,Ny)),0}};
             }
             else
             {
-                n= {{get_single_index(x-1,y),0},{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x+1,mod(y+1,Ny)),1},{get_single_index(x+1,mod(y-1,Ny)),-1}};
+                n= {{get_single_index(x-1,y),4},{get_single_index(x,mod(y+1,Ny)),3},{get_single_index(x,mod(y-1,Ny)),5},{get_single_index(x+1,y),1},{get_single_index(x+1,mod(y+1,Ny)),2},{get_single_index(x+1,mod(y-1,Ny)),0}};
             }
         }
         else if(x==0)
         {
             if(y%2==0)
             {
-                n= {{get_single_index(x+1,y),0},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
+                n= {{get_single_index(x+1,y),1},{get_single_index(x,mod(y+1,Ny)),2},{get_single_index(x,mod(y-1,Ny)),0}};
             }
             else
             {
-                n= {{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x+1,mod(y+1,Ny)),1},{get_single_index(x+1,mod(y-1,Ny)),-1}};
+                n= {{get_single_index(x,mod(y+1,Ny)),3},{get_single_index(x,mod(y-1,Ny)),5},{get_single_index(x+1,y),1},{get_single_index(x+1,mod(y+1,Ny)),2},{get_single_index(x+1,mod(y-1,Ny)),0}};
             }
         }
         else
         {
             if(y%2==0)
             {
-                n= {{get_single_index(x-1,y),0},{get_single_index(x-1,mod(y+1,Ny)),-1},{get_single_index(x-1,mod(y-1,Ny)),1},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
+                n= {{get_single_index(x-1,y),4},{get_single_index(x-1,mod(y+1,Ny)),3},{get_single_index(x-1,mod(y-1,Ny)),5},{get_single_index(x,mod(y+1,Ny)),2},{get_single_index(x,mod(y-1,Ny)),0}};
             }
             else
             {
-                n= {{get_single_index(x-1,y),0},{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1}};
+                n= {{get_single_index(x-1,y),4},{get_single_index(x,mod(y+1,Ny)),3},{get_single_index(x,mod(y-1,Ny)),5}};
             }
         }
+
+
+//
+//        if(unsigned(x-1)<Nx-2)
+//        {
+//            if(y%2==0)
+//            {
+//                n= {{get_single_index(x-1,y),0},{get_single_index(x-1,mod(y+1,Ny)),-1},{get_single_index(x-1,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
+//            }
+//            else
+//            {
+//                n= {{get_single_index(x-1,y),0},{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x+1,mod(y+1,Ny)),1},{get_single_index(x+1,mod(y-1,Ny)),-1}};
+//            }
+//        }
+//        else if(x==0)
+//        {
+//            if(y%2==0)
+//            {
+//                n= {{get_single_index(x+1,y),0},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
+//            }
+//            else
+//            {
+//                n= {{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1},{get_single_index(x+1,y),0},{get_single_index(x+1,mod(y+1,Ny)),1},{get_single_index(x+1,mod(y-1,Ny)),-1}};
+//            }
+//        }
+//        else
+//        {
+//            if(y%2==0)
+//            {
+//                n= {{get_single_index(x-1,y),0},{get_single_index(x-1,mod(y+1,Ny)),-1},{get_single_index(x-1,mod(y-1,Ny)),1},{get_single_index(x,mod(y+1,Ny)),1},{get_single_index(x,mod(y-1,Ny)),-1}};
+//            }
+//            else
+//            {
+//                n= {{get_single_index(x-1,y),0},{get_single_index(x,mod(y+1,Ny)),-1},{get_single_index(x,mod(y-1,Ny)),1}};
+//            }
+//        }
 
         return n;
     }

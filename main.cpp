@@ -31,8 +31,8 @@ int main(int argc,char *argv[])
     }
     else
     {
-        alpha=0.5;
-        J=4;
+        alpha=0.0;
+        J=2.6;
         density = 0.2;
         slurm_index = 7;
         std::cout << "Using default parameters." << '\n';
@@ -50,16 +50,23 @@ int main(int argc,char *argv[])
     Particle_Actions particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "rectangular_output_bonds" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << "FrzB_test" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
+
     std::ostringstream fn2;
-    fn2 << "rectangular_outputlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << "FrzB_test_labels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
+    std::ostringstream fn3;
+    fn3 << "FrzB_test_flags_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    std::ofstream out3;
+    out3.open(fn3.str());
+
     out << Nx << '\t' << Ny << '\t' <<'\n';
     out2 << Nx << '\t' << Ny << '\t' <<'\n';
+    out3 << Nx << '\t' << Ny << '\t' <<'\n';
 ///////////////////////////
 
 
@@ -158,6 +165,7 @@ int main(int argc,char *argv[])
                 out << '\n';
                 particles.print_labels(out2,labels);
                 particles.print(out2);
+                particles.print_Frz(out3);
             }
         MC_counter++;
     }

@@ -34,6 +34,18 @@ void print_container(const std::vector<int>& c)
     std::cout << '\n';
 }
 
+std::array<bool, 6*32> const Frz_Interaction_Lookuptable={true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
+    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
+    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
+    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
+    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
+    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
+    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
+    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
+    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
+    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
+    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
+    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false};
 
 struct Interactions
 {
@@ -47,7 +59,7 @@ struct Particle_Types
 
 {
     int ori=0;
-    int frz_a_b=0;
+    int Frz_A_B=0;
 };
 
 
@@ -63,9 +75,6 @@ public:
     std::vector<int> positions; //stores position of particles on the grid
     Lattice &lattice;
 
-
-
-
     Particle_Actions(Lattice &lattice):lattice{lattice}
     {
         int initial_num = Nxy*density;
@@ -78,12 +87,18 @@ public:
             double random_size = random*Nxy;
             int pos=random_size;
             random=random_size-pos;
-            double titration_concentration_frzb=0.5;
+            double titration_concentration_frzb=0.25;
             if(grid[pos].ori==0)
             {
                 grid[pos].ori=1;
                 positions[i]=pos;
-                if(random>titration_concentration_frzb){grid[pos].frz_a_b=1;}
+                if(random<titration_concentration_frzb)
+                {
+//                    random=unidist(gen);
+//                    random_size = random*3;
+//                    int flag=random_size;
+                    grid[pos].Frz_A_B=3;
+                }
             }
             else
             {
@@ -116,7 +131,7 @@ public:
     }
     inline int get_flag(const int pos) const
     {
-        int flag = grid[pos].frz_a_b;
+        int flag = grid[pos].Frz_A_B;
         return flag;
     }
     inline void set_orientation(const int pos, const int ori)
@@ -125,15 +140,29 @@ public:
     }
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
-        grid[old_pos].ori=0;
         grid[new_pos].ori=1;
+        grid[new_pos].Frz_A_B=get_flag(old_pos);
+        grid[old_pos].ori=0;
+        grid[old_pos].Frz_A_B=0;
         positions[ind]=new_pos;
     }
-    inline bool is_ori_interaction_allowed(const int ori_1, const int ori_2, const int slope) const
+    inline bool is_interaction_allowed(const int ori_1, const int ori_2, const int flag_self, const int flag_other, const int slope) const
     {
-        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
+        int order_of_flags;
+        if(ori_1<ori_2)
+        {
+            order_of_flags=0;
+        }
+        else
+        {
+            order_of_flags=16;
+        }
+        int key = slope*32 + order_of_flags + flag_self*4 + flag_other;
+        bool b = (ori_1 != ori_2 && ((ori_1 + (slope%3-1))*(ori_2+(slope%3-1)))!=0 && Frz_Interaction_Lookuptable[key]);
+        return b;
+//        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
     }
-    inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2) const
+    inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2, const int slope) const
     {
         return (flag_1!=1 && flag_2!=1);
     }
@@ -196,7 +225,7 @@ public:
 
         for(unsigned int i=0; i<n.size(); i++)
         {
-            if(is_bound(n[i].position) && is_ori_interaction_allowed(ori,get_orientation(n[i].position),n[i].slope) && is_frz_interaction_allowed(get_flag(pos),get_flag(n[i].position)) )
+            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),get_flag(pos),get_flag(n[i].position),n[i].slope))
             {
                 count_bound++;
             }
@@ -235,13 +264,13 @@ public:
         {
             return is_diffuse(n.position);
         };
-        auto _get_compatible_diffuse_neighbours = [&interactions,this,&rand,ori](auto n)
+        auto _get_compatible_diffuse_neighbours = [&interactions,this,&rand,ori,pos](auto n)
         {
             double rand_size = rand*3;
             int ori2 = rand_size;
             rand=rand_size-ori2;
             ori2--;
-            if(is_ori_interaction_allowed(ori,ori2,n.slope))
+            if(is_interaction_allowed(ori,ori2,get_flag(pos),get_flag(n.position),n.slope))
             {
                 interactions.possible_interaction_pos.emplace_back(n.position);
                 interactions.orientations.emplace_back(ori2);
@@ -263,13 +292,9 @@ public:
         {
             return is_bound(n.position);
         };
-        auto _is_allowed = [this,ori](const Neighbour &n)
+        auto _is_allowed = [this,ori,pos](const Neighbour &n)
         {
-            return is_ori_interaction_allowed(ori,get_orientation(n.position),n.slope);
-        };
-        auto _is_frz_allowed = [this,pos](const Neighbour &n)
-        {
-            return is_frz_interaction_allowed(get_flag(pos),get_flag(n.position));
+            return is_interaction_allowed(ori,get_orientation(n.position),get_flag(pos),get_flag(n.position),n.slope);
         };
         auto _get_affected_particles = [&interactions,this](auto n)
         {
@@ -278,7 +303,7 @@ public:
             interactions.num_bonds++;
         };
 
-        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)|std::views::filter(_is_frz_allowed);
+        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
         std::ranges::for_each(s2,_get_affected_particles);
 
 
@@ -324,13 +349,9 @@ public:
         {
             return is_bound(n.position);
         };
-        auto _is_allowed = [this,ori](const Neighbour &n)
+        auto _is_allowed = [this,ori,pos](const Neighbour &n)
         {
-            return is_ori_interaction_allowed(ori,get_orientation(n.position),n.slope);
-        };
-        auto _is_frz_allowed = [this,pos](const Neighbour &n)
-        {
-            return is_frz_interaction_allowed(get_flag(pos),get_flag(n.position));
+            return is_interaction_allowed(ori,get_orientation(n.position),get_flag(pos),get_flag(n.position),n.slope);
         };
         auto _get_affected_particles = [&interactions,this](auto n)
         {
@@ -343,7 +364,7 @@ public:
             }
         };
 
-        auto s= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)|std::views::filter(_is_frz_allowed);
+        auto s= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
         std::ranges::for_each(s,_get_affected_particles);
 
 
@@ -374,15 +395,15 @@ public:
         int ori = get_orientation(pos);
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
-        auto _is_bound = [this](const Neighbour &n){return is_bound(n.position);};
-
-        auto _is_allowed = [this,ori](const Neighbour &n){return is_ori_interaction_allowed(ori,get_orientation(n.position),n.slope);};
-
-        auto _is_frz_allowed = [this,pos](const Neighbour &n)
+        auto _is_bound = [this](const Neighbour &n)
         {
-            return is_frz_interaction_allowed(get_flag(pos),get_flag(n.position));
+            return is_bound(n.position);
         };
 
+        auto _is_allowed = [this,ori,pos](const Neighbour &n)
+        {
+            return is_interaction_allowed(ori,get_orientation(n.position),get_flag(pos),get_flag(n.position),n.slope);
+        };
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
             auto it= (std::find(begin(positions),end(positions),n.position));
@@ -411,11 +432,11 @@ public:
 
 
 
-        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)|std::views::filter(_is_frz_allowed) | std::views::filter(_is_labelled);
+        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)| std::views::filter(_is_labelled);
         auto cnt = std::ranges::distance(s1);
         num_bonds=num_bonds+cnt;
 
-        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed)|std::views::filter(_is_frz_allowed);
+        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
         std::ranges::for_each(s2,_label);
     }
 
@@ -429,6 +450,17 @@ public:
         }
 
         return orientations_vector;
+    }
+    std::vector<int> Frz_vec() const
+    {
+        std::vector<int> Frz_vector;
+
+        for(unsigned int index=0; index<positions.size(); index++)
+        {
+            Frz_vector.emplace_back(grid[get_pos(index)].Frz_A_B);
+        }
+
+        return Frz_vector;
     }
 
     void print(std::ofstream &out) const
@@ -456,6 +488,19 @@ public:
     {
         std::stringstream buffer;
         for(auto &x:labels)
+        {
+            buffer << x<< '\t';
+        }
+        buffer << '\n';
+        out << buffer.str();
+    }
+
+    void print_Frz(std::ofstream &out) const
+    {
+        std::stringstream buffer;
+        std::vector<int> Frz_vector=Frz_vec();
+
+        for(auto &x:Frz_vector)
         {
             buffer << x<< '\t';
         }
