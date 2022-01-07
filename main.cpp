@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <ranges>
 
-# define NDEBUG //comment out to turn on assert.
+//# define NDEBUG //comment out to turn on assert.
 # include <assert.h>	// for assert()
 
 #include "lattice.h"
@@ -34,7 +34,7 @@ int main(int argc,char *argv[])
         alpha=0.0;
         J=2.6;
         density = 0.2;
-        slurm_index = 7;
+        slurm_index = 3;
         std::cout << "Using default parameters." << '\n';
     }
 
@@ -78,6 +78,7 @@ int main(int argc,char *argv[])
 //    File_grid << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
     while(MC_counter<MC_steps)
     {
+//        std::cout<<"MC_counter "<< MC_counter<<'\n';
 
         for(unsigned int attempted_moves=0; attempted_moves<particles.positions.size(); attempted_moves++)
         {
@@ -112,12 +113,15 @@ int main(int argc,char *argv[])
             rand_size = rand*particles.positions.size();
             int ind=rand_size;
             rand=rand_size-ind;
-            assert(rand<0);
+            assert(rand<1);
             if(particles.is_diffuse(particles.get_pos(ind)))
             {
+//                std::cout<<" diffuse pos "<<particles.get_pos(ind)<<"\n";
+
 
 //Move diffusive particles
-                if(rand<0){
+                if(rand<0)
+                {
 
                 }
                 particles.attempt_diffusion(ind, rand);
@@ -134,6 +138,7 @@ int main(int argc,char *argv[])
 
             else if(particles.is_bound(particles.get_pos(ind)))
             {
+//            std::cout<<" bound pos "<<particles.get_pos(ind)<<"\n";
 // UNBINDING ATTEMPT
                 particles.attempt_unbinding(alpha,J,ind,rand);
 //            print_container(particles.positions);
@@ -142,31 +147,46 @@ int main(int argc,char *argv[])
 
         }
         if(MC_counter%20000==0)
-            {
+        {
 
 //                std::cout<<"Number of bonds: ";
-                std::vector<int> labels(particles.positions.size(),0);
-                int label_i = 1;
-                for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
+            std::vector<int> labels(particles.positions.size(),0);
+            int label_i = 1;
+            for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
+            {
+                if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
                 {
-                    if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
-                    {
-                        int num_bonds=0;
-                        particles.label(label_index,label_i,labels,num_bonds);
-                        label_i++;
+                    int num_bonds=0;
+                    particles.label(label_index,label_i,labels,num_bonds);
+                    label_i++;
 //                        std::cout << num_bonds << '\t';
-                        out << num_bonds<< '\t';
-                    }
+                    out << num_bonds<< '\t';
                 }
+//                int check_num=0;
+//                for(unsigned int check=0; check<labels.size(); check++)
+//                {
+//                    if(labels[check]==label_i-1)
+//                    {
+//                        check_num++;
+//                    }
+//                    //assert(check_num>1);
+//                    if(check_num==1){
+//                    std::cout<<label_i-1;
+//
+//                    }
+//                }
+            }
+
+
 
             //std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
             std::cout<<"Number of clusters: " << std::ranges::max(labels) << '\n';
 //            print_container(labels);
-                out << '\n';
-                particles.print_labels(out2,labels);
-                particles.print(out2);
-                particles.print_Frz(out3);
-            }
+            out << '\n';
+            particles.print_labels(out2,labels);
+            particles.print(out2);
+            particles.print_Frz(out3);
+        }
         MC_counter++;
     }
 //

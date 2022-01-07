@@ -34,18 +34,33 @@ void print_container(const std::vector<int>& c)
     std::cout << '\n';
 }
 
-std::array<bool, 6*32> const Frz_Interaction_Lookuptable={true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
+const bool Frz_Interaction_Lookuptable[6*32]={
+    true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,
+    true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,
+    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
+    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
     true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
     true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
     true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
     true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
-    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
-    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
-    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
-    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false,
-    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
-    true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
-    true,true,false,false,true,true,false,false,true,true,false,false,true,true,false,false};
+    true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,
+    true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,
+    true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,
+    true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false};
+
+    //00-15:   slope 0 ori -1,0 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //16-31:   slope 0 ori 0,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //32-47:   slope 1 ori -1,1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //48-63:   slope 1 ori 1,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //64-79:   slope 2 ori 0,1  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //80-95:   slope 2 ori 1,0  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //96-111:  slope 3 ori -1,0 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //112-127: slope 3 ori 0,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //128-143: slope 4 ori -1,1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //144-159: slope 4 ori 1,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //160-175: slope 5 ori 0,1  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    //176-191: slope 5 ori 1,0  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+
 
 struct Interactions
 {
@@ -87,7 +102,7 @@ public:
             double random_size = random*Nxy;
             int pos=random_size;
             random=random_size-pos;
-            double titration_concentration_frzb=0.25;
+            double titration_concentration_frzb=0.5;
             if(grid[pos].ori==0)
             {
                 grid[pos].ori=1;
@@ -97,7 +112,9 @@ public:
 //                    random=unidist(gen);
 //                    random_size = random*3;
 //                    int flag=random_size;
-                    grid[pos].Frz_A_B=3;
+//                    grid[pos].Frz_A_B=flag+1;
+
+                    grid[pos].Frz_A_B=0;
                 }
             }
             else
@@ -146,10 +163,10 @@ public:
         grid[old_pos].Frz_A_B=0;
         positions[ind]=new_pos;
     }
-    inline bool is_interaction_allowed(const int ori_1, const int ori_2, const int flag_self, const int flag_other, const int slope) const
+    inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
         int order_of_flags;
-        if(ori_1<ori_2)
+        if(ori_self<ori_other)
         {
             order_of_flags=0;
         }
@@ -158,14 +175,14 @@ public:
             order_of_flags=16;
         }
         int key = slope*32 + order_of_flags + flag_self*4 + flag_other;
-        bool b = (ori_1 != ori_2 && ((ori_1 + (slope%3-1))*(ori_2+(slope%3-1)))!=0 && Frz_Interaction_Lookuptable[key]);
-        return b;
+//        bool b = (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && Frz_Interaction_Lookuptable[key]);
+        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && Frz_Interaction_Lookuptable[key]);
 //        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
     }
-    inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2, const int slope) const
-    {
-        return (flag_1!=1 && flag_2!=1);
-    }
+//    inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2, const int slope) const
+//    {
+//        return (flag_1!=1 && flag_2!=1);
+//    }
 
 
 //CREATION ATTEMPT
@@ -173,7 +190,7 @@ public:
     {
         if(rand<=k_on)
         {
-            std::cout<<"particle created"<<"\n";
+//            std::cout<<"particle created"<<"\n";
             positions.emplace_back(pos);
             grid[pos].ori=1;
         }
@@ -231,6 +248,7 @@ public:
             }
 
         }
+        assert(count_bound>=0);
         return count_bound;
     }
 
@@ -310,6 +328,7 @@ public:
 
         if(interactions.num_bonds>0)
         {
+            assert(interactions.possible_interaction_pos.size()>0);
             binding_attempt++;
             double delta = delta_H(alpha,J,interactions.num_diffuse,interactions.num_bonds, -1);
             //std::cout<<"delta "<< delta << "\n";
@@ -320,11 +339,29 @@ public:
 //                std::cout<<"binding"<<"\n";
                 binding_succ++;
                 set_orientation(pos,ori+3);
+//                std::cout<<"pos after binding "<<pos<<"\n";
+//                std::cout<<"ori after binding "<<get_orientation(pos)<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n";
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],interactions.orientations[i]+3);
-
+//                    std::cout<<"pos after binding "<<interactions.possible_interaction_pos[i]<<"\n";
+//                    std::cout<<"ori after binding "<<get_orientation(interactions.possible_interaction_pos[i])<<"\t"<<"Frz_flag"<<get_flag(interactions.possible_interaction_pos[i])<<"\n";
                 }
+
+                std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
+                int test1=0;
+
+                for(unsigned int i=0; i<neig.size();i++)
+                {
+                    if(is_bound(neig[i].position))
+                    {
+                        test1++;
+                    }
+                }
+
+                int test = count_interacting_neighbors(pos,ori);
+                assert(test>0);
+                assert(test1>0);
             }
         }
     }
@@ -335,14 +372,33 @@ public:
     {
         // get bound particle
         unbinding_attempt++;
-        int particle_pos = get_pos(ind);
-        int ori = get_orientation(particle_pos);
+
+        int pos = get_pos(ind);
+        int ori = get_orientation(pos);
+        assert(is_bound(pos));
+//        std::cout<<"pos pre unbinding "<<pos<<"\n";
+//        std::cout<<"ori pre unbinding "<<ori<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n";
+        std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
+                int test1=0;
+
+                for(unsigned int i=0; i<neig.size();i++)
+                {
+                    if(is_bound(neig[i].position)&& is_interaction_allowed(ori,get_orientation(neig[i].position),get_flag(pos),get_flag(neig[i].position),neig[i].slope))
+                    {
+//                        std::cout<<"pos pre unbinding "<<neig[i].position<<"\n";
+//                        std::cout<<"ori pre unbinding "<<get_orientation(neig[i].position)<<"\t"<<"Frz_flag"<<get_flag(neig[i].position)<<"\n";
+                        test1++;
+                    }
+                }
+                assert(test1);
+        int test = count_interacting_neighbors(pos,ori);
+        assert(test>0);
 
         Interactions interactions;
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
 
-        int pos = get_pos(ind);
+
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
         auto _is_bound = [this](const Neighbour &n)
@@ -374,16 +430,21 @@ public:
         if (rand<delta_E)
         {
 //            std::cout<<"unbinding"<<"\n";
-            set_orientation(particle_pos,1);
+            set_orientation(pos,1);
             unbinding_succ++;
+//            std::cout<<"pos after unbinding "<<pos<<"\n";
+//            std::cout<<"ori after unbinding "<<grid[pos].ori<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n";
             if(interactions.possible_interaction_pos.size()>0)
             {
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],1);
+//                    std::cout<<"pos after unbinding "<<interactions.possible_interaction_pos[i]<<"\n";
+//                    std::cout<<"ori after unbinding "<<grid[interactions.possible_interaction_pos[i]].ori<<"\t"<<"Frz_flag"<<get_flag(interactions.possible_interaction_pos[i])<<"\n";
                 }
             }
         }
+//        else{std::cout<<"no unbinding"<<"\n";}
     }
 
 
@@ -394,6 +455,16 @@ public:
         int pos = get_pos(ind);
         int ori = get_orientation(pos);
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+//        std::cout<<n.size();
+        int test_all=0;
+        for(unsigned int test_i=0; test_i<n.size(); test_i++)
+        {
+            if(is_bound(n[test_i].position) && is_interaction_allowed(ori, get_orientation(n[test_i].position),get_flag(pos),get_flag(n[test_i].position),n[test_i].slope))
+            {
+                test_all++;
+            }
+        }
+       assert(test_all>0);
 
         auto _is_bound = [this](const Neighbour &n)
         {
@@ -404,6 +475,7 @@ public:
         {
             return is_interaction_allowed(ori,get_orientation(n.position),get_flag(pos),get_flag(n.position),n.slope);
         };
+
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
             auto it= (std::find(begin(positions),end(positions),n.position));
