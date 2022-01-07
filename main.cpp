@@ -31,10 +31,10 @@ int main(int argc,char *argv[])
     }
     else
     {
-        alpha=0.0;
-        J=2.6;
+        alpha=0.5;
+        J=4.0;
         density = 0.2;
-        slurm_index = 3;
+        slurm_index = 8;
         std::cout << "Using default parameters." << '\n';
     }
 

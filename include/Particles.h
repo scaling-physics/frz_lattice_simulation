@@ -47,7 +47,6 @@ const bool Frz_Interaction_Lookuptable[6*32]={
     true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,
     true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,
     true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false};
-
     //00-15:   slope 0 ori -1,0 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
     //16-31:   slope 0 ori 0,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
     //32-47:   slope 1 ori -1,1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
@@ -60,6 +59,21 @@ const bool Frz_Interaction_Lookuptable[6*32]={
     //144-159: slope 4 ori 1,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
     //160-175: slope 5 ori 0,1  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
     //176-191: slope 5 ori 1,0  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+
+const bool Frz_occupied_site[6*12]={
+    false,false,false,false,true,false,true,false,false,false,false,false,
+    true,true,false,false,false,false,false,false,false,false,false,false,
+    false,false,false,false,false,false,false,false,true,true,false,false,
+    false,false,false,false,true,true,false,false,false,false,false,false,
+    true,false,true,false,false,false,false,false,false,false,false,false,
+    false,false,false,false,false,false,false,false,true,false,true,false};
+
+    //00-11 slope 0 possible directions for Frz B to point ori order -1,0,1
+    //12-23 slope 1
+    //24-35 slope 2
+    //36-47 slope 3
+    //48-59 slope 4
+    //60-72 slope 5
 
 
 struct Interactions
@@ -109,12 +123,12 @@ public:
                 positions[i]=pos;
                 if(random<titration_concentration_frzb)
                 {
-//                    random=unidist(gen);
-//                    random_size = random*3;
-//                    int flag=random_size;
-//                    grid[pos].Frz_A_B=flag+1;
+                    random=unidist(gen);
+                    random_size = random*3;
+                    int flag=random_size;
+                    grid[pos].Frz_A_B=flag+1;
 
-                    grid[pos].Frz_A_B=0;
+//                    grid[pos].Frz_A_B=0;
                 }
             }
             else
@@ -179,6 +193,24 @@ public:
         return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && Frz_Interaction_Lookuptable[key]);
 //        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
     }
+    inline bool is_occupied_by_FrzB(const int pos) const
+    {
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+
+        for(unsigned int i=0;i<n.size();i++)
+        {
+            if(is_bound(n[i].position))
+            {
+                int key=n[i].slope*12+(get_orientation(n[i].position)+1)*4+get_flag(n[i].position);
+                bool b= Frz_occupied_site[key];
+                if(b)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 //    inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2, const int slope) const
 //    {
 //        return (flag_1!=1 && flag_2!=1);
@@ -226,7 +258,7 @@ public:
         int new_pos = n[dir].position;
 
         //check if new hex is occupied
-        if(is_free(new_pos))// accept move
+        if(is_free(new_pos) && !is_occupied_by_FrzB(new_pos))// accept move
         {
             set_pos(particle_pos,new_pos, ind);
             diffuse_succ++;
