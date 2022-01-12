@@ -21,6 +21,9 @@ double const k_on=0.05;
 double const  k_off=0.5;
 
 double density;
+double titration_concentration_frzb;
+
+
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
 std::uniform_real_distribution<double> unidist(0.0,1.0);
@@ -116,7 +119,7 @@ public:
             double random_size = random*Nxy;
             int pos=random_size;
             random=random_size-pos;
-            double titration_concentration_frzb=0.5;
+//            double titration_concentration_frzb=0.5;
             if(grid[pos].ori==0)
             {
                 grid[pos].ori=1;
@@ -258,7 +261,8 @@ public:
         int new_pos = n[dir].position;
 
         //check if new hex is occupied
-        if(is_free(new_pos) && !is_occupied_by_FrzB(new_pos))// accept move
+//        if(is_free(new_pos) && !is_occupied_by_FrzB(new_pos))// accept move
+        if(is_free(new_pos))
         {
             set_pos(particle_pos,new_pos, ind);
             diffuse_succ++;

@@ -22,25 +22,25 @@ int main(int argc,char *argv[])
 
     double J,alpha;
     int slurm_index;
-    if(argc==5)
+    if(argc==3)
     {
-        J= atof(argv[1]);
-        alpha = atof(argv[2]);
-        density = atof(argv[3]);
-        slurm_index = atof(argv[4]);
+        titration_concentration_frzb= atof(argv[1]);
+        slurm_index = atof(argv[2]);
     }
     else
     {
-        alpha=0.5;
-        J=4.0;
-        density = 0.2;
+        titration_concentration_frzb=0.5;
         slurm_index = 8;
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = pow(10,6); // number of Monte Carlo Steps
+    alpha=0.5;
+    J=4;
+    density = 0.2;
+
+    const long int MC_steps = pow(10,9); // number of Monte Carlo Steps
 //    const int MC_steps =500;
-    int MC_counter = 0;
+    long int MC_counter = 0;
 //    long double rand;
     double rand;
 //    long double rand_size;
@@ -50,17 +50,17 @@ int main(int argc,char *argv[])
     Particle_Actions particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "FrzB_test" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << "FrzB_titration_long_" << J << "_" << alpha << "_" <<titration_concentration_frzb<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
 
     std::ostringstream fn2;
-    fn2 << "FrzB_test_labels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << "FrzB_titration_long_labels_" << J << "_" << alpha<<"_"  <<titration_concentration_frzb<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
     std::ostringstream fn3;
-    fn3 << "FrzB_test_flags_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn3 << "FrzB_titration_long_flags_" << J << "_" << alpha<<"_"  <<titration_concentration_frzb<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out3;
     out3.open(fn3.str());
 
@@ -146,7 +146,7 @@ int main(int argc,char *argv[])
             }
 
         }
-        if(MC_counter%20000==0)
+        if(MC_counter%2000000==0)
         {
 
 //                std::cout<<"Number of bonds: ";

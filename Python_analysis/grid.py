@@ -110,15 +110,15 @@ color_scale=[[0,0,1],[0,1,0],[1,0,0],[1,0,0.6],[1,0.6,0],[0.6,1,0],[0,1,0.6],[0,
 alpha=0.5
 density=0.2
 run=1
-for run in[8]:
+for run in [1]:
     for J in [4]:
-        for alpha in [0.5]:
+        for titration in [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8]:
             # labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/rectangular_outputlabels_{J}_{alpha}_0.2_11.txt',dtype=int,skiprows=1)
-            labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_test_labels_{J}_{alpha}_{density}_{run}.txt',dtype=int,skiprows=1)
-            Frz = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_test_flags_{J}_{alpha}_{density}_{run}.txt',dtype=int,skiprows=1)
+            labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
+            Frz = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_flags_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
             # f"/home/hannohennighausen/Documents/frz_lattice_model/
-            Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_test_{run}_image_{J}_{alpha}_{density}').mkdir( exist_ok=True)
-            Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_test_labels_{J}_{alpha}_{density}_{run}.txt',dtype=int,max_rows=1)
+            Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_{run}_image_{J}_{alpha}_{titration}').mkdir( exist_ok=True)
+            Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,max_rows=1)
             saved_steps = int(labels.shape[0]/3)
         
             for step in range(0,saved_steps):
@@ -147,41 +147,41 @@ for run in[8]:
                     else:
                         coloring_labels[x]=color_scale[labels[step*3,j]%39]
                     j+=1
-                fig, axs = plt.subplots(3,sharex=(True))
+                fig, axs = plt.subplots(2,sharex=(True))
                 # plt.figure(figsize=(20,15))
-                hex_centers,axs[0]= hex.create_hex_grid(nx= int(Nx),ny=int(Ny), face_color=coloring_labels,do_plot=True,h_ax=axs[0])
+                hex_centers, _ = hex.create_hex_grid(nx= int(Nx),ny=int(Ny), face_color=coloring_labels,do_plot=True,h_ax=axs[0])
                 centers_x = hex_centers[:, 0]
                 centers_x = hex_centers[:, 1]
                 # plt.suptitle(f'{step}')
-                fig.suptitle(f'{step}')
+                fig.suptitle(f'{(step+1)*2} $\cdot 10^4$ Monte Carlo Steps')
                 #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
                 # plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_test_{run}_image_{J}_{alpha}_{density}/label_{step}.jpg')
                 # plt.show()
                 
-                for x in labels[step*3+1]:
+                # for x in labels[step*3+1]:
             
-                    # else:
-                    #     coloring_labels[x]=[195/255,192/255,192/255]
-                        # labels_name[x]=labels[0,i]
-                    if labels[step*3+2,i]==1:
-                        colors_labels[x]=[195/255,192/255,192/255]  
-                    elif labels[step*3+2,i]==2:
-                        colors_labels[x]=[0, 1, 0]
-                    elif labels[step*3+2,i]==3:
-                        colors_labels[x]=[1,0,0]
-                    elif labels[step*3+2,i]==4:
-                        colors_labels[x]=[0,0,1]
-                    i+=1
+                #     # else:
+                #     #     coloring_labels[x]=[195/255,192/255,192/255]
+                #         # labels_name[x]=labels[0,i]
+                #     if labels[step*3+2,i]==1:
+                #         colors_labels[x]=[195/255,192/255,192/255]  
+                #     elif labels[step*3+2,i]==2:
+                #         colors_labels[x]=[0, 1, 0]
+                #     elif labels[step*3+2,i]==3:
+                #         colors_labels[x]=[1,0,0]
+                #     elif labels[step*3+2,i]==4:
+                #         colors_labels[x]=[0,0,1]
+                #     i+=1
                     
             
-                # plt.figure(figsize=(20,15))
-                hex_centers, _ = hex.create_hex_grid(nx= int(Nx),ny=int(Ny), face_color=colors_labels,do_plot=True,h_ax=axs[2])
-                centers_x = hex_centers[:, 0]
-                centers_x = hex_centers[:, 1]
-                #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
-                # plt.savefig(f'{counter}_labels_{step}_{J}_{alpha}_{density}.svg')
+                # # plt.figure(figsize=(20,15))
+                # hex_centers, _ = hex.create_hex_grid(nx= int(Nx),ny=int(Ny), face_color=colors_labels,do_plot=True,h_ax=axs[2])
+                # centers_x = hex_centers[:, 0]
+                # centers_x = hex_centers[:, 1]
+                # #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
+                # # plt.savefig(f'{counter}_labels_{step}_{J}_{alpha}_{density}.svg')
             
-                # plt.show()
+                # # plt.show()
                 
                 for x in labels[step*3+1]:
             
@@ -206,20 +206,20 @@ for run in[8]:
                 centers_x = hex_centers[:, 1]
                 
                 # plt.title(f'{step}')
-                plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_test_{run}_image_{J}_{alpha}_{density}/triplet_Frz_B_{step}.jpg')
+                plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_{run}_image_{J}_{alpha}_{titration}/Frz_B_{step}.jpg')
                 #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
                 # plt.savefig(f'{counter}_labels_{step}_{J}_{alpha}_{density}.svg')
             
                 plt.show()
             
-            # images=[]
-            # for file in range(1,49):
-            #     im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_test_{run}_image_{J}_{alpha}_{density}/Frz_B_{file}.jpg")
-            #     images.append(im)
-            # iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_test_{run}_image_{J}_{alpha}_{density}/movie_{J}_{alpha}_{run}.gif', images, duration=0.8)
+            images=[]
+            for file in range(1,49):
+                im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_{run}_image_{J}_{alpha}_{titration}/Frz_B_{file}.jpg")
+                images.append(im)
+            iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_{run}_image_{J}_{alpha}_{titration}/movie_{J}_{alpha}_{run}.gif', images, duration=0.8)
         
     
-    #%%
+#%%
 # J=4
 # alpha=0.5
 # density=0.2
