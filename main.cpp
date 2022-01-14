@@ -34,11 +34,11 @@ int main(int argc,char *argv[])
         std::cout << "Using default parameters." << '\n';
     }
 
-    alpha=0.5;
-    J=4;
+    alpha=0.0;
+    J=2.6;
     density = 0.2;
 
-    const long int MC_steps = pow(10,9); // number of Monte Carlo Steps
+    const long int MC_steps = pow(10,8); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     long int MC_counter = 0;
 //    long double rand;
@@ -146,7 +146,7 @@ int main(int argc,char *argv[])
             }
 
         }
-        if(MC_counter%2000000==0)
+        if(MC_counter%200000==0)
         {
 
 //                std::cout<<"Number of bonds: ";

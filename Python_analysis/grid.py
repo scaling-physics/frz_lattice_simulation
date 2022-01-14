@@ -107,18 +107,18 @@ for J in J_r:
 color_scale=[[0,0,1],[0,1,0],[1,0,0],[1,0,0.6],[1,0.6,0],[0.6,1,0],[0,1,0.6],[0,0.6,1],[0.6,0,1],[1,1,0.6],[1,0.6,1],[0.6,1,1],[0,0,0.6],[0,0.6,0],[0.6,0,0],
              [0,0,0.2],[0,0.2,0],[0.2,0,0],[1,0,0.2],[1,0.2,0],[0.2,1,0],[0,1,0.2],[0,0.2,1],[0.2,0,1],[1,1,0.2],[1,0.2,1],[0.2,1,1],
              [0,0.4,0.2],[0,0.2,0.4],[0.2,0.4,0],[0.4,0,0.2],[0.4,0.2,0],[0.2,0.4,0],[0.4,0.4,0.2],[0.4,0.2,0.4],[0.2,0.4,0.4],[0.4,1,0.2],[0.4,0.2,1],[0.2,1,0.4]]
-alpha=0.5
+alpha=0
 density=0.2
-run=1
-for run in [1]:
-    for J in [4]:
-        for titration in [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8]:
+run=8
+for run in [8]:
+    for J in [2.6]:
+        for titration in [0.5]:
             # labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/rectangular_outputlabels_{J}_{alpha}_0.2_11.txt',dtype=int,skiprows=1)
-            labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
-            Frz = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_flags_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
+            labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_titration_long_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
+            Frz = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_titration_long_flags_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
             # f"/home/hannohennighausen/Documents/frz_lattice_model/
-            Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_{run}_image_{J}_{alpha}_{titration}').mkdir( exist_ok=True)
-            Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,max_rows=1)
+            Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_titration_long_{run}_image_{J}_{alpha}_{titration}').mkdir( exist_ok=True)
+            Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_titration_long_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,max_rows=1)
             saved_steps = int(labels.shape[0]/3)
         
             for step in range(0,saved_steps):
@@ -206,7 +206,7 @@ for run in [1]:
                 centers_x = hex_centers[:, 1]
                 
                 # plt.title(f'{step}')
-                plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_{run}_image_{J}_{alpha}_{titration}/Frz_B_{step}.jpg')
+                plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_titration_long_{run}_image_{J}_{alpha}_{titration}/Frz_B_{step}.jpg')
                 #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
                 # plt.savefig(f'{counter}_labels_{step}_{J}_{alpha}_{density}.svg')
             
@@ -214,9 +214,9 @@ for run in [1]:
             
             images=[]
             for file in range(1,49):
-                im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_{run}_image_{J}_{alpha}_{titration}/Frz_B_{file}.jpg")
+                im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_titration_long_{run}_image_{J}_{alpha}_{titration}/Frz_B_{file}.jpg")
                 images.append(im)
-            iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/titration/FrzB_titration_{run}_image_{J}_{alpha}_{titration}/movie_{J}_{alpha}_{run}.gif', images, duration=0.8)
+            iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_titration_long_{run}_image_{J}_{alpha}_{titration}/movie_{J}_{alpha}_{run}.gif', images, duration=0.8)
         
     
 #%%
