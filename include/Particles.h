@@ -43,6 +43,14 @@ struct Interactions
     int num_bonds;
 };
 
+struct Particle
+{
+    int pos=0;
+    int ori=0;
+    int Frz_A_B=0;
+};
+
+
 
 
 class Particles
@@ -52,7 +60,7 @@ private:
     std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
 
 public:
-
+    std::vector<Particle> particles;
     std::vector<int> positions; //stores position of particles on the grid
     Lattice &lattice;
 
