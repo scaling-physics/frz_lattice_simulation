@@ -112,11 +112,11 @@ alpha=0.5
 density=0.2
 for J in [4]:
     for alpha in [0.5]:
-        Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/rectangular_outputlabels_{J}_{alpha}_0.2_1.txt',dtype=int,max_rows=1)
+        Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/weird_labels_4_0.5_0.2_7.txt',dtype=int,max_rows=1)
         # labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/rectangular_outputlabels_{J}_{alpha}_0.2_11.txt',dtype=int,skiprows=1)
-        labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/rectangular_outputlabels_{J}_{alpha}_0.2_1.txt',dtype=int,skiprows=1)
+        labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/weird_labels_4_0.5_0.2_7.txt',dtype=int,skiprows=1)
         # f"/home/hannohennighausen/Documents/frz_lattice_model/
-        Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular1_image_{J}_{alpha}').mkdir( exist_ok=True)
+        Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/weird_labels_4_0.5_0.2_7').mkdir( exist_ok=True)
         
         saved_steps = int(labels.shape[0]/3)
     
@@ -146,13 +146,13 @@ for J in [4]:
                 j+=1
         
             plt.figure(figsize=(20,15))
-            hex_centers, _ = hex.create_hex_grid(nx= 40,ny=40, face_color=coloring_labels,do_plot=True)
+            hex_centers, _ = hex.create_hex_grid(nx= int(Nx),ny=int(Ny), face_color=coloring_labels,do_plot=True)
             centers_x = hex_centers[:, 0]
             centers_x = hex_centers[:, 1]
             plt.suptitle(f'{step}')
             plt.title(f'J={J} alpha={alpha}')
             #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
-            plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/label_{step}.jpg')
+            plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/weird_labels_4_0.5_0.2_7/label_{step}.jpg')
             plt.show()
             
             # for x in labels[step*3+1]:
@@ -180,11 +180,11 @@ for J in [4]:
         
             # plt.show()
         
-        images=[]
-        for file in range(1,49):
-            im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/label_{file}.jpg")
-            images.append(im)
-        iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/rectangular_image_{J}_{alpha}/movie_{J}_{alpha}.gif', images, duration=0.8)
+        # images=[]
+        # for file in range(1,49):
+        #     im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/weird_labels_4_0.5_0.2_7/label_{file}.jpg")
+        #     images.append(im)
+        # iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/weird_labels_4_0.5_0.2_7/movie_{J}_{alpha}.gif', images, duration=0.8)
         
     
     #%%

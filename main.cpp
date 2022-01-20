@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = pow(10,2); // number of Monte Carlo Steps
+    const int MC_steps = pow(10,5); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
 //    long double rand;
@@ -74,6 +74,11 @@ int main(int argc,char *argv[])
 
         for(unsigned int attempted_moves=0; attempted_moves<particles.positions.size(); attempted_moves++)
         {
+//            for(unsigned int i =0; i<particles.positions.size(); i++)
+//            {
+//                int p=particles.get_pos(i);
+//                std::cout<<"pos \t"<<particles.positions[i]<<"\t"<<particles.particles[i]->pos<<"\t ori"<<particles.grid[p]<<"\t"<<particles.particles[i]->ori<<"\n";
+//            }
 //        std::cout <<"counter"<< MC_counter <<'\n';
 //        if(MC_counter%10==0)
 //        {
@@ -110,7 +115,8 @@ int main(int argc,char *argv[])
             {
 
 //Move diffusive particles
-                if(rand<0){
+                if(rand<0)
+                {
 
                 }
                 particles.attempt_diffusion(ind, rand);
@@ -135,37 +141,39 @@ int main(int argc,char *argv[])
 
         }
         if(MC_counter%20000==0)
-            {
+        {
 
 //                std::cout<<"Number of bonds: ";
-                std::vector<int> labels(particles.positions.size(),0);
-                int label_i = 1;
-                for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
+            std::vector<int> labels(particles.positions.size(),0);
+            int label_i = 1;
+            for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
+            {
+                if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
                 {
-                    if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
-                    {
-                        int num_bonds=0;
-                        particles.label(label_index,label_i,labels,num_bonds);
-                        label_i++;
+                    int num_bonds=0;
+                    particles.label(label_index,label_i,labels,num_bonds);
+                    label_i++;
 //                        std::cout << num_bonds << '\t';
-                        out << num_bonds<< '\t';
-                    }
+                    out << num_bonds<< '\t';
                 }
+            }
 
             //std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
             std::cout<<"Number of clusters: " << std::ranges::max(labels) << '\n';
 //            print_container(labels);
-                out << '\n';
-                particles.print_labels(out2,labels);
-                particles.print(out2);
-            }
+            out << '\n';
+            particles.print_labels(out2,labels);
+            particles.print(out2);
+        }
         MC_counter++;
     }
-    std::cout<<"START"<<"\n";
-    for(int i =0;i<particles.positions.size();i++){
-
-    particles.get_pos(i);}
-//
+//    std::cout<<"START"<<"\n";
+//    for(int i =0; i<particles.positions.size(); i++)
+//    {
+//        int p=particles.get_pos(i);
+//        std::cout<<"pos \t"<<particles.positions[i]<<"\t"<<particles.particles[i]->pos<<"\t ori"<<particles.grid[p]<<"\t"<<particles.particles[i]->ori<<"\n";
+//    }
+////
 //    std::vector<int> labels(particles.positions.size(),0);
 //    int label_i = 1;
 //    for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
