@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <ranges>
 
-# define NDEBUG //comment out to turn on assert.
+//# define NDEBUG //comment out to turn on assert.
 # include <assert.h>	// for assert()
 
 #include "lattice.h"
@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = pow(10,6); // number of Monte Carlo Steps
+    const int MC_steps = pow(10,2); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
 //    long double rand;
@@ -50,11 +50,11 @@ int main(int argc,char *argv[])
     Particles particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "rectangular_output_bonds" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << "weird" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
     std::ostringstream fn2;
-    fn2 << "rectangular_outputlabels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << "weird_labels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
@@ -105,7 +105,7 @@ int main(int argc,char *argv[])
             rand_size = rand*particles.positions.size();
             int ind=rand_size;
             rand=rand_size-ind;
-            assert(rand<0);
+            assert(rand<1);
             if(particles.is_diffuse(particles.get_pos(ind)))
             {
 
@@ -161,6 +161,10 @@ int main(int argc,char *argv[])
             }
         MC_counter++;
     }
+    std::cout<<"START"<<"\n";
+    for(int i =0;i<particles.positions.size();i++){
+
+    particles.get_pos(i);}
 //
 //    std::vector<int> labels(particles.positions.size(),0);
 //    int label_i = 1;

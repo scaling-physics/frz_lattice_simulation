@@ -2,6 +2,7 @@
 #define PARTICLES_H
 
 # include <fstream>
+#include <memory>
 # include <cmath>
 # include <iostream>	// cout, etc.
 #include <sstream>      // std::stringstrea
@@ -58,9 +59,9 @@ class Particles
 {
 private:
     std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
-
+    std::vector<std::weak_ptr<Particle>> grid1{Nxy};
 public:
-    std::vector<Particle> particles;
+    std::vector<std::shared_ptr<Particle> > particles;
     std::vector<int> positions; //stores position of particles on the grid
     Lattice &lattice;
 
@@ -70,6 +71,7 @@ public:
     {
         int initial_num = Nxy*density;
         positions.resize(initial_num);
+        particles.resize(initial_num);
 
         for (int i=0; i<initial_num; i++)
         {
@@ -80,6 +82,15 @@ public:
             {
                 grid[pos]=1;
                 positions[i]=pos;
+
+                auto p = std::make_shared<Particle>();
+                p-> pos = pos;
+                p->ori =1;
+
+                particles[i] = p;
+                std::weak_ptr<Particle> pw(p);
+                grid1[pos]= pw;
+                std::cout<<p->pos<<"\t"<<positions[i]<<"\n";
             }
             else
             {
@@ -90,32 +101,86 @@ public:
 
     inline int get_pos(const int ind) const
     {
+        auto p = particles[ind];
+        int pos= p->pos;
+
+        if(pos!=positions[ind])
+        {
+        std::cout<<"b"<<"\n";
+        }
+        assert(pos==positions[ind]);
+        std::cout<<pos<<"\t"<<positions[ind]<<"\n";
         return positions[ind];
     }
+
     inline bool is_free(const int pos) const
     {
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            int pos = p-> pos;
+            bool free = (pos==0);
+            assert(free==(grid[pos]==0));
+        }
+
+
         return grid[pos]==0;
     }
+
     inline bool is_diffuse(const int pos) const
     {
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            int ori = p-> ori;
+            bool diffuse = (ori==1);
+            assert(diffuse==(grid[pos]==1));
+        }
         return grid[pos]==1;
     }
     inline bool is_bound(const int pos) const
     {
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            int ori = p-> ori;
+            bool bound = (ori>1);
+            assert(bound==(grid[pos]>1));
+        }
         return grid[pos]>1;
     }
     inline int get_orientation(const int pos) const
     {
-        int ori=grid[pos];
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            int ori = p-> ori;
+            assert(ori==grid[pos]);
+        }
+        int ori=grid[pos] ;
         assert(is_bound(pos));
         return ori-3;
     }
     inline void set_orientation(const int pos, const int ori)
     {
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            p-> ori = ori;
+        }
         grid[pos]=ori;
     }
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
+        //create new object? delete old object/ delete weak_ptr
+
+        grid1[new_pos].swap(grid1[old_pos]);
+
         grid[old_pos]=0;
         grid[new_pos]=1;
         positions[ind]=new_pos;
@@ -353,9 +418,15 @@ public:
         int ori = get_orientation(pos);
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
-        auto _is_bound = [this](const Neighbour &n){return is_bound(n.position);};
+        auto _is_bound = [this](const Neighbour &n)
+        {
+            return is_bound(n.position);
+        };
 
-        auto _is_allowed = [this,ori](const Neighbour &n){return is_interaction_allowed(ori,get_orientation(n.position),n.slope);};
+        auto _is_allowed = [this,ori](const Neighbour &n)
+        {
+            return is_interaction_allowed(ori,get_orientation(n.position),n.slope);
+        };
 
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
