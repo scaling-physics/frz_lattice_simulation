@@ -107,7 +107,7 @@ public:
 
         if(pos!=positions[ind])
         {
-        std::cout<<"b"<<"\n";
+            std::cout<<"b"<<"\n";
         }
         assert(pos==positions[ind]);
 //        std::cout<<pos<<"\t"<<positions[ind]<<"\n";
@@ -127,7 +127,7 @@ public:
 //        }
 ////        if(grid1[pos].lock()-> pos==0)
 ////        {return true;}
-return grid1[pos].expired();
+        return grid1[pos].expired();
 
 
 //        return grid[pos]==0;
