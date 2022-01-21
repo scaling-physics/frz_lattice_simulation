@@ -2,13 +2,14 @@
 #define PARTICLES_H
 
 # include <fstream>
+# include <memory>
 # include <cmath>
 # include <iostream>	// cout, etc.
-#include <sstream>      // std::stringstrea
-#include <vector>
-#include <array>
-#include <algorithm>
-#include "lattice.h"
+# include <sstream>      // std::stringstrea
+# include <vector>
+# include <array>
+# include <algorithm>
+# include "lattice.h"
 
 int unbinding_attempt=0;
 int unbinding_succ=0;
@@ -37,7 +38,8 @@ void print_container(const std::vector<int>& c)
     std::cout << '\n';
 }
 
-const bool Frz_Interaction_Lookuptable[6*32]={
+const bool Frz_Interaction_Lookuptable[6*32]=
+{
     true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,
     true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,
     true,true,true,true,false,false,false,false,true,true,true,true,false,false,false,false,
@@ -49,34 +51,37 @@ const bool Frz_Interaction_Lookuptable[6*32]={
     true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,
     true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,
     true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,
-    true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false};
-    //00-15:   slope 0 ori -1,0 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //16-31:   slope 0 ori 0,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //32-47:   slope 1 ori -1,1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //48-63:   slope 1 ori 1,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //64-79:   slope 2 ori 0,1  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //80-95:   slope 2 ori 1,0  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //96-111:  slope 3 ori -1,0 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //112-127: slope 3 ori 0,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //128-143: slope 4 ori -1,1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //144-159: slope 4 ori 1,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //160-175: slope 5 ori 0,1  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
-    //176-191: slope 5 ori 1,0  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+    true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false
+};
+//00-15:   slope 0 ori -1,0 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//16-31:   slope 0 ori 0,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//32-47:   slope 1 ori -1,1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//48-63:   slope 1 ori 1,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//64-79:   slope 2 ori 0,1  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//80-95:   slope 2 ori 1,0  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//96-111:  slope 3 ori -1,0 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//112-127: slope 3 ori 0,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//128-143: slope 4 ori -1,1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//144-159: slope 4 ori 1,-1 Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//160-175: slope 5 ori 0,1  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
+//176-191: slope 5 ori 1,0  Frz_flag 0,0 0,1 0,2 0,3 1,0 1,1 1,2...
 
-const bool Frz_occupied_site[6*12]={
+const bool Frz_occupied_site[6*12]=
+{
     false,false,false,false,true,false,true,false,false,false,false,false,
     true,true,false,false,false,false,false,false,false,false,false,false,
     false,false,false,false,false,false,false,false,true,true,false,false,
     false,false,false,false,true,true,false,false,false,false,false,false,
     true,false,true,false,false,false,false,false,false,false,false,false,
-    false,false,false,false,false,false,false,false,true,false,true,false};
+    false,false,false,false,false,false,false,false,true,false,true,false
+};
 
-    //00-11 slope 0 possible directions for Frz B to point ori order -1,0,1
-    //12-23 slope 1
-    //24-35 slope 2
-    //36-47 slope 3
-    //48-59 slope 4
-    //60-72 slope 5
+//00-11 slope 0 possible directions for Frz B to point ori order -1,0,1
+//12-23 slope 1
+//24-35 slope 2
+//36-47 slope 3
+//48-59 slope 4
+//60-72 slope 5
 
 
 struct Interactions
@@ -87,27 +92,31 @@ struct Interactions
     int num_bonds;
 };
 
-struct Particle_Types
-
+struct Particle
 {
+    int pos=0;
     int ori=0;
     int Frz_A_B=0;
 };
 
 
 
-class Particle_Actions
+
+class Particles
 
 {
 private:
-    std::array<Particle_Types,Nxy> grid{0}; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
+    std::array<Particle,Nxy> grid{0}; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
 
 public:
+    std::array<std::weak_ptr<Particle>,Nxy> grid1;
+    std::vector<std::shared_ptr<Particle> > particles;
+
 
     std::vector<int> positions; //stores position of particles on the grid
     Lattice &lattice;
 
-    Particle_Actions(Lattice &lattice):lattice{lattice}
+    Particles(Lattice &lattice):lattice{lattice}
     {
         int initial_num = Nxy*density;
         positions.resize(initial_num);
@@ -124,15 +133,24 @@ public:
             {
                 grid[pos].ori=1;
                 positions[i]=pos;
-                if(random<titration_concentration_frzb)
-                {
-                    random=unidist(gen);
-                    random_size = random*3;
-                    int flag=random_size;
-                    grid[pos].Frz_A_B=flag+1;
 
-//                    grid[pos].Frz_A_B=0;
-                }
+                auto p = std::make_shared<Particle>();
+                p-> pos = pos;
+                p->ori =1;
+
+                particles[i] = p;
+                std::weak_ptr<Particle> pw(p);
+                grid1[pos]= pw;
+
+//                if(random<titration_concentration_frzb)
+//                {
+//                    random=unidist(gen);
+//                    random_size = random*3;
+//                    int flag=random_size;
+//                    grid[pos].Frz_A_B=flag+1;
+//
+////                    grid[pos].Frz_A_B=0;
+//                }
             }
             else
             {
@@ -143,37 +161,91 @@ public:
 
     inline int get_pos(const int ind) const
     {
-        return positions[ind];
+        auto p = particles[ind];
+        int pos= p->pos;
+
+        if(pos!=positions[ind])
+        {
+            std::cout<<"b"<<"\n";
+        }
+        assert(pos==positions[ind]);
+//        std::cout<<pos<<"\t"<<positions[ind]<<"\n";
+        return pos;
+
     }
     inline bool is_free(const int pos) const
     {
-        return grid[pos].ori==0;
+        return grid1[pos].expired();
     }
     inline bool is_diffuse(const int pos) const
     {
-        return grid[pos].ori==1;
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            int ori = p-> ori;
+            bool diffuse = (ori==1);
+            assert(diffuse==(grid[pos].ori==1));
+            return diffuse;
+        }
+
     }
     inline bool is_bound(const int pos) const
     {
-        return grid[pos].ori>1;
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            int ori = p-> ori;
+            bool bound = (ori>1);
+            assert(bound==(grid[pos].ori>1));
+            return bound;
+        }
+
     }
     inline int get_orientation(const int pos) const
     {
-        int ori=grid[pos].ori;
-        assert(is_bound(pos));
-        return ori-3;
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            int ori = p-> ori;
+            assert(ori==grid[pos].ori);
+            return ori-3;
+        }
+
     }
     inline int get_flag(const int pos) const
     {
-        int flag = grid[pos].Frz_A_B;
-        return flag;
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            int flag = p-> Frz_A_B;
+            assert(flag==grid[pos].Frz_A_B);
+            return flag;
+        }
     }
     inline void set_orientation(const int pos, const int ori)
     {
+        if(!grid1[pos].expired())
+        {
+            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+
+            p-> ori = ori;
+        }
         grid[pos].ori=ori;
+
     }
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
+
+        assert(particles[ind]->pos == old_pos);
+        particles[ind] -> pos = new_pos;
+        assert(particles[ind]->pos == new_pos);
+        grid1[new_pos].swap(grid1[old_pos]);
+
+
         grid[new_pos].ori=1;
         grid[new_pos].Frz_A_B=get_flag(old_pos);
         grid[old_pos].ori=0;
@@ -196,11 +268,14 @@ public:
         return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && Frz_Interaction_Lookuptable[key]);
 //        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
     }
+
+//    needs fixing!!!
+
     inline bool is_occupied_by_FrzB(const int pos) const
     {
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
-        for(unsigned int i=0;i<n.size();i++)
+        for(unsigned int i=0; i<n.size(); i++)
         {
             if(is_bound(n[i].position))
             {
@@ -387,7 +462,7 @@ public:
                 std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
                 int test1=0;
 
-                for(unsigned int i=0; i<neig.size();i++)
+                for(unsigned int i=0; i<neig.size(); i++)
                 {
                     if(is_bound(neig[i].position))
                     {
@@ -415,18 +490,18 @@ public:
 //        std::cout<<"pos pre unbinding "<<pos<<"\n";
 //        std::cout<<"ori pre unbinding "<<ori<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n";
         std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
-                int test1=0;
+        int test1=0;
 
-                for(unsigned int i=0; i<neig.size();i++)
-                {
-                    if(is_bound(neig[i].position)&& is_interaction_allowed(ori,get_orientation(neig[i].position),get_flag(pos),get_flag(neig[i].position),neig[i].slope))
-                    {
+        for(unsigned int i=0; i<neig.size(); i++)
+        {
+            if(is_bound(neig[i].position)&& is_interaction_allowed(ori,get_orientation(neig[i].position),get_flag(pos),get_flag(neig[i].position),neig[i].slope))
+            {
 //                        std::cout<<"pos pre unbinding "<<neig[i].position<<"\n";
 //                        std::cout<<"ori pre unbinding "<<get_orientation(neig[i].position)<<"\t"<<"Frz_flag"<<get_flag(neig[i].position)<<"\n";
-                        test1++;
-                    }
-                }
-                assert(test1);
+                test1++;
+            }
+        }
+        assert(test1);
         int test = count_interacting_neighbors(pos,ori);
         assert(test>0);
 
@@ -500,7 +575,7 @@ public:
                 test_all++;
             }
         }
-       assert(test_all>0);
+        assert(test_all>0);
 
         auto _is_bound = [this](const Neighbour &n)
         {

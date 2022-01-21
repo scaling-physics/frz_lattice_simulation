@@ -47,7 +47,7 @@ int main(int argc,char *argv[])
     double rand_size;
 
     Lattice lattice;
-    Particle_Actions particles(lattice);
+    Particles particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
     fn << "FrzB_titration_long_" << J << "_" << alpha << "_" <<titration_concentration_frzb<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
@@ -110,7 +110,7 @@ int main(int argc,char *argv[])
 
 //      choose random particle
             rand = unidist(gen);
-            rand_size = rand*particles.positions.size();
+            rand_size = rand*particles.particles.size();
             int ind=rand_size;
             rand=rand_size-ind;
             assert(rand<1);
