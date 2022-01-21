@@ -72,7 +72,7 @@ int main(int argc,char *argv[])
     while(MC_counter<MC_steps)
     {
 
-        for(unsigned int attempted_moves=0; attempted_moves<particles.positions.size(); attempted_moves++)
+        for(unsigned int attempted_moves=0; attempted_moves<particles.particles.size(); attempted_moves++)
         {
 //            for(unsigned int i =0; i<particles.positions.size(); i++)
 //            {
@@ -107,7 +107,7 @@ int main(int argc,char *argv[])
 
 //      choose random particle
             rand = unidist(gen);
-            rand_size = rand*particles.positions.size();
+            rand_size = rand*particles.particles.size();
             int ind=rand_size;
             rand=rand_size-ind;
             assert(rand<1);
@@ -144,9 +144,9 @@ int main(int argc,char *argv[])
         {
 
 //                std::cout<<"Number of bonds: ";
-            std::vector<int> labels(particles.positions.size(),0);
+            std::vector<int> labels(particles.particles.size(),0);
             int label_i = 1;
-            for (unsigned int label_index=0; label_index < particles.positions.size(); label_index++)
+            for (unsigned int label_index=0; label_index < particles.particles.size(); label_index++)
             {
                 if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
                 {

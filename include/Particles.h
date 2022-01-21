@@ -60,18 +60,17 @@ class Particles
 private:
 
 public:
-    std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
+//    std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
     std::array<std::weak_ptr<Particle>,Nxy> grid1;
     std::vector<std::shared_ptr<Particle> > particles;
-    std::vector<int> positions; //stores position of particles on the grid
+//    std::vector<int> positions; //stores position of particles on the grid
     Lattice &lattice;
 
 
 
-    Particles(Lattice &lattice):grid{0},lattice(lattice)
+    Particles(Lattice &lattice):lattice(lattice)
     {
         int initial_num = Nxy*density;
-        positions.resize(initial_num);
         particles.resize(initial_num);
 
         for (int i=0; i<initial_num; i++)
@@ -79,10 +78,11 @@ public:
 //            long double random=unidist(gen);
             double random=unidist(gen);
             int pos = random*Nxy;
-            if(grid[pos]==0)
+//            if(grid[pos]==0)
+            if(grid1[pos].expired())
             {
-                grid[pos]=1;
-                positions[i]=pos;
+//                grid[pos]=1;
+//                positions[i]=pos;
 
                 auto p = std::make_shared<Particle>();
                 p-> pos = pos;
@@ -105,11 +105,11 @@ public:
         auto p = particles[ind];
         int pos= p->pos;
 
-        if(pos!=positions[ind])
-        {
-            std::cout<<"b"<<"\n";
-        }
-        assert(pos==positions[ind]);
+//        if(pos!=positions[ind])
+//        {
+//            std::cout<<"b"<<"\n";
+//        }
+//        assert(pos==positions[ind]);
 //        std::cout<<pos<<"\t"<<positions[ind]<<"\n";
         return pos;
     }
@@ -141,7 +141,7 @@ public:
 
             int ori = p-> ori;
             bool diffuse = (ori==1);
-            assert(diffuse==(grid[pos]==1));
+//            assert(diffuse==(grid[pos]==1));
             return diffuse;
         }
 //        return grid[pos]==1;
@@ -154,7 +154,7 @@ public:
 
             int ori = p-> ori;
             bool bound = (ori>1);
-            assert(bound==(grid[pos]>1));
+//            assert(bound==(grid[pos]>1));
             return bound;
         }
 //        return grid[pos]>1;
@@ -166,7 +166,7 @@ public:
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
             int ori = p-> ori;
-            assert(ori==grid[pos]);
+//            assert(ori==grid[pos]);
             return ori-3;
         }
 //        int ori=grid[pos] ;
@@ -181,7 +181,7 @@ public:
 
             p-> ori = ori;
         }
-        grid[pos]=ori;
+//        grid[pos]=ori;
     }
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
@@ -193,9 +193,9 @@ public:
 
 
 
-        grid[old_pos]=0;
-        grid[new_pos]=1;
-        positions[ind]=new_pos;
+//        grid[old_pos]=0;
+//        grid[new_pos]=1;
+//        positions[ind]=new_pos;
 
 
 
@@ -207,27 +207,27 @@ public:
 
 
 //CREATION ATTEMPT
-    void attempt_creation(const int pos, const double &rand)
-    {
-        if(rand<=k_on)
-        {
-            std::cout<<"particle created"<<"\n";
-            positions.emplace_back(pos);
-            grid[pos]=1;
-        }
-    }
+////////    void attempt_creation(const int pos, const double &rand)
+////////    {
+////////        if(rand<=k_on)
+////////        {
+////////            std::cout<<"particle created"<<"\n";
+////////            positions.emplace_back(pos);
+////////            grid[pos]=1;
+////////        }
+////////    }
 
 
 //DESTRUCTION ATTEMPT
-    void attempt_destruction(const int pos,const double &rand)
-    {
-        if(rand<k_off)
-        {
-//            std::cout<<"particle destroyed"<<"\n";
-            grid[pos]=0;
-            positions.erase(std::find(begin(positions),end(positions),pos));
-        }
-    }
+////////    void attempt_destruction(const int pos,const double &rand)
+////////    {
+////////        if(rand<k_off)
+////////        {
+//////////            std::cout<<"particle destroyed"<<"\n";
+////////            grid[pos]=0;
+////////            positions.erase(std::find(begin(positions),end(positions),pos));
+////////        }
+////////    }
 
 
 //DIFFUSE PARTICLES
@@ -445,10 +445,11 @@ public:
 
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
-            auto it= (std::find(begin(positions),end(positions),n.position));
-            if(it!= positions.end())
+            auto it=(std::find_if(begin(particles),end(particles), [](std::shared_ptr<Particle> q,const Neighbour &n) { return q->pos == n.position; }));
+//            auto it= (std::find(begin(positions),end(positions),n.position));
+            if(it!= particles.end())
             {
-                int inds = it-positions.begin();
+                int inds = it-particles.begin();
                 return labels[inds]!=0;
             }
         };
@@ -456,10 +457,11 @@ public:
 
         auto _label = [this,&labels,i,pos,&num_bonds](const Neighbour &n)
         {
-            auto it= (std::find(begin(positions),end(positions),n.position));
-            if(it!= positions.end())
+            auto it=(std::find_if(begin(particles),end(particles), [](std::shared_ptr<Particle> q,const Neighbour &n) { return q->pos == n.position; }));
+//            auto it= (std::find(begin(positions),end(positions),n.position));
+            if(it!= particles.end())
             {
-                int inds = it-positions.begin();
+                int inds = it-particles.begin();
                 if(labels[inds]==0)
                 {
                     label(inds,i,labels,num_bonds);
@@ -481,7 +483,7 @@ public:
     {
         std::vector<int> orientations_vector;
 
-        for(unsigned int index=0; index<positions.size(); index++)
+        for(unsigned int index=0; index<particles.size(); index++)
         {
             orientations_vector.emplace_back(particles[index]->ori);
         }
@@ -495,9 +497,9 @@ public:
         std::vector<int> ori_vec=orientations_vec();
 
 //        buffer << t << '\t';
-        for(auto const &x: positions)
+        for(auto const &x: particles)
         {
-            buffer << x<< '\t';
+            buffer << x-> pos << '\t';
         }
         buffer << '\n';
         out << buffer.str();
@@ -521,16 +523,16 @@ public:
         out << buffer.str();
     }
 
-    void print_grid(std::ofstream &out) const
-    {
-        std::stringstream buffer;
-        for(auto &x:grid)
-        {
-            buffer << x<< '\t';
-        }
-        buffer << '\n';
-        out << buffer.str();
-    }
+//////    void print_grid(std::ofstream &out) const
+//////    {
+//////        std::stringstream buffer;
+//////        for(auto &x:grid1)
+//////        {
+//////            buffer << x<< '\t';
+//////        }
+//////        buffer << '\n';
+//////        out << buffer.str();
+//////    }
 
 
 
