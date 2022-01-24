@@ -60,10 +60,8 @@ class Particles
 private:
 
 public:
-//    std::array<short,Nxy> grid; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
     std::array<std::weak_ptr<Particle>,Nxy> grid1;
     std::vector<std::shared_ptr<Particle> > particles;
-//    std::vector<int> positions; //stores position of particles on the grid
     Lattice &lattice;
 
 
@@ -78,12 +76,8 @@ public:
 //            long double random=unidist(gen);
             double random=unidist(gen);
             int pos = random*Nxy;
-//            if(grid[pos]==0)
             if(grid1[pos].expired())
             {
-//                grid[pos]=1;
-//                positions[i]=pos;
-
                 auto p = std::make_shared<Particle>();
                 p-> pos = pos;
                 p->ori =1;
@@ -91,7 +85,6 @@ public:
                 particles[i] = p;
                 std::weak_ptr<Particle> pw(p);
                 grid1[pos]= pw;
-//                std::cout<<p->pos<<"\t"<<positions[i]<<"\n";
             }
             else
             {
@@ -104,33 +97,12 @@ public:
     {
         auto p = particles[ind];
         int pos= p->pos;
-
-//        if(pos!=positions[ind])
-//        {
-//            std::cout<<"b"<<"\n";
-//        }
-//        assert(pos==positions[ind]);
-//        std::cout<<pos<<"\t"<<positions[ind]<<"\n";
         return pos;
     }
 
     inline bool is_free(const int pos) const
     {
-//        if(!grid1[pos].expired())
-//        {
-//            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
-//
-//            int pos = p-> pos;
-//            bool free = (pos==0);
-//            assert(free==(grid[pos]==0));
-//            return free;
-//        }
-////        if(grid1[pos].lock()-> pos==0)
-////        {return true;}
         return grid1[pos].expired();
-
-
-//        return grid[pos]==0;
     }
 
     inline bool is_diffuse(const int pos) const
@@ -141,10 +113,8 @@ public:
 
             int ori = p-> ori;
             bool diffuse = (ori==1);
-//            assert(diffuse==(grid[pos]==1));
             return diffuse;
         }
-//        return grid[pos]==1;
     }
     inline bool is_bound(const int pos) const
     {
@@ -154,10 +124,8 @@ public:
 
             int ori = p-> ori;
             bool bound = (ori>1);
-//            assert(bound==(grid[pos]>1));
             return bound;
         }
-//        return grid[pos]>1;
     }
     inline int get_orientation(const int pos) const
     {
@@ -166,12 +134,8 @@ public:
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
             int ori = p-> ori;
-//            assert(ori==grid[pos]);
             return ori-3;
         }
-//        int ori=grid[pos] ;
-//        assert(is_bound(pos));
-//        return ori-3;
     }
     inline void set_orientation(const int pos, const int ori)
     {
@@ -181,23 +145,13 @@ public:
 
             p-> ori = ori;
         }
-//        grid[pos]=ori;
     }
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
-        //create new object? delete old object/ delete weak_ptr
         assert(particles[ind]->pos == old_pos);
         particles[ind] -> pos = new_pos;
         assert(particles[ind]->pos == new_pos);
         grid1[new_pos].swap(grid1[old_pos]);
-
-
-
-//        grid[old_pos]=0;
-//        grid[new_pos]=1;
-//        positions[ind]=new_pos;
-
-
 
     }
     inline bool is_interaction_allowed(const int ori_1, const int ori_2, const int slope) const
