@@ -106,34 +106,27 @@ class Particles
 
 {
 private:
-    std::array<Particle,Nxy> grid{0}; //0 if empty, 1 if diffuse, {2,3,4} if bound as ori
 
 public:
     std::array<std::weak_ptr<Particle>,Nxy> grid1;
     std::vector<std::shared_ptr<Particle> > particles;
 
-
-    std::vector<int> positions; //stores position of particles on the grid
     Lattice &lattice;
 
     Particles(Lattice &lattice):lattice{lattice}
     {
         int initial_num = Nxy*density;
-        positions.resize(initial_num);
+        particles.resize(initial_num);
 
         for (int i=0; i<initial_num; i++)
         {
-//            long double random=unidist(gen);
             double random=unidist(gen);
             double random_size = random*Nxy;
             int pos=random_size;
             random=random_size-pos;
 //            double titration_concentration_frzb=0.5;
-            if(grid[pos].ori==0)
+            if(grid1[pos].expired())
             {
-                grid[pos].ori=1;
-                positions[i]=pos;
-
                 auto p = std::make_shared<Particle>();
                 p-> pos = pos;
                 p->ori =1;
@@ -141,21 +134,12 @@ public:
                 particles[i] = p;
                 std::weak_ptr<Particle> pw(p);
                 grid1[pos]= pw;
-
-//                if(random<titration_concentration_frzb)
-//                {
-//                    random=unidist(gen);
-//                    random_size = random*3;
-//                    int flag=random_size;
-//                    grid[pos].Frz_A_B=flag+1;
-//
-////                    grid[pos].Frz_A_B=0;
-//                }
             }
             else
             {
                 i--;
             }
+
         }
     }
 
@@ -163,20 +147,14 @@ public:
     {
         auto p = particles[ind];
         int pos= p->pos;
-
-        if(pos!=positions[ind])
-        {
-            std::cout<<"b"<<"\n";
-        }
-        assert(pos==positions[ind]);
-//        std::cout<<pos<<"\t"<<positions[ind]<<"\n";
         return pos;
-
     }
+
     inline bool is_free(const int pos) const
     {
         return grid1[pos].expired();
     }
+
     inline bool is_diffuse(const int pos) const
     {
         if(!grid1[pos].expired())
@@ -185,10 +163,8 @@ public:
 
             int ori = p-> ori;
             bool diffuse = (ori==1);
-            assert(diffuse==(grid[pos].ori==1));
             return diffuse;
         }
-
     }
     inline bool is_bound(const int pos) const
     {
@@ -198,10 +174,8 @@ public:
 
             int ori = p-> ori;
             bool bound = (ori>1);
-            assert(bound==(grid[pos].ori>1));
             return bound;
         }
-
     }
     inline int get_orientation(const int pos) const
     {
@@ -210,11 +184,10 @@ public:
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
             int ori = p-> ori;
-            assert(ori==grid[pos].ori);
             return ori-3;
         }
-
     }
+
     inline int get_flag(const int pos) const
     {
         if(!grid1[pos].expired())
@@ -222,7 +195,6 @@ public:
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
             int flag = p-> Frz_A_B;
-            assert(flag==grid[pos].Frz_A_B);
             return flag;
         }
     }
@@ -234,23 +206,13 @@ public:
 
             p-> ori = ori;
         }
-        grid[pos].ori=ori;
-
     }
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
-
         assert(particles[ind]->pos == old_pos);
         particles[ind] -> pos = new_pos;
         assert(particles[ind]->pos == new_pos);
         grid1[new_pos].swap(grid1[old_pos]);
-
-
-        grid[new_pos].ori=1;
-        grid[new_pos].Frz_A_B=get_flag(old_pos);
-        grid[old_pos].ori=0;
-        grid[old_pos].Frz_A_B=0;
-        positions[ind]=new_pos;
     }
     inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
@@ -269,8 +231,8 @@ public:
 //        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
     }
 
-//    needs fixing!!!
 
+//// needs fixing
     inline bool is_occupied_by_FrzB(const int pos) const
     {
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
@@ -289,34 +251,34 @@ public:
         }
         return false;
     }
-//    inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2, const int slope) const
+    inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2, const int slope) const
+    {
+        return (flag_1!=1 && flag_2!=1);
+    }
+
+
+////CREATION ATTEMPT
+//    void attempt_creation(const int pos, const double &rand)
 //    {
-//        return (flag_1!=1 && flag_2!=1);
+//        if(rand<=k_on)
+//        {
+////            std::cout<<"particle created"<<"\n";
+//            positions.emplace_back(pos);
+//            grid[pos].ori=1;
+//        }
 //    }
-
-
-//CREATION ATTEMPT
-    void attempt_creation(const int pos, const double &rand)
-    {
-        if(rand<=k_on)
-        {
-//            std::cout<<"particle created"<<"\n";
-            positions.emplace_back(pos);
-            grid[pos].ori=1;
-        }
-    }
-
-
-//DESTRUCTION ATTEMPT
-    void attempt_destruction(const int pos,const double &rand)
-    {
-        if(rand<k_off)
-        {
-//            std::cout<<"particle destroyed"<<"\n";
-            grid[pos].ori=0;
-            positions.erase(std::find(begin(positions),end(positions),pos));
-        }
-    }
+//
+//
+////DESTRUCTION ATTEMPT
+//    void attempt_destruction(const int pos,const double &rand)
+//    {
+//        if(rand<k_off)
+//        {
+////            std::cout<<"particle destroyed"<<"\n";
+//            grid[pos].ori=0;
+//            positions.erase(std::find(begin(positions),end(positions),pos));
+//        }
+//    }
 
 
 //DIFFUSE PARTICLES
@@ -589,10 +551,10 @@ public:
 
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
-            auto it= (std::find(begin(positions),end(positions),n.position));
-            if(it!= positions.end())
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q) { return q->pos == n.position; }));
+            if(it!= particles.end())
             {
-                int inds = it-positions.begin();
+                int inds = it-particles.begin();
                 return labels[inds]!=0;
             }
             std::cout << "error";
@@ -602,10 +564,10 @@ public:
 
         auto _label = [this,&labels,i,pos,&num_bonds](const Neighbour &n)
         {
-            auto it= (std::find(begin(positions),end(positions),n.position));
-            if(it!= positions.end())
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q) { return q->pos == n.position; }));
+            if(it!= particles.end())
             {
-                int inds = it-positions.begin();
+                int inds = it-particles.begin();
                 if(labels[inds]==0)
                 {
                     label(inds,i,labels,num_bonds);
@@ -623,27 +585,16 @@ public:
         std::ranges::for_each(s2,_label);
     }
 
-    std::vector<int> orientations_vec() const
+     std::vector<int> orientations_vec() const
     {
         std::vector<int> orientations_vector;
 
-        for(unsigned int index=0; index<positions.size(); index++)
+        for(unsigned int index=0; index<particles.size(); index++)
         {
-            orientations_vector.emplace_back(grid[get_pos(index)].ori);
+            orientations_vector.emplace_back(particles[index]->ori);
         }
 
         return orientations_vector;
-    }
-    std::vector<int> Frz_vec() const
-    {
-        std::vector<int> Frz_vector;
-
-        for(unsigned int index=0; index<positions.size(); index++)
-        {
-            Frz_vector.emplace_back(grid[get_pos(index)].Frz_A_B);
-        }
-
-        return Frz_vector;
     }
 
     void print(std::ofstream &out) const
@@ -652,9 +603,9 @@ public:
         std::vector<int> ori_vec=orientations_vec();
 
 //        buffer << t << '\t';
-        for(auto const &x: positions)
+        for(auto const &x: particles)
         {
-            buffer << x<< '\t';
+            buffer << x-> pos << '\t';
         }
         buffer << '\n';
         out << buffer.str();
@@ -678,6 +629,19 @@ public:
         out << buffer.str();
     }
 
+
+    std::vector<int> Frz_vec() const
+    {
+        std::vector<int> Frz_vector;
+
+        for(unsigned int index=0; index<particles.size(); index++)
+        {
+            Frz_vector.emplace_back(particles[index]->Frz_A_B);
+        }
+
+        return Frz_vector;
+    }
+
     void print_Frz(std::ofstream &out) const
     {
         std::stringstream buffer;
@@ -691,16 +655,16 @@ public:
         out << buffer.str();
     }
 
-    void print_grid(std::ofstream &out) const
-    {
-        std::stringstream buffer;
-        for(auto &x:grid)
-        {
-            buffer << x.ori<< '\t';
-        }
-        buffer << '\n';
-        out << buffer.str();
-    }
+//    void print_grid(std::ofstream &out) const
+//    {
+//        std::stringstream buffer;
+//        for(auto &x:grid)
+//        {
+//            buffer << x.ori<< '\t';
+//        }
+//        buffer << '\n';
+//        out << buffer.str();
+//    }
 
 
 
