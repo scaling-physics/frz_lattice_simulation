@@ -445,7 +445,7 @@ public:
 
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
-            auto it=(std::find_if(begin(particles),end(particles), [](std::shared_ptr<Particle> q,const Neighbour &n) { return q->pos == n.position; }));
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q) { return q->pos == n.position; }));
 //            auto it= (std::find(begin(positions),end(positions),n.position));
             if(it!= particles.end())
             {
@@ -457,7 +457,7 @@ public:
 
         auto _label = [this,&labels,i,pos,&num_bonds](const Neighbour &n)
         {
-            auto it=(std::find_if(begin(particles),end(particles), [](std::shared_ptr<Particle> q,const Neighbour &n) { return q->pos == n.position; }));
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q) { return q->pos == n.position; }));
 //            auto it= (std::find(begin(positions),end(positions),n.position));
             if(it!= particles.end())
             {
