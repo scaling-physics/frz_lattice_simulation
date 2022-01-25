@@ -198,6 +198,15 @@ public:
             return flag;
         }
     }
+
+    inline int get_free_flag_sites(const int pos)
+    {
+
+        int free_site;
+
+        return free_site;
+    }
+
     inline void set_orientation(const int pos, const int ori)
     {
         if(!grid1[pos].expired())
@@ -213,6 +222,11 @@ public:
         particles[ind] -> pos = new_pos;
         assert(particles[ind]->pos == new_pos);
         grid1[new_pos].swap(grid1[old_pos]);
+    }
+
+    inline void set_frz(const int ind, const int frz)
+    {
+        particles[ind]->Frz_A_B= frz;
     }
     inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
@@ -521,6 +535,38 @@ public:
     }
 
 
+// Assign frz flag
+    void assigning_Frz_flag(int ind, double titration, double &rand)
+    {
+        int frz = get_flag(get_pos(ind));
+
+        if(is_diffuse(get_pos(ind)))
+        {
+            if(frz==0 && rand<titration)
+            {
+                int new_frz = unidist(gen)*3;
+                set_frz(ind,new_frz+1);
+            }
+
+            else if(frz>0 && rand>titration)
+            {
+                set_frz(ind, 0);
+            }
+        }
+        else if (is_bound(get_pos(ind)))
+        {
+            if(frz>0 && rand>titration)
+            {
+                set_frz(ind, 0);
+            }
+
+
+        }
+
+    }
+
+
+// labeling a cluster
     void label(int ind, int i,std::vector<int> &labels,int &num_bonds) const
     {
         labels[ind]=i;
@@ -551,7 +597,10 @@ public:
 
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
-            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q) { return q->pos == n.position; }));
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q)
+            {
+                return q->pos == n.position;
+            }));
             if(it!= particles.end())
             {
                 int inds = it-particles.begin();
@@ -564,7 +613,10 @@ public:
 
         auto _label = [this,&labels,i,pos,&num_bonds](const Neighbour &n)
         {
-            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q) { return q->pos == n.position; }));
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q)
+            {
+                return q->pos == n.position;
+            }));
             if(it!= particles.end())
             {
                 int inds = it-particles.begin();
@@ -585,7 +637,7 @@ public:
         std::ranges::for_each(s2,_label);
     }
 
-     std::vector<int> orientations_vec() const
+    std::vector<int> orientations_vec() const
     {
         std::vector<int> orientations_vector;
 
