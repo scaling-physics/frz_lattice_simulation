@@ -208,17 +208,12 @@ public:
 
         if(ori==0)
         {
-            auto it1=(std::find_if(begin(n),end(n), [](Neighbour m)
-            {
-                return m.slope==0;
-            }));
+            auto it1=(std::find_if(begin(n),end(n), [](Neighbour m){return m.slope==0;}));
             if(it1!=n.end())
             {
                 int n_ind = it1-n.begin();
                 if(grid1[n[n_ind].position].expired())
-                {
-                    free_sites.emplace_back(2);
-                }
+                {free_sites.emplace_back(2);}
             }
 
             auto it2=(std::find_if(begin(n),end(n), [](Neighbour m)
