@@ -74,6 +74,7 @@ int main(int argc,char *argv[])
 
         for(unsigned int attempted_moves=0; attempted_moves<particles.particles.size(); attempted_moves++)
         {
+        std::cout<<attempted_moves<<"\n";
 //            for(unsigned int i =0; i<particles.positions.size(); i++)
 //            {
 //                int p=particles.get_pos(i);
@@ -109,6 +110,7 @@ int main(int argc,char *argv[])
             rand = unidist(gen);
             rand_size = rand*particles.particles.size();
             int ind=rand_size;
+            std::cout<<"ind \t"<<ind<<"\n";
             rand=rand_size-ind;
             assert(rand<1);
             if(particles.is_diffuse(particles.get_pos(ind)))

@@ -102,7 +102,7 @@ public:
 
     inline bool is_free(const int pos) const
     {
-        return grid1[pos].expired();
+        return grid1.at(pos).expired();
     }
 
     inline bool is_diffuse(const int pos) const
@@ -138,8 +138,8 @@ public:
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
             ori = p-> ori;
+            return ori-3;
         }
-        return ori-3;
     }
     inline void set_orientation(const int pos, const int ori)
     {
