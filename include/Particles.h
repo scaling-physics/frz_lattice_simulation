@@ -23,6 +23,7 @@ double const  k_off=0.5;
 
 double density;
 double titration_concentration_frzb;
+int FrzB_num;
 
 
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -117,6 +118,7 @@ public:
     {
         int initial_num = Nxy*density;
         particles.resize(initial_num);
+        FrzB_num=initial_num*titration_concentration_frzb;
 
         for (int i=0; i<initial_num; i++)
         {
@@ -165,6 +167,7 @@ public:
             bool diffuse = (ori==1);
             return diffuse;
         }
+        return false;
     }
     inline bool is_bound(const int pos) const
     {
@@ -176,16 +179,19 @@ public:
             bool bound = (ori>1);
             return bound;
         }
+        return false;
     }
     inline int get_orientation(const int pos) const
     {
+        int ori=0;
+        assert(!grid1[pos].expired());
         if(!grid1[pos].expired())
         {
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
-            int ori = p-> ori;
-            return ori-3;
+            ori = p-> ori;
         }
+        return ori-3;
     }
 
     inline int get_flag(const int pos) const
@@ -208,12 +214,17 @@ public:
 
         if(ori==0)
         {
-            auto it1=(std::find_if(begin(n),end(n), [](Neighbour m){return m.slope==0;}));
+            auto it1=(std::find_if(begin(n),end(n), [](Neighbour m)
+            {
+                return m.slope==0;
+            }));
             if(it1!=n.end())
             {
                 int n_ind = it1-n.begin();
                 if(grid1[n[n_ind].position].expired())
-                {free_sites.emplace_back(2);}
+                {
+                    free_sites.emplace_back(2);
+                }
             }
 
             auto it2=(std::find_if(begin(n),end(n), [](Neighbour m)
@@ -620,65 +631,76 @@ public:
 
 
 // Binding FrzB acceptance rate 1
-    void binding_FrzB(int ind)
+    void binding_FrzB(int ind, int &FrzB_num, double &rand)
     {
         int pos=get_pos(ind);
         int frz = get_flag(pos);
+        std::cout<<FrzB_num<<"\t";
+        double rate_acceptance = FrzB_num/(Nxy-particles.size());
 
         if(is_diffuse(pos))
         {
-            if(frz==0)
+            if(frz==3) {std::cout<<FrzB_num<<"\n";return;}
+            else if(frz==0 && rand<rate_acceptance)
             {
-                int new_frz = unidist(gen)*3;
+                int new_frz = unidist(gen)*2;
+                FrzB_num--;
                 set_frz(ind,new_frz+1);
             }
-            if(frz>0 && frz<3)
+            else if(frz>0 && frz<3 && rand<rate_acceptance)
             {
+                FrzB_num--;
                 set_frz(ind,3);
             }
         }
-        else if (is_bound(pos))
+        else if(is_bound(pos))
         {
-            if(frz==0)
+            if(frz==3) {std::cout<<FrzB_num<<"\n";return;}
+            else if(frz==0 )
             {
                 std::vector<int> free_sites(get_free_flag_sites(pos));
-                if(free_sites.size()==1)
+                if(free_sites.size()==1 && rand<rate_acceptance)
                 {
                     set_frz(ind, free_sites[0]);
+                    FrzB_num--;
                 }
-                if(free_sites.size()==2)
+                else if(free_sites.size()==2 && rand<rate_acceptance)
                 {
-                    int new_frz = unidist(gen)*3;
+                    int new_frz = unidist(gen)*2;
                     set_frz(ind,new_frz+1);
+                    FrzB_num--;
                 }
             }
-            else if(frz>0 && frz<3)
+            else if(frz>0 && frz<3 && rand<rate_acceptance)
             {
                 std::vector<int> free_sites(get_free_flag_sites(pos));
-                if(free_sites.size()==2)
+                if(free_sites.size()==2 && rand<rate_acceptance)
                 {
                     set_frz(ind,3);
+                    FrzB_num--;
                 }
             }
-            else if(frz==3){}
         }
+        std::cout<<FrzB_num<<"\n";
     }
 // Unbinding FrzB acceptance rate proportional to e^(-deltaE)=const
-    void unbinding_FrzB(const int ind, const double &rate, double &rand )
+    void unbinding_FrzB(const int ind,int &FrzB_num, const double &rate, double &rand )
     {
         int pos=get_pos(ind);
         int frz = get_flag(pos);
-        if(frz==0){}
+        if(frz==0) {return;}
 
         else if(frz>0 && frz<3 && rand<rate)
         {
+            FrzB_num++;
             set_frz(ind,0);
             //options are to go from one to no FrzB
         }
         else if(frz==3 && (rate*2)>rand)
         {
-            int new_frz = unidist(gen)*3;
-            set_frz(ind,new_frz);
+            int new_frz = unidist(gen)*2;
+            FrzB_num++;
+            set_frz(ind,new_frz+1);
             //options are no FrzB = 0, or one FrzB = 1 or 2
         }
     }

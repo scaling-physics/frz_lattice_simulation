@@ -29,15 +29,15 @@ int main(int argc,char *argv[])
     }
     else
     {
-        titration_concentration_frzb=0.5;
-        slurm_index = 6;
+        titration_concentration_frzb=20;
+        slurm_index = 5;
         std::cout << "Using default parameters." << '\n';
     }
 
     alpha=0.0;
     J=2.6;
     density = 0.2;
-    rate=0.8;
+    rate=0.5;
 
     const long int MC_steps = pow(10,6); // number of Monte Carlo Steps
 //    const int MC_steps =500;
@@ -113,16 +113,15 @@ int main(int argc,char *argv[])
             rand = unidist(gen);
             rand_size = rand*particles.particles.size();
             int ind=rand_size;
-            rand=rand_size-ind;
             assert(rand<1);
            //BINDING OF FrzB
-            particles.binding_FrzB(ind);
+            particles.binding_FrzB(ind, FrzB_num, rand);
 
             rand = unidist(gen);
             rand_size = rand*particles.particles.size();
             ind=rand_size;
             //UNBINDING OF FrezB
-            particles.unbinding_FrzB(ind, rate, rand);
+            particles.unbinding_FrzB(ind, FrzB_num,rate, rand);
 
 
 
@@ -164,7 +163,7 @@ int main(int argc,char *argv[])
 
 
         }
-        if(MC_counter%200000==0)
+        if(MC_counter%20000==0)
         {
 
 //                std::cout<<"Number of bonds: ";
