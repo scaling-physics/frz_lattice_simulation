@@ -199,12 +199,101 @@ public:
         }
     }
 
-    inline int get_free_flag_sites(const int pos)
+    inline std::vector<int> get_free_flag_sites(const int pos)
     {
+        std::vector<int> free_sites;
+        int ori = get_orientation(pos);
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
-        int free_site;
 
-        return free_site;
+        if(ori==0)
+        {
+            auto it1=(std::find_if(begin(n),end(n), [](Neighbour m)
+            {
+                return m.slope==0;
+            }));
+            if(it1!=n.end())
+            {
+                int n_ind = it1-n.begin();
+                if(grid1[n[n_ind].position].expired())
+                {
+                    free_sites.emplace_back(2);
+                }
+            }
+
+            auto it2=(std::find_if(begin(n),end(n), [](Neighbour m)
+            {
+                return m.slope==3;
+            }));
+            if(it2!=n.end())
+            {
+                int n_ind = it2-n.begin();
+                if(grid1[n[n_ind].position].expired())
+                {
+                    free_sites.emplace_back(1);
+                }
+            }
+        }
+        else if (ori==-1)
+        {
+            auto it1=(std::find_if(begin(n),end(n), [](Neighbour m)
+            {
+                return m.slope==2;
+            }));
+            if(it1!=n.end())
+            {
+                int n_ind = it1-n.begin();
+                if(grid1[n[n_ind].position].expired())
+                {
+                    free_sites.emplace_back(1);
+                }
+            }
+
+            auto it2=(std::find_if(begin(n),end(n), [](Neighbour m)
+            {
+                return m.slope==5;
+            }));
+            if(it2!=n.end())
+            {
+                int n_ind = it2-n.begin();
+                if(grid1[n[n_ind].position].expired())
+                {
+                    free_sites.emplace_back(2);
+                }
+            }
+        }
+
+        else if(ori==1)
+        {
+            auto it1=(std::find_if(begin(n),end(n), [](Neighbour m)
+            {
+                return m.slope==1;
+            }));
+            if(it1!=n.end())
+            {
+                int n_ind = it1-n.begin();
+                if(grid1[n[n_ind].position].expired())
+                {
+                    free_sites.emplace_back(2);
+                }
+            }
+
+            auto it2=(std::find_if(begin(n),end(n), [](Neighbour m)
+            {
+                return m.slope==4;
+            }));
+            if(it2!=n.end())
+            {
+                int n_ind = it2-n.begin();
+                if(grid1[n[n_ind].position].expired())
+                {
+                    free_sites.emplace_back(1);
+                }
+            }
+        }
+
+
+        return free_sites;
     }
 
     inline void set_orientation(const int pos, const int ori)
@@ -477,7 +566,7 @@ public:
                 test1++;
             }
         }
-        assert(test1);
+        assert(test1>0);
         int test = count_interacting_neighbors(pos,ori);
         assert(test>0);
 
@@ -535,34 +624,68 @@ public:
     }
 
 
-// Assign frz flag
-    void assigning_Frz_flag(int ind, double titration, double &rand)
+// Binding FrzB acceptance rate 1
+    void binding_FrzB(int ind)
     {
-        int frz = get_flag(get_pos(ind));
+        int pos=get_pos(ind);
+        int frz = get_flag(pos);
 
-        if(is_diffuse(get_pos(ind)))
+        if(is_diffuse(pos))
         {
-            if(frz==0 && rand<titration)
+            if(frz==0)
             {
                 int new_frz = unidist(gen)*3;
                 set_frz(ind,new_frz+1);
             }
-
-            else if(frz>0 && rand>titration)
+            if(frz>0 && frz<3)
             {
-                set_frz(ind, 0);
+                set_frz(ind,3);
             }
         }
-        else if (is_bound(get_pos(ind)))
+        else if (is_bound(pos))
         {
-            if(frz>0 && rand>titration)
+            if(frz==0)
             {
-                set_frz(ind, 0);
+                std::vector<int> free_sites(get_free_flag_sites(pos));
+                if(free_sites.size()==1)
+                {
+                    set_frz(ind, free_sites[0]);
+                }
+                if(free_sites.size()==2)
+                {
+                    int new_frz = unidist(gen)*3;
+                    set_frz(ind,new_frz+1);
+                }
             }
-
-
+            else if(frz>0 && frz<3)
+            {
+                std::vector<int> free_sites(get_free_flag_sites(pos));
+                if(free_sites.size()==2)
+                {
+                    set_frz(ind,3);
+                }
+            }
+            else if(frz==3){}
         }
+    }
+// Unbinding FrzB acceptance rate proportional to e^(-deltaE)=const
+    void unbinding_FrzB(const int ind, const double &rate, double &rand )
+    {
+        int pos=get_pos(ind);
+        int frz = get_flag(pos);
+        if(frz==0){}
 
+        else if(frz>0 && frz<3 && rand<rate)
+        {
+            set_frz(ind,0);
+            //options are to go from one to no FrzB
+        }
+        else if(frz==3 && (rate*2)>rand)
+        {
+            int new_frz = unidist(gen)*3;
+            set_frz(ind,new_frz);
+            //options are no FrzB = 0, or one FrzB = 1 or 2
+        }
     }
 
 

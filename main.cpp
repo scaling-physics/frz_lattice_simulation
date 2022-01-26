@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <ranges>
 
-//# define NDEBUG //comment out to turn on assert.
+# define NDEBUG //comment out to turn on assert.
 # include <assert.h>	// for assert()
 
 #include "lattice.h"
@@ -20,7 +20,7 @@
 int main(int argc,char *argv[])
 {
 
-    double J,alpha;
+    double J,alpha,rate;
     int slurm_index;
     if(argc==3)
     {
@@ -30,15 +30,16 @@ int main(int argc,char *argv[])
     else
     {
         titration_concentration_frzb=0.5;
-        slurm_index = 8;
+        slurm_index = 6;
         std::cout << "Using default parameters." << '\n';
     }
 
     alpha=0.0;
     J=2.6;
     density = 0.2;
+    rate=0.8;
 
-    const long int MC_steps = pow(10,8); // number of Monte Carlo Steps
+    const long int MC_steps = pow(10,6); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     long int MC_counter = 0;
 //    long double rand;
@@ -50,17 +51,17 @@ int main(int argc,char *argv[])
     Particles particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "FrzB_titration_long_" << J << "_" << alpha << "_" <<titration_concentration_frzb<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << "weird_FrzB_" << J << "_" << alpha << "_" <<titration_concentration_frzb<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
 
     std::ostringstream fn2;
-    fn2 << "FrzB_titration_long_labels_" << J << "_" << alpha<<"_"  <<titration_concentration_frzb<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << "weird_FrzB_labels_" << J << "_" << alpha<<"_"  <<titration_concentration_frzb<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
     std::ostringstream fn3;
-    fn3 << "FrzB_titration_long_flags_" << J << "_" << alpha<<"_"  <<titration_concentration_frzb<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn3 << "weird_FrzB_long_flags_" << J << "_" << alpha<<"_"  <<titration_concentration_frzb<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out3;
     out3.open(fn3.str());
 
@@ -108,10 +109,27 @@ int main(int argc,char *argv[])
 //            }
 //        }
 
-//      choose random particle
+//      choose random particle for FrzB binding/unbinding
             rand = unidist(gen);
             rand_size = rand*particles.particles.size();
             int ind=rand_size;
+            rand=rand_size-ind;
+            assert(rand<1);
+           //BINDING OF FrzB
+            particles.binding_FrzB(ind);
+
+            rand = unidist(gen);
+            rand_size = rand*particles.particles.size();
+            ind=rand_size;
+            //UNBINDING OF FrezB
+            particles.unbinding_FrzB(ind, rate, rand);
+
+
+
+//      choose random particle for interaction and movement
+            rand = unidist(gen);
+            rand_size = rand*particles.particles.size();
+            ind=rand_size;
             rand=rand_size-ind;
             assert(rand<1);
             if(particles.is_diffuse(particles.get_pos(ind)))
@@ -120,10 +138,6 @@ int main(int argc,char *argv[])
 
 
 //Move diffusive particles
-                if(rand<0)
-                {
-
-                }
                 particles.attempt_diffusion(ind, rand);
 //            print_container(particles.positions);
 
@@ -144,6 +158,10 @@ int main(int argc,char *argv[])
 //            print_container(particles.positions);
 
             }
+
+
+
+
 
         }
         if(MC_counter%200000==0)
