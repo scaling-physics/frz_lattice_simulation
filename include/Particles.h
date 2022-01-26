@@ -115,6 +115,7 @@ public:
             bool diffuse = (ori==1);
             return diffuse;
         }
+        return false;
     }
     inline bool is_bound(const int pos) const
     {
@@ -126,16 +127,19 @@ public:
             bool bound = (ori>1);
             return bound;
         }
+        return false;
     }
     inline int get_orientation(const int pos) const
     {
+        int ori=0;
+        assert(!grid1[pos].expired());
         if(!grid1[pos].expired())
         {
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
-            int ori = p-> ori;
-            return ori-3;
+            ori = p-> ori;
         }
+        return ori-3;
     }
     inline void set_orientation(const int pos, const int ori)
     {

@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
         std::cout << "Using default parameters." << '\n';
     }
 
-    const int MC_steps = pow(10,5); // number of Monte Carlo Steps
+    const int MC_steps = pow(10,6); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
 //    long double rand;
