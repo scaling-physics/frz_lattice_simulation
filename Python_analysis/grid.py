@@ -107,18 +107,18 @@ for J in J_r:
 color_scale=[[0,0,1],[0,1,0],[1,0,0],[1,0,0.6],[1,0.6,0],[0.6,1,0],[0,1,0.6],[0,0.6,1],[0.6,0,1],[1,1,0.6],[1,0.6,1],[0.6,1,1],[0,0,0.6],[0,0.6,0],[0.6,0,0],
              [0,0,0.2],[0,0.2,0],[0.2,0,0],[1,0,0.2],[1,0.2,0],[0.2,1,0],[0,1,0.2],[0,0.2,1],[0.2,0,1],[1,1,0.2],[1,0.2,1],[0.2,1,1],
              [0,0.4,0.2],[0,0.2,0.4],[0.2,0.4,0],[0.4,0,0.2],[0.4,0.2,0],[0.2,0.4,0],[0.4,0.4,0.2],[0.4,0.2,0.4],[0.2,0.4,0.4],[0.4,1,0.2],[0.4,0.2,1],[0.2,1,0.4]]
-alpha=0
+alpha=0.5
 density=0.2
 run=8
-for run in [8]:
-    for J in [2.6]:
-        for titration in [0.5]:
+for run in [20]:
+    for J in [4]:
+        for titration in [1]:
             # labels = np.loadtxt(f'/scratch2/hannohennighausen/Parameter_sweep/rectangular_outputlabels_{J}_{alpha}_0.2_11.txt',dtype=int,skiprows=1)
-            labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_titration_long_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
-            Frz = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_titration_long_flags_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
+            labels = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/weird_FrzB_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
+            Frz = np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/weird_FrzB_long_flags_{J}_{alpha}_{titration}_{run}.txt',dtype=int,skiprows=1)
             # f"/home/hannohennighausen/Documents/frz_lattice_model/
-            Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_titration_long_{run}_image_{J}_{alpha}_{titration}').mkdir( exist_ok=True)
-            Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/FrzB_titration_long_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,max_rows=1)
+            Path(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/weird_FrzB_{run}_image_{J}_{alpha}_{titration}').mkdir( exist_ok=True)
+            Nx,Ny=np.loadtxt(f'/home/hannohennighausen/Documents/frz_lattice_model/weird_FrzB_labels_{J}_{alpha}_{titration}_{run}.txt',dtype=int,max_rows=1)
             saved_steps = int(labels.shape[0]/3)
         
             for step in range(0,saved_steps):
@@ -206,7 +206,7 @@ for run in [8]:
                 centers_x = hex_centers[:, 1]
                 
                 # plt.title(f'{step}')
-                plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_titration_long_{run}_image_{J}_{alpha}_{titration}/Frz_B_{step}.jpg')
+                plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/weird_FrzB_{run}_image_{J}_{alpha}_{titration}/Frz_B_{step}.jpg')
                 #plt.savefig(f'D:/Hanno/Physics/Marburg/Murray/frz_lattice_model/rand_grid_19899+{row}.png')
                 # plt.savefig(f'{counter}_labels_{step}_{J}_{alpha}_{density}.svg')
             
@@ -214,11 +214,32 @@ for run in [8]:
             
             images=[]
             for file in range(1,49):
-                im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_titration_long_{run}_image_{J}_{alpha}_{titration}/Frz_B_{file}.jpg")
+                im = iio.imread(f"/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/weird_FrzB_{run}_image_{J}_{alpha}_{titration}/Frz_B_{file}.jpg")
                 images.append(im)
-            iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/FrzB_titration_long_{run}_image_{J}_{alpha}_{titration}/movie_{J}_{alpha}_{run}.gif', images, duration=0.8)
-        
+            iio.mimsave(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/weird_FrzB_{run}_image_{J}_{alpha}_{titration}/movie_{J}_{alpha}_{run}.gif', images, duration=0.8)
+      #%%
+FrzB_tot = []
+for i in range(50):
+    unique,counts=np.unique(Frz[i],return_counts=True)
     
+    S = 0
+    if len(counts)==4:
+        S= counts[1]+counts[2]+2*counts[3]
+    elif len(counts)==3:
+        S=counts[1]+counts[2]    
+    FrzB_tot = np.append(FrzB_tot,S)
+    print(dict(zip(unique, counts)), S)
+
+    
+pT = 420
+xT = 610
+k_off = 0.3
+Nxy = Nx*Ny
+
+p = 0.5*(xT+2*pT-k_off)
+q= 2*pT*xT
+pq = p+np.sqrt(p**2-q)
+print(pq,p-np.sqrt(p**2-q))    
 #%%
 # J=4
 # alpha=0.5
@@ -255,7 +276,7 @@ for run in [8]:
 #     # for x in labels[step*3+1]:
 
 #     #     # else:
-#     #     #     coloring_labels[x]=[195/255,192/255,192/255]
+#   #     #     coloring_labels[x]=[195/255,192/255,192/255]
 #     #         # labels_name[x]=labels[0,i]
 #     #     if labels[step*3+2,i]==1:
 #     #         colors_labels[x]=[195/255,192/255,192/255]  

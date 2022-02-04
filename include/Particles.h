@@ -23,7 +23,7 @@ double const  k_off=0.5;
 
 double density;
 double titration_concentration_frzb;
-int FrzB_num;
+
 
 
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -114,37 +114,79 @@ public:
 
     Lattice &lattice;
 
+//////////// Constructor
+
     Particles(Lattice &lattice):lattice{lattice}
     {
         int initial_num = Nxy*density;
         particles.resize(initial_num);
-        FrzB_num=initial_num*titration_concentration_frzb;
+
+////// Read in from file, stable initital configuration
+        std::ifstream read_pos("read_in_pos.txt");
+        std::ifstream read_ori("read_in_ori.txt");
+//        std::ifstream read_frz("read_in_frz.txt");
+        int temp_pos,temp_frz,temp_ori;
+        int ind_pos=0;
+        int ind_ori=0;
+        int ind_frz=0;
+//
+        for (int i=0; i<initial_num; i++)
+        {
+            auto p = std::make_shared<Particle>();
+            particles[i] = p;
+        }
+
+        while (read_pos>>temp_pos)
+        {
+            particles[ind_pos]->pos = temp_pos;
+            ind_pos++;
+        }
+        while (read_ori>>temp_ori)
+        {
+            particles[ind_ori]->ori = temp_ori;
+            ind_ori++;
+        }
 
         for (int i=0; i<initial_num; i++)
         {
-            double random=unidist(gen);
-            double random_size = random*Nxy;
-            int pos=random_size;
-            random=random_size-pos;
-//            double titration_concentration_frzb=0.5;
-            if(grid1[pos].expired())
-            {
-                auto p = std::make_shared<Particle>();
-                p-> pos = pos;
-                p->ori =1;
-
-                particles[i] = p;
-                std::weak_ptr<Particle> pw(p);
-                grid1[pos]= pw;
-            }
-            else
-            {
-                i--;
-            }
-
+            auto p = particles[i];
+            int pos = p->pos;
+            std::weak_ptr<Particle> pw(p);
+            grid1[pos]= pw;
         }
+//        while (read_frz>>temp_frz)
+//        {
+//            particles[ind_frz]->Frz_A_B = temp_frz;
+//        }
+
+
+////// Random initial configuration
+//        for (int i=0; i<initial_num; i++)
+//        {
+//            double random=unidist(gen);
+//            double random_size = random*Nxy;
+//            int pos=random_size;
+//            random=random_size-pos;
+////            double titration_concentration_frzb=0.5;
+//            if(grid1[pos].expired())
+//            {
+//                auto p = std::make_shared<Particle>();
+//                p-> pos = pos;
+//                p->ori =1;
+//
+//                particles[i] = p;
+//                std::weak_ptr<Particle> pw(p);
+//                grid1[pos]= pw;
+//            }
+//            else
+//            {
+//                i--;
+//            }
+//
+//        }
     }
 
+//////////// GETTERS, SETTERS //////////////
     inline int get_pos(const int ind) const
     {
         auto p = particles[ind];
@@ -159,27 +201,25 @@ public:
 
     inline bool is_diffuse(const int pos) const
     {
+        int ori=0;
         if(!grid1[pos].expired())
         {
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
-            int ori = p-> ori;
-            bool diffuse = (ori==1);
-            return diffuse;
+            ori = p-> ori;
         }
-        return false;
+        return ori==1;
     }
     inline bool is_bound(const int pos) const
     {
+        int ori=0;
         if(!grid1[pos].expired())
         {
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
-            int ori = p-> ori;
-            bool bound = (ori>1);
-            return bound;
+            ori = p-> ori;
         }
-        return false;
+        return ori>1;
     }
     inline int get_orientation(const int pos) const
     {
@@ -209,6 +249,7 @@ public:
     {
         std::vector<int> free_sites;
         int ori = get_orientation(pos);
+        int frz = get_flag(pos);
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
 
@@ -223,6 +264,7 @@ public:
                 int n_ind = it1-n.begin();
                 if(grid1[n[n_ind].position].expired())
                 {
+                    int pos_neighbor1=n[n_ind].position;
                     free_sites.emplace_back(2);
                 }
             }
@@ -236,11 +278,12 @@ public:
                 int n_ind = it2-n.begin();
                 if(grid1[n[n_ind].position].expired())
                 {
+                    int pos_neighbor2=n[n_ind].position;
                     free_sites.emplace_back(1);
                 }
             }
         }
-        else if (ori==-1)
+        else if (ori==1)
         {
             auto it1=(std::find_if(begin(n),end(n), [](Neighbour m)
             {
@@ -251,6 +294,7 @@ public:
                 int n_ind = it1-n.begin();
                 if(grid1[n[n_ind].position].expired())
                 {
+                    int pos_neighbor1=n[n_ind].position;
                     free_sites.emplace_back(1);
                 }
             }
@@ -264,12 +308,13 @@ public:
                 int n_ind = it2-n.begin();
                 if(grid1[n[n_ind].position].expired())
                 {
+                    int pos_neighbor2=n[n_ind].position;
                     free_sites.emplace_back(2);
                 }
             }
         }
 
-        else if(ori==1)
+        else if(ori==-1)
         {
             auto it1=(std::find_if(begin(n),end(n), [](Neighbour m)
             {
@@ -280,6 +325,7 @@ public:
                 int n_ind = it1-n.begin();
                 if(grid1[n[n_ind].position].expired())
                 {
+                    int pos_neighbor1=n[n_ind].position;
                     free_sites.emplace_back(2);
                 }
             }
@@ -293,6 +339,7 @@ public:
                 int n_ind = it2-n.begin();
                 if(grid1[n[n_ind].position].expired())
                 {
+                    int pos_neighbor2=n[n_ind].position;
                     free_sites.emplace_back(1);
                 }
             }
@@ -321,7 +368,13 @@ public:
 
     inline void set_frz(const int ind, const int frz)
     {
-        particles[ind]->Frz_A_B= frz;
+        particles[ind] -> Frz_A_B = frz;
+//        if(!grid1[pos].expired())
+//        {
+//            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+//
+//            p-> Frz_A_B = frz;
+//        }
     }
     inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
@@ -339,27 +392,27 @@ public:
         return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && Frz_Interaction_Lookuptable[key]);
 //        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
     }
-
+////////////////////////////////////////////////////////////
 
 //// needs fixing
-    inline bool is_occupied_by_FrzB(const int pos) const
-    {
-        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
-
-        for(unsigned int i=0; i<n.size(); i++)
-        {
-            if(is_bound(n[i].position))
-            {
-                int key=n[i].slope*12+(get_orientation(n[i].position)+1)*4+get_flag(n[i].position);
-                bool b= Frz_occupied_site[key];
-                if(b)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+//    inline bool is_occupied_by_FrzB(const int pos) const
+//    {
+//        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+//
+//        for(unsigned int i=0; i<n.size(); i++)
+//        {
+//            if(is_bound(n[i].position))
+//            {
+//                int key=n[i].slope*12+(get_orientation(n[i].position)+1)*4+get_flag(n[i].position);
+//                bool b= Frz_occupied_site[key];
+//                if(b)
+//                {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
     inline bool is_frz_interaction_allowed(const int flag_1, const int flag_2, const int slope) const
     {
         return (flag_1!=1 && flag_2!=1);
@@ -561,20 +614,20 @@ public:
 //        std::cout<<"pos pre unbinding "<<pos<<"\n";
 //        std::cout<<"ori pre unbinding "<<ori<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n";
         std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
-        int test1=0;
-
-        for(unsigned int i=0; i<neig.size(); i++)
-        {
-            if(is_bound(neig[i].position)&& is_interaction_allowed(ori,get_orientation(neig[i].position),get_flag(pos),get_flag(neig[i].position),neig[i].slope))
-            {
-//                        std::cout<<"pos pre unbinding "<<neig[i].position<<"\n";
-//                        std::cout<<"ori pre unbinding "<<get_orientation(neig[i].position)<<"\t"<<"Frz_flag"<<get_flag(neig[i].position)<<"\n";
-                test1++;
-            }
-        }
-        assert(test1>0);
-        int test = count_interacting_neighbors(pos,ori);
-        assert(test>0);
+//////        int test1=0;
+//////
+//////        for(unsigned int i=0; i<neig.size(); i++)
+//////        {
+//////            if(is_bound(neig[i].position)&& is_interaction_allowed(ori,get_orientation(neig[i].position),get_flag(pos),get_flag(neig[i].position),neig[i].slope))
+//////            {
+////////                        std::cout<<"pos pre unbinding "<<neig[i].position<<"\n";
+////////                        std::cout<<"ori pre unbinding "<<get_orientation(neig[i].position)<<"\t"<<"Frz_flag"<<get_flag(neig[i].position)<<"\n";
+//////                test1++;
+//////            }
+//////        }
+//////        assert(test1>0);
+//////        int test = count_interacting_neighbors(pos,ori);
+//////        assert(test>0);
 
         Interactions interactions;
         interactions.num_bonds=0;
@@ -633,42 +686,48 @@ public:
 // Binding FrzB acceptance rate 1
     void binding_FrzB(int ind, int &FrzB_num, double &rand)
     {
+        assert (rand<1 && rand>0);
         int pos=get_pos(ind);
         int frz = get_flag(pos);
-        std::cout<<FrzB_num<<"\t";
-        double rate_acceptance = FrzB_num/(Nxy-particles.size());
+//        std::cout<<"FrzB_num \t"<<FrzB_num<<"\t"<<"pos frz \t"<< pos<<"\t"<<frz<<"\t"<<"rand \t"<<rand<<"\t";
+        double rate_acceptance = FrzB_num/(double)420;//(Nxy-particles.size());
+//        std::cout<<"rate_acc \t"<<rate_acceptance<<"\t";
 
         if(is_diffuse(pos))
         {
-            if(frz==3) {std::cout<<FrzB_num<<"\n";return;}
+            if(frz==3){return;}
             else if(frz==0 && rand<rate_acceptance)
             {
                 int new_frz = unidist(gen)*2;
                 FrzB_num--;
                 set_frz(ind,new_frz+1);
+//                std::cout<<1<<"\t";
             }
             else if(frz>0 && frz<3 && rand<rate_acceptance)
             {
                 FrzB_num--;
                 set_frz(ind,3);
+//                std::cout<<2<<"\t";
             }
         }
         else if(is_bound(pos))
         {
-            if(frz==3) {std::cout<<FrzB_num<<"\n";return;}
-            else if(frz==0 )
+            if(frz==3) {return;}
+            else if(frz==0 && rand<rate_acceptance )
             {
                 std::vector<int> free_sites(get_free_flag_sites(pos));
                 if(free_sites.size()==1 && rand<rate_acceptance)
                 {
                     set_frz(ind, free_sites[0]);
                     FrzB_num--;
+//                    std::cout<<4<<"\t";
                 }
                 else if(free_sites.size()==2 && rand<rate_acceptance)
                 {
                     int new_frz = unidist(gen)*2;
                     set_frz(ind,new_frz+1);
                     FrzB_num--;
+//                    std::cout<<5<<"\t";
                 }
             }
             else if(frz>0 && frz<3 && rand<rate_acceptance)
@@ -678,10 +737,11 @@ public:
                 {
                     set_frz(ind,3);
                     FrzB_num--;
+//                    std::cout<<6<<"\t";FrzB_{run}_image_J_{J}_alpha_{alpha}_FrzB_{FrzB}_off_{rate}')
                 }
             }
         }
-        std::cout<<FrzB_num<<"\n";
+//        std::cout<<FrzB_num<<"\n";
     }
 // Unbinding FrzB acceptance rate proportional to e^(-deltaE)=const
     void unbinding_FrzB(const int ind,int &FrzB_num, const double &rate, double &rand )
@@ -715,15 +775,15 @@ public:
         int ori = get_orientation(pos);
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 //        std::cout<<n.size();
-        int test_all=0;
-        for(unsigned int test_i=0; test_i<n.size(); test_i++)
-        {
-            if(is_bound(n[test_i].position) && is_interaction_allowed(ori, get_orientation(n[test_i].position),get_flag(pos),get_flag(n[test_i].position),n[test_i].slope))
-            {
-                test_all++;
-            }
-        }
-        assert(test_all>0);
+//        int test_all=0;
+//        for(unsigned int test_i=0; test_i<n.size(); test_i++)
+//        {
+//            if(is_bound(n[test_i].position) && is_interaction_allowed(ori, get_orientation(n[test_i].position),get_flag(pos),get_flag(n[test_i].position),n[test_i].slope))
+//            {
+//                test_all++;
+//            }
+//        }
+//        assert(test_all>0);
 
         auto _is_bound = [this](const Neighbour &n)
         {
