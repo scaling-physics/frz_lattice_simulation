@@ -18,8 +18,8 @@ int binding_succ=0;
 int diffuse_attempt=0;
 int diffuse_succ=0;
 
-double const k_on=0.05;
-double const  k_off=0.5;
+double const  k_off=5*pow(10,-4);
+double const k_on=k_off/55;
 
 double density;
 double titration_concentration_frzb;
@@ -29,6 +29,7 @@ double titration_concentration_frzb;
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
 std::uniform_real_distribution<double> unidist(0.0,1.0);
+std::default_random_engine generator (seed);
 
 void print_container(const std::vector<int>& c)
 {
@@ -109,7 +110,7 @@ class Particles
 private:
 
 public:
-    std::array<std::weak_ptr<Particle>,Nxy> grid1;
+    std::vector<std::weak_ptr<Particle> > grid1;
     std::vector<std::shared_ptr<Particle> > particles;
 
     Lattice &lattice;
@@ -120,70 +121,72 @@ public:
     {
         int initial_num = Nxy*density;
         particles.resize(initial_num);
+        grid1.resize(Nxy);
 
-////// Read in from file, stable initital configuration
-        std::ifstream read_pos("read_in_pos.txt");
-        std::ifstream read_ori("read_in_ori.txt");
-//        std::ifstream read_frz("read_in_frz.txt");
-        int temp_pos,temp_frz,temp_ori;
-        int ind_pos=0;
-        int ind_ori=0;
-        int ind_frz=0;
-//
-        for (int i=0; i<initial_num; i++)
-        {
-            auto p = std::make_shared<Particle>();
-            particles[i] = p;
-        }
-
-        while (read_pos>>temp_pos)
-        {
-            particles[ind_pos]->pos = temp_pos;
-            ind_pos++;
-        }
-        while (read_ori>>temp_ori)
-        {
-            particles[ind_ori]->ori = temp_ori;
-            ind_ori++;
-        }
-
-        for (int i=0; i<initial_num; i++)
-        {
-            auto p = particles[i];
-            int pos = p->pos;
-            std::weak_ptr<Particle> pw(p);
-            grid1[pos]= pw;
-        }
-//        while (read_frz>>temp_frz)
-//        {
-//            particles[ind_frz]->Frz_A_B = temp_frz;
-//        }
-
-
-////// Random initial configuration
+//////// Read in from file, stable initital configuration
+//        std::ifstream read_pos("read_in_pos_side.txt");
+//        std::ifstream read_ori("read_in_ori_side.txt");
+////        std::ifstream read_frz("read_in_frz.txt");
+//        int temp_pos,temp_ori;
+//        int ind_pos=0;
+//        int ind_ori=0;
+////
 //        for (int i=0; i<initial_num; i++)
 //        {
-//            double random=unidist(gen);
-//            double random_size = random*Nxy;
-//            int pos=random_size;
-//            random=random_size-pos;
-////            double titration_concentration_frzb=0.5;
-//            if(grid1[pos].expired())
-//            {
-//                auto p = std::make_shared<Particle>();
-//                p-> pos = pos;
-//                p->ori =1;
-//
-//                particles[i] = p;
-//                std::weak_ptr<Particle> pw(p);
-//                grid1[pos]= pw;
-//            }
-//            else
-//            {
-//                i--;
-//            }
-//
+//            auto p = std::make_shared<Particle>();
+//            particles[i] = p;
 //        }
+//
+//        while (read_pos>>temp_pos)
+//        {
+//            particles[ind_pos]->pos = temp_pos;
+//            ind_pos++;
+//        }
+//        while (read_ori>>temp_ori)
+//        {
+//            particles[ind_ori]->ori = temp_ori;
+//            ind_ori++;
+//        }
+//
+//        for (int i=0; i<initial_num; i++)
+//        {
+//            auto p = particles[i];
+//            int pos = p->pos;
+//            std::weak_ptr<Particle> pw(p);
+//            grid1[pos]= pw;
+//        }
+////          int temp_frz
+////          int ind_frz=0;
+//////        while (read_frz>>temp_frz)
+//////        {
+//////            particles[ind_frz]->Frz_A_B = temp_frz;
+//////        }
+
+
+//// Random initial configuration
+        for (int i=0; i<initial_num; i++)
+        {
+            double random=unidist(gen);
+            double random_size = random*Nxy;
+            int pos=random_size;
+            random=random_size-pos;
+//            double titration_concentration_frzb=0.5;
+            if(grid1[pos].expired())
+            {
+                auto p = std::make_shared<Particle>();
+                p-> pos = pos;
+                p->ori =1;
+
+                particles[i] = p;
+                std::weak_ptr<Particle> pw(p);
+                grid1[pos]= pw;
+            }
+            else
+            {
+                i--;
+            }
+
+        }
     }
 
 //////////// GETTERS, SETTERS //////////////
@@ -251,7 +254,6 @@ public:
         int ori = get_orientation(pos);
         int frz = get_flag(pos);
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
-
 
         if(ori==0)
         {
@@ -418,29 +420,132 @@ public:
         return (flag_1!=1 && flag_2!=1);
     }
 
+    //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
+    int count_interacting_neighbors(const int pos, const int ori) const
+    {
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+        int count_bound = 0;
+
+        for(unsigned int i=0; i<n.size(); i++)
+        {
+            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),get_flag(pos),get_flag(n[i].position),n[i].slope))
+            {
+                count_bound++;
+            }
+
+        }
+        assert(count_bound>=0);
+        return count_bound;
+    }
 
 ////CREATION ATTEMPT
-//    void attempt_creation(const int pos, const double &rand)
-//    {
-//        if(rand<=k_on)
-//        {
-////            std::cout<<"particle created"<<"\n";
-//            positions.emplace_back(pos);
-//            grid[pos].ori=1;
-//        }
-//    }
+    void attempt_creation(double &rand)
+    {
+        int initial_num = Nxy*density;
+        int free_hexes=(Nx*Ny)-particles.size();
+        double k_on_1 = k_on*(initial_num-particles.size());
+        std::binomial_distribution<int> bnom(free_hexes,k_on_1);
+        double random=unidist(gen);
+
+        int new_particles_created = bnom(generator);
+        if(particles.size()+new_particles_created>initial_num)
+        {
+            new_particles_created=new_particles_created+(initial_num-particles.size()-new_particles_created);
+        }
+        for ( int i=0;i<new_particles_created;i++)
+        {
+            double random_size = random*Nxy;
+            int pos=random_size;
+            random=random_size-pos;
+            if(grid1[pos].expired())
+            {
+                auto p = std::make_shared<Particle>();
+                p-> pos = pos;
+                p->ori =1;
+
+                particles.emplace_back(p);
+                std::weak_ptr<Particle> pw(p);
+                grid1[pos]= pw;
+            }
+            else
+            {
+                i--;
+            }
+
+        }
+        rand=random;
+    }
 //
 //
 ////DESTRUCTION ATTEMPT
-//    void attempt_destruction(const int pos,const double &rand)
-//    {
-//        if(rand<k_off)
-//        {
-////            std::cout<<"particle destroyed"<<"\n";
-//            grid[pos].ori=0;
-//            positions.erase(std::find(begin(positions),end(positions),pos));
-//        }
-//    }
+    void attempt_destruction(double &rand)
+    {
+        for(unsigned int ind=0; ind<particles.size(); ind++)
+        {
+            if(is_diffuse(get_pos(ind)))
+            {
+                rand = unidist(gen);
+                if(rand<k_off)
+                {
+                    int pos = get_pos(ind);
+                    assert(!grid1[pos].expired());
+                    auto it = particles.begin()+ind;
+                    particles.erase(it);
+                    assert(grid1[pos].expired());
+                }
+            }
+
+        }
+
+    }
+
+
+//CELL GROWTH
+    void cell_growth(double &rand,int &Nx)
+    {
+        double rand_size = Nx*rand;
+        int column_insert = rand_size;
+        rand = rand_size-column_insert;
+        Nx++;
+        std::vector<std::weak_ptr<Particle> > column;
+        column.resize(Ny);
+        auto it = grid1.begin()+column_insert*Ny;
+
+        grid1.insert(it, column.begin(),column.end());
+        std::cout<<grid1.size();
+
+        for(int i=(Nx*Ny-1); i>=Ny*column_insert; i--)
+        {
+            if(!grid1[i].expired())
+            {
+                auto p = std::shared_ptr<Particle> (grid1[i].lock());
+
+                int pos = p->pos;
+                int new_pos = pos+Ny;
+                p->pos = new_pos;
+            }
+        }
+        for(unsigned int i=(Nx*Ny-1); i>=Ny*column_insert; i--)
+        {
+            if(!grid1[i].expired() && is_bound(i))
+            {
+                auto p = std::shared_ptr<Particle> (grid1[i].lock());
+
+                int pos = p->pos;
+                int ori = p-> ori;
+                int is_still_bound = count_interacting_neighbors(pos, ori);
+                if(is_still_bound>=1)
+                {
+                    return;
+                }
+                else
+                {
+                    set_orientation(pos,1);
+                }
+            }
+        }
+
+    }
 
 
 //DIFFUSE PARTICLES
@@ -469,23 +574,7 @@ public:
     }
 
 
-//COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
-    int count_interacting_neighbors(const int pos, const int ori) const
-    {
-        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
-        int count_bound = 0;
 
-        for(unsigned int i=0; i<n.size(); i++)
-        {
-            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),get_flag(pos),get_flag(n[i].position),n[i].slope))
-            {
-                count_bound++;
-            }
-
-        }
-        assert(count_bound>=0);
-        return count_bound;
-    }
 
 
 //DELTA_H
@@ -695,7 +784,10 @@ public:
 
         if(is_diffuse(pos))
         {
-            if(frz==3){return;}
+            if(frz==3)
+            {
+                return;
+            }
             else if(frz==0 && rand<rate_acceptance)
             {
                 int new_frz = unidist(gen)*2;
@@ -712,7 +804,10 @@ public:
         }
         else if(is_bound(pos))
         {
-            if(frz==3) {return;}
+            if(frz==3)
+            {
+                return;
+            }
             else if(frz==0 && rand<rate_acceptance )
             {
                 std::vector<int> free_sites(get_free_flag_sites(pos));
@@ -748,7 +843,10 @@ public:
     {
         int pos=get_pos(ind);
         int frz = get_flag(pos);
-        if(frz==0) {return;}
+        if(frz==0)
+        {
+            return;
+        }
 
         else if(frz>0 && frz<3 && rand<rate)
         {

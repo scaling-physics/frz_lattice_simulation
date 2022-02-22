@@ -36,14 +36,13 @@ int main(int argc,char *argv[])
         alpha=0.5;
         FrzB_num=210;
         rate=0.03;
-        slurm_index = 5;
+        slurm_index = 10;
         std::cout << "Using default parameters." << '\n';
     }
     titration_concentration_frzb= 1;
     density = 0.2;
 
-    const long int MC_steps = 1*pow(10,6); // number of Monte Carlo Steps
-//    const int MC_steps =500;
+    const long int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
     long int MC_counter = 0;
 //    long double rand;
     double rand;
@@ -53,18 +52,33 @@ int main(int argc,char *argv[])
     Lattice lattice;
     Particles particles(lattice);
 ///////////////////////////
+//    std::ostringstream fn;
+//    fn << slurm_index << "_FrzB_bondspercluster_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate << ".txt";//k_un << "_" << k << ".txt";
+//    std::ofstream out;
+//    out.open(fn.str());
+//
+//    std::ostringstream fn2;
+//    fn2 << slurm_index << "_FrzB_labels_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<< ".txt";// k_un << "_" << k << ".txt";
+//    std::ofstream out2;
+//    out2.open(fn2.str());
+//
+//    std::ostringstream fn3;
+//    fn3 << slurm_index << "_FrzB_flags_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<< ".txt";// k_un << "_" << k << ".txt";
+//    std::ofstream out3;
+//    out3.open(fn3.str());
+
     std::ostringstream fn;
-    fn << "aaFrzB_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << slurm_index << "_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
 
     std::ostringstream fn2;
-    fn2 << "aaFrzB_labels_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<<"_"<< slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << slurm_index << "_dFrzB_labels_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<< ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
     std::ostringstream fn3;
-    fn3 << "aaFrzB_flags_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<<"_"<< slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn3 << slurm_index << "_dFrzB_flags_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<< ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out3;
     out3.open(fn3.str());
 
@@ -102,48 +116,23 @@ int main(int argc,char *argv[])
         for(unsigned int attempted_moves=0; attempted_moves<particles.particles.size(); attempted_moves++)
         {
 //        std::cout <<"counter"<< MC_counter <<'\n';
-//        if(MC_counter%10==0)
-//        {
-//            // select a random hex on grid:
-//            double rand_size1 = unidist(gen) * Nxy;
-//            int pos1 = rand_size1;
-//            double rand1 = rand_size1-pos1;
-////            std::cout<<"pos "<<pos<<"\n";
-////            std::cout<<"rand "<<rand<<"\n";
-//
-//
-//            //CREATION ATTEMPT
-//            if(particles.is_free(pos1))
-//            {
-//                //std::cout<<"free"<<"\n";
-//                particles.attempt_creation(pos1,rand1);
-////                print_container(particles.positions);
-//            }
-//
-//            //DESTRUCTION ATTEMPT
-//            else if(particles.is_diffuse(particles.get_ind(pos1)))
-//            {
-//                particles.attempt_destruction(pos1,rand1);
-//            }
-//        }
-
 ////////////////// FrzB Un-/Binding Section //////////////////////////
 
 //      choose random particle for FrzB binding/unbinding
-            rand = unidist(gen);
-            rand_size = rand*particles.particles.size();
-            int ind=rand_size;
-            rand = rand_size-ind;
-            assert(rand<1);
-            //BINDING OF FrzB
-            particles.binding_FrzB(ind, FrzB_num, rand);
-
-            rand = unidist(gen);
-            rand_size = rand*particles.particles.size();
-            ind=rand_size;
-            rand = rand_size-ind;
-            //UNBINDING OF FrezB
-            particles.unbinding_FrzB(ind, FrzB_num,rate, rand);
+//            rand = unidist(gen);
+//            rand_size = rand*particles.particles.size();
+//            int ind=rand_size;
+//            rand = rand_size-ind;
+//            assert(rand<1);
+//            //BINDING OF FrzB
+//            particles.binding_FrzB(ind, FrzB_num, rand);
+//
+//            rand = unidist(gen);
+//            rand_size = rand*particles.particles.size();
+//            ind=rand_size;
+//            rand = rand_size-ind;
+//            //UNBINDING OF FrezB
+//            particles.unbinding_FrzB(ind, FrzB_num,rate, rand);
 //////////////////////////////////////////////////////////////////////
 
 //////////////////// Particle Movement, Un-/Binding to Clusters etc ///
@@ -151,7 +140,7 @@ int main(int argc,char *argv[])
 //      choose random particle for interaction and movement
             rand = unidist(gen);
             rand_size = rand*particles.particles.size();
-            ind=rand_size;
+            int ind=rand_size;
             rand=rand_size-ind;
             assert(rand<1);
             if(particles.is_diffuse(particles.get_pos(ind)))
@@ -171,10 +160,16 @@ int main(int argc,char *argv[])
 //////////////////////////////////////////////////////////////////////////
         }
 
-////////////////////////// Labelling of clusters, Printout////////////////
-        if(MC_counter%20000==0)
-        {
+//        particles.attempt_destruction(rand);
+//
+//        particles.attempt_creation(rand);
 
+////////////////////////// Labelling of clusters, Printout////////////////
+        if(MC_counter%10000==0)
+        {
+//        out << Nx << '\t' << Ny << '\t' <<'\n';
+//        out2 << Nx << '\t' << Ny << '\t' <<'\n';
+//        out3 << Nx << '\t' << Ny << '\t' <<'\n';
 //                std::cout<<"Number of bonds: ";
             std::vector<int> labels(particles.particles.size(),0);
             int label_i = 1;
@@ -189,11 +184,9 @@ int main(int argc,char *argv[])
                     out << num_bonds<< '\t';
                 }
             }
-
-
-
             //std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
             std::cout<<"Number of clusters: " << std::ranges::max(labels) << '\n';
+            std::cout<<"Number of particles: "<<particles.particles.size()<< '\n';
 //            print_container(labels);
             out << '\n';
             particles.print_labels(out2,labels);
@@ -201,7 +194,6 @@ int main(int argc,char *argv[])
             particles.print_Frz(out3);
         }
 //////////////////////////////////////////////////////////////////////////
-
         MC_counter++;
     }
 
