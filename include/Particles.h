@@ -18,13 +18,14 @@ int binding_succ=0;
 int diffuse_attempt=0;
 int diffuse_succ=0;
 
-double const k_on=0.05;
-double const  k_off=0.5;
+double const  k_off=5*pow(10,-2);
+double const k_on=k_off/55;
 
 double density;
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937_64 gen(seed);
 std::uniform_real_distribution<double> unidist(0.0,1.0);
+std::default_random_engine generator (seed);
 
 void print_container(const std::vector<int>& c)
 {
@@ -48,7 +49,6 @@ struct Particle
 {
     int pos=0;
     int ori=0;
-    int Frz_A_B=0;
 };
 
 
@@ -60,16 +60,18 @@ class Particles
 private:
 
 public:
-    std::array<std::weak_ptr<Particle>,Nxy> grid1;
+    std::vector<std::weak_ptr<Particle>> grid1;
     std::vector<std::shared_ptr<Particle> > particles;
     Lattice &lattice;
+    int initial_num = 1000;
 
 
 
     Particles(Lattice &lattice):lattice(lattice)
     {
-        int initial_num = Nxy*density;
+
         particles.resize(initial_num);
+        grid1.resize(Nxy);
 
         for (int i=0; i<initial_num; i++)
         {
@@ -93,6 +95,7 @@ public:
         }
     }
 
+//////////// GETTERS, SETTERS //////////////
     inline int get_pos(const int ind) const
     {
         auto p = particles[ind];
@@ -102,32 +105,32 @@ public:
 
     inline bool is_free(const int pos) const
     {
-        return grid1.at(pos).expired();
+        return grid1[pos].expired();
     }
 
     inline bool is_diffuse(const int pos) const
     {
+        int ori=0;
         if(!grid1[pos].expired())
         {
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
-            int ori = p-> ori;
-            bool diffuse = (ori==1);
-            return diffuse;
+            ori = p-> ori;
         }
-        return false;
+        return ori==1;
+
     }
     inline bool is_bound(const int pos) const
     {
+        int ori=0;
         if(!grid1[pos].expired())
         {
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
-            int ori = p-> ori;
-            bool bound = (ori>1);
-            return bound;
+            ori = p-> ori;
         }
-        return false;
+        return ori>1;
+
     }
     inline int get_orientation(const int pos) const
     {
@@ -138,8 +141,8 @@ public:
             auto p = std::shared_ptr<Particle> (grid1[pos].lock());
 
             ori = p-> ori;
-            return ori-3;
         }
+        return ori-3;
     }
     inline void set_orientation(const int pos, const int ori)
     {
@@ -158,34 +161,139 @@ public:
         grid1[new_pos].swap(grid1[old_pos]);
 
     }
-    inline bool is_interaction_allowed(const int ori_1, const int ori_2, const int slope) const
+    inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int slope) const
     {
-        return (ori_1 != ori_2 && ((ori_1 + slope)*(ori_2+slope))!=0);
+        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0);
+    }
+
+    //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
+    int count_interacting_neighbors(const int pos, const int ori) const
+    {
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+        int count_bound = 0;
+
+        for(unsigned int i=0; i<n.size(); i++)
+        {
+            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),n[i].slope))
+            {
+                count_bound++;
+            }
+
+        }
+        return count_bound;
     }
 
 
 //CREATION ATTEMPT
-////////    void attempt_creation(const int pos, const double &rand)
-////////    {
-////////        if(rand<=k_on)
-////////        {
-////////            std::cout<<"particle created"<<"\n";
-////////            positions.emplace_back(pos);
-////////            grid[pos]=1;
-////////        }
-////////    }
+    void attempt_creation(const double &k_on)
+    {
+        int free_hexes=(Nx*Ny)-particles.size();
+        double k_on_1 = k_on*(initial_num-particles.size());
+        std::binomial_distribution<int> bnom(free_hexes,k_on_1);
+
+        int new_particles_created = bnom(generator);
+//        std::cout<<particles.size()<<'\t'<<new_particles_created<<'\n';
+        if(particles.size()+new_particles_created>initial_num)
+        {
+            new_particles_created=new_particles_created+(initial_num-particles.size()-new_particles_created);
+        }
+//        std::cout<<Nxy<<'\t'<<random<<'\n';
+        for ( int i=0; i<new_particles_created; i++)
+        {
+            double random=unidist(gen);
+            double random_size = random*Nxy;
+            int pos=random_size;
+            random=random_size-pos;
+            if(is_free(pos))
+            {
+                auto p = std::make_shared<Particle>();
+                p-> pos = pos;
+                p->ori =1;
+
+                particles.emplace_back(p);
+                std::weak_ptr<Particle> pw(p);
+                grid1[pos]= pw;
+            }
+            else
+            {
+                i--;
+            }
+
+        }
+    }
+//
+//
+////DESTRUCTION ATTEMPT
+    void attempt_destruction(double &rand)
+    {
+        int num_destroyed=0;
+        for(unsigned int ind=0; ind<particles.size(); ind++)
+        {
+            if(is_diffuse(get_pos(ind)))
+            {
+                rand = unidist(gen);
+                if(rand<k_off)
+                {
+                    int pos = get_pos(ind);
+                    assert(!grid1[pos].expired());
+                    auto it = particles.begin()+ind;
+                    particles.erase(it);
+                    assert(grid1[pos].expired());
+                    num_destroyed++;
+                }
+            }
+
+        }
+        std::cout<<num_destroyed<<'\n';
+    }
 
 
-//DESTRUCTION ATTEMPT
-////////    void attempt_destruction(const int pos,const double &rand)
-////////    {
-////////        if(rand<k_off)
-////////        {
-//////////            std::cout<<"particle destroyed"<<"\n";
-////////            grid[pos]=0;
-////////            positions.erase(std::find(begin(positions),end(positions),pos));
-////////        }
-////////    }
+//CELL GROWTH
+    void cell_growth(double &rand,int &Nx)
+    {
+        double rand_size = Nx*rand;
+        int column_insert = rand_size;
+        rand = rand_size-column_insert;
+        Nx++;
+        std::vector<std::weak_ptr<Particle> > column;
+        column.resize(Ny);
+        auto it = grid1.begin()+column_insert*Ny;
+
+        grid1.insert(it, column.begin(),column.end());
+        std::cout<<grid1.size();
+
+        for(int i=(Nx*Ny-1); i>=Ny*column_insert; i--)
+        {
+            if(!grid1[i].expired())
+            {
+                auto p = std::shared_ptr<Particle> (grid1[i].lock());
+
+                int pos = p->pos;
+                int new_pos = pos+Ny;
+                p->pos = new_pos;
+            }
+        }
+        for(int i=(Nx*Ny-1); i>=Ny*column_insert; i--)
+        {
+            if(!grid1[i].expired() && is_bound(i))
+            {
+                auto p = std::shared_ptr<Particle> (grid1[i].lock());
+
+                int pos = p->pos;
+                int ori = p-> ori;
+                int is_still_bound = count_interacting_neighbors(pos, ori);
+                if(is_still_bound>=1)
+                {
+                    return;
+                }
+                else
+                {
+                    set_orientation(pos,1);
+                }
+            }
+        }
+    }
+
 
 
 //DIFFUSE PARTICLES
@@ -210,24 +318,6 @@ public:
             set_pos(particle_pos,new_pos, ind);
             diffuse_succ++;
         }
-    }
-
-
-//COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
-    int count_interacting_neighbors(const int pos, const int ori) const
-    {
-        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
-        int count_bound = 0;
-
-        for(unsigned int i=0; i<n.size(); i++)
-        {
-            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),n[i].slope))
-            {
-                count_bound++;
-            }
-
-        }
-        return count_bound;
     }
 
 
@@ -403,7 +493,10 @@ public:
 
         auto _is_labelled = [this,&labels](const Neighbour &n)
         {
-            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q) { return q->pos == n.position; }));
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q)
+            {
+                return q->pos == n.position;
+            }));
 //            auto it= (std::find(begin(positions),end(positions),n.position));
             if(it!= particles.end())
             {
@@ -415,7 +508,10 @@ public:
 
         auto _label = [this,&labels,i,pos,&num_bonds](const Neighbour &n)
         {
-            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q) { return q->pos == n.position; }));
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q)
+            {
+                return q->pos == n.position;
+            }));
 //            auto it= (std::find(begin(positions),end(positions),n.position));
             if(it!= particles.end())
             {

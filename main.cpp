@@ -22,23 +22,21 @@ int main(int argc,char *argv[])
 
     double J,alpha;
     int slurm_index;
-    if(argc==5)
+    if(argc==4)
     {
         J= atof(argv[1]);
         alpha = atof(argv[2]);
-        density = atof(argv[3]);
-        slurm_index = atof(argv[4]);
+        slurm_index = atof(argv[3]);
     }
     else
     {
         alpha=0.5;
         J=4;
-        density = 0.2;
-        slurm_index = 7;
+        slurm_index = 16;
         std::cout << "Using default parameters." << '\n';
     }
-
-    const int MC_steps = pow(10,6); // number of Monte Carlo Steps
+    density = 0.1;
+    const int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
 //    long double rand;
@@ -50,11 +48,11 @@ int main(int argc,char *argv[])
     Particles particles(lattice);
 ///////////////////////////
     std::ostringstream fn;
-    fn << "weird" << J << "_" << alpha << "_" <<density<<"_"<< slurm_index << ".txt";//k_un << "_" << k << ".txt";
+    fn << slurm_index << "_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
     std::ostringstream fn2;
-    fn2 << "weird_labels_" << J << "_" << alpha<<"_"  <<density<<"_" << slurm_index << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << slurm_index << "_dFrzB_labels_J_" << J << "_alpha_" << alpha << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
@@ -74,7 +72,7 @@ int main(int argc,char *argv[])
 
         for(unsigned int attempted_moves=0; attempted_moves<particles.particles.size(); attempted_moves++)
         {
-        std::cout<<attempted_moves<<"\n";
+//        std::cout<<attempted_moves<<"\n";
 //            for(unsigned int i =0; i<particles.positions.size(); i++)
 //            {
 //                int p=particles.get_pos(i);
@@ -110,7 +108,7 @@ int main(int argc,char *argv[])
             rand = unidist(gen);
             rand_size = rand*particles.particles.size();
             int ind=rand_size;
-            std::cout<<"ind \t"<<ind<<"\n";
+//            std::cout<<"ind \t"<<ind<<"\n";
             rand=rand_size-ind;
             assert(rand<1);
             if(particles.is_diffuse(particles.get_pos(ind)))
@@ -142,7 +140,14 @@ int main(int argc,char *argv[])
             }
 
         }
-        if(MC_counter%20000==0)
+
+        particles.attempt_destruction(rand);
+
+        particles.attempt_creation(k_on);
+
+
+
+        if(MC_counter%10000==0)
         {
 
 //                std::cout<<"Number of bonds: ";
