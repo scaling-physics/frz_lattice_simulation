@@ -21,18 +21,20 @@ int main(int argc,char *argv[])
 {
 
     double J,alpha;
-    int slurm_index;
-    if(argc==4)
+    int slurm_index,exponent;
+    if(argc==5)
     {
         J= atof(argv[1]);
         alpha = atof(argv[2]);
-        slurm_index = atof(argv[3]);
+        exponent= atof(argv[3]);
+        slurm_index = atof(argv[4]);
     }
     else
     {
-        alpha=0.5;
-        J=4;
-        slurm_index = 16;
+        alpha=0.1;
+        J=2.6;
+        exponent=6;
+        slurm_index = 21;
         std::cout << "Using default parameters." << '\n';
     }
     density = 0.1;
@@ -43,21 +45,34 @@ int main(int argc,char *argv[])
     double rand;
 //    long double rand_size;
     double rand_size;
+    double gamma = 1.8*pow(10,-exponent);
+    double const  k_off=5*pow(10,-5);
+    //double const k_on=k_off/55;
+    double const k_on=2*pow(10,-(exponent+1));
+
 
     Lattice lattice;
     Particles particles(lattice);
 ///////////////////////////
+//    std::ostringstream fn;
+//    fn << slurm_index << "growth_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << ".txt";//k_un << "_" << k << ".txt";
+//    std::ofstream out;
+//    out.open(fn.str());
+//    std::ostringstream fn2;
+//    fn2 << slurm_index << "growth_dFrzB_labels_J_" << J << "_alpha_" << alpha << ".txt";// k_un << "_" << k << ".txt";
+//    std::ofstream out2;
+//    out2.open(fn2.str());
     std::ostringstream fn;
-    fn << slurm_index << "_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << ".txt";//k_un << "_" << k << ".txt";
+    fn << slurm_index << "_growth_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
     std::ostringstream fn2;
-    fn2 << slurm_index << "_dFrzB_labels_J_" << J << "_alpha_" << alpha << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << slurm_index << "_growth_dFrzB_labels_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
-    out << Nx << '\t' << Ny << '\t' <<'\n';
-    out2 << Nx << '\t' << Ny << '\t' <<'\n';
+//    out << Nx << '\t' << Ny << '\t' <<'\n';
+//    out2 << Nx << '\t' << Ny << '\t' <<'\n';
 ///////////////////////////
 
 
@@ -69,6 +84,7 @@ int main(int argc,char *argv[])
 //    File_grid << "Nx "  << Nx << ", Ny "<<Ny<<"\n";
     while(MC_counter<MC_steps)
     {
+
 
         for(unsigned int attempted_moves=0; attempted_moves<particles.particles.size(); attempted_moves++)
         {
@@ -140,15 +156,21 @@ int main(int argc,char *argv[])
             }
 
         }
+//
+        if(Nx<300)
+        {
 
-        particles.attempt_destruction(rand);
+        if(rand<gamma*Nx){particles.cell_growth(rand,Nx);}}
 
-        particles.attempt_creation(k_on);
+//        particles.attempt_destruction(rand);
+//
+        if(particles.particles.size()<1501){particles.attempt_creation(k_on);}
 
 
 
         if(MC_counter%10000==0)
         {
+            std::cout<<Nx<<"num of particles \t"<<particles.particles.size()<<'\n';
 
 //                std::cout<<"Number of bonds: ";
             std::vector<int> labels(particles.particles.size(),0);

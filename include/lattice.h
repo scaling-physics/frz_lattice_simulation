@@ -12,8 +12,8 @@
 #include <algorithm>
 
 //declare global dimensions
-const int Nx=200;
-const int Ny=40;
+int Nx=20;
+int Ny=50;
 const int Nxy = Nx*Ny;
 
 inline int mod(int a, int b)

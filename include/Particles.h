@@ -18,8 +18,6 @@ int binding_succ=0;
 int diffuse_attempt=0;
 int diffuse_succ=0;
 
-double const  k_off=5*pow(10,-2);
-double const k_on=k_off/55;
 
 double density;
 unsigned long int seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -63,7 +61,7 @@ public:
     std::vector<std::weak_ptr<Particle>> grid1;
     std::vector<std::shared_ptr<Particle> > particles;
     Lattice &lattice;
-    int initial_num = 1000;
+    int initial_num = density*Nxy;
 
 
 
@@ -188,15 +186,15 @@ public:
     void attempt_creation(const double &k_on)
     {
         int free_hexes=(Nx*Ny)-particles.size();
-        double k_on_1 = k_on*(initial_num-particles.size());
+        double k_on_1 = k_on;//*(initial_num-particles.size());
         std::binomial_distribution<int> bnom(free_hexes,k_on_1);
 
         int new_particles_created = bnom(generator);
 //        std::cout<<particles.size()<<'\t'<<new_particles_created<<'\n';
-        if(particles.size()+new_particles_created>initial_num)
-        {
-            new_particles_created=new_particles_created+(initial_num-particles.size()-new_particles_created);
-        }
+//        if(particles.size()+new_particles_created>initial_num)
+//        {
+//            new_particles_created=new_particles_created+(initial_num-particles.size()-new_particles_created);
+//        }
 //        std::cout<<Nxy<<'\t'<<random<<'\n';
         for ( int i=0; i<new_particles_created; i++)
         {
@@ -224,7 +222,7 @@ public:
 //
 //
 ////DESTRUCTION ATTEMPT
-    void attempt_destruction(double &rand)
+    void attempt_destruction(double &rand,double k_off)
     {
         int num_destroyed=0;
         for(unsigned int ind=0; ind<particles.size(); ind++)
@@ -235,16 +233,26 @@ public:
                 if(rand<k_off)
                 {
                     int pos = get_pos(ind);
+////////
+//                    if (!grid1[pos].expired())
+//                    {std::cout<<"particle found"<<'\t';}
+//                    else{std::cout<<"particle missing"<<'\t';}
+//////
                     assert(!grid1[pos].expired());
                     auto it = particles.begin()+ind;
                     particles.erase(it);
                     assert(grid1[pos].expired());
+//////
+//                    if (grid1[pos].expired())
+//                    {std::cout<<"del success"<<'\n';}
+//                    else{std::cout<<"del failed"<<'\n';}
+//////
                     num_destroyed++;
                 }
             }
 
         }
-        std::cout<<num_destroyed<<'\n';
+//        std::cout<<num_destroyed<<'\n';
     }
 
 
@@ -260,7 +268,7 @@ public:
         auto it = grid1.begin()+column_insert*Ny;
 
         grid1.insert(it, column.begin(),column.end());
-        std::cout<<grid1.size();
+//        std::cout<<grid1.size();
 
         for(int i=(Nx*Ny-1); i>=Ny*column_insert; i--)
         {
@@ -299,7 +307,11 @@ public:
 //DIFFUSE PARTICLES
     void attempt_diffusion(const int ind, double &rand)
     {
-        // get diffuse particle
+        // get diffuse particle//        if(particles.size()+new_particles_created>initial_num)
+//        {
+//            new_particles_created=new_particles_created+(initial_num-particles.size()-new_particles_created);
+//        }
+
         diffuse_attempt++;
         int particle_pos = get_pos(ind);
 
@@ -568,6 +580,7 @@ public:
 
     void print_labels(std::ofstream &out,std::vector<int> &labels) const
     {
+        out << Nx << '\t' << Ny <<'\n';
         std::stringstream buffer;
         for(auto &x:labels)
         {
