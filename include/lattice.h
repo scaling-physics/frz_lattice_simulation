@@ -12,9 +12,9 @@
 #include <algorithm>
 
 //declare global dimensions
-int Nx=20;
+int Nx=100;
 int Ny=50;
-const int Nxy = Nx*Ny;
+int Nxy = Nx*Ny;
 
 inline int mod(int a, int b)
 {
@@ -40,41 +40,7 @@ class Lattice
 {
 private:
 
-
-
-
-public:
-
-    inline std::array<int,2> get_coord(const int pos) const
-    {
-        //transform 1d array into 2d notation
-//        int x=pos%Nx;
-//        int y=pos/Nx;
-        int x=pos/Ny;
-        int y=pos%Ny;
-
-
-        std::array<int, 2> coord{x,y};
-        return coord;
-    }
-
-    inline int get_single_index(const int x, const int y) const
-    {
-//        int index = y*Nx+x;
-        int index = x*Ny+y;
-
-        return index;
-    }
-
-//    inline bool is_in_lattice(const std::array<int,2> coord) const
-//    {
-//        int x=coord[0];
-//        int y= coord[1];
-//        return ( (unsigned int)x<Nx && (unsigned int)y<Ny );//negative values are looped around to big numbers by the cast to unsigned. In this way, only one inequality is required.
-//    }
-
-
-    std::vector<Neighbour> get_neighbors2(const int pos) const
+    std::vector<Neighbour> get_neighbors2(const int pos) const //determine the neighbours of site
     {
         std::vector<Neighbour> n;
 
@@ -154,6 +120,55 @@ public:
 
 
         return n;
+    }
+
+
+
+
+public:
+
+    std::vector<std::vector<Neighbour>> neighbours;
+
+
+
+    Lattice(){
+        determine_all_neighbours();
+    }
+
+    inline std::array<int,2> get_coord(const int pos) const
+    {
+        //transform 1d array into 2d notation
+//        int x=pos%Nx;
+//        int y=pos/Nx;
+        int x=pos/Ny;
+        int y=pos%Ny;
+
+
+        std::array<int, 2> coord{x,y};
+        return coord;
+    }
+
+    inline int get_single_index(const int x, const int y) const
+    {
+//        int index = y*Nx+x;
+        int index = x*Ny+y;
+
+        return index;
+    }
+
+//    inline bool is_in_lattice(const std::array<int,2> coord) const
+//    {
+//        int x=coord[0];
+//        int y= coord[1];
+//        return ( (unsigned int)x<Nx && (unsigned int)y<Ny );//negative values are looped around to big numbers by the cast to unsigned. In this way, only one inequality is required.
+//    }
+
+    void determine_all_neighbours()
+    {
+        neighbours.resize(Nxy);
+        for(int i=0;i<Nxy;i++){
+            neighbours[i]=get_neighbors2(i);
+        }
     }
 
 

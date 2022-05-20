@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <ranges>
 
-//# define NDEBUG //comment out to turn on assert.
+# define NDEBUG //comment out to turn on assert.
 # include <assert.h>	// for assert()
 
 #include "lattice.h"
@@ -33,12 +33,12 @@ int main(int argc,char *argv[])
     {
         alpha=0.1;
         J=2.6;
-        exponent=6;
+        exponent=16;
         slurm_index = 21;
         std::cout << "Using default parameters." << '\n';
     }
     density = 0.1;
-    const int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
+    const int MC_steps = 5*pow(10,4); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
 //    long double rand;

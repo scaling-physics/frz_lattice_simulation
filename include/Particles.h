@@ -106,12 +106,23 @@ public:
         return grid1[pos].expired();
     }
 
+
+    inline int get_ori(const int pos) const
+    {
+        if(auto p{grid1[pos].lock()}){
+
+           return p-> ori;
+        }
+        else{return 0;}
+    }
+
+
     inline bool is_diffuse(const int pos) const
     {
         int ori=0;
         if(!grid1[pos].expired())
         {
-            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+            auto p(grid1[pos].lock());
 
             ori = p-> ori;
         }
@@ -123,7 +134,7 @@ public:
         int ori=0;
         if(!grid1[pos].expired())
         {
-            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
+            auto p(grid1[pos].lock());
 
             ori = p-> ori;
         }
@@ -134,22 +145,16 @@ public:
     {
         int ori=0;
         assert(!grid1[pos].expired());
-        if(!grid1[pos].expired())
-        {
-            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
-
-            ori = p-> ori;
-        }
+        auto p(grid1[pos].lock());
+        ori = p-> ori;
         return ori-3;
     }
+
     inline void set_orientation(const int pos, const int ori)
     {
-        if(!grid1[pos].expired())
-        {
-            auto p = std::shared_ptr<Particle> (grid1[pos].lock());
-
-            p-> ori = ori;
-        }
+        assert(!grid1[pos].expired());
+        auto p(grid1[pos].lock());
+        p-> ori = ori;
     }
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
@@ -167,12 +172,12 @@ public:
     //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
     int count_interacting_neighbors(const int pos, const int ori) const
     {
-        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+        std::vector<Neighbour>& n(lattice.neighbours[pos]);
         int count_bound = 0;
 
         for(unsigned int i=0; i<n.size(); i++)
         {
-            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),n[i].slope))
+            if(int raw_ori=get_ori(n[i].position) && is_interaction_allowed(ori,raw_ori-3,n[i].slope))
             {
                 count_bound++;
             }
@@ -263,6 +268,9 @@ public:
         int column_insert = rand_size;
         rand = rand_size-column_insert;
         Nx++;
+        Nxy=Nx*Ny;
+        lattice.determine_all_neighbours();
+
         std::vector<std::weak_ptr<Particle> > column;
         column.resize(Ny);
         auto it = grid1.begin()+column_insert*Ny;
@@ -316,8 +324,7 @@ public:
         int particle_pos = get_pos(ind);
 
         //choose random direction
-        std::vector<Neighbour> n(lattice.get_neighbors2(particle_pos));
-
+        std::vector<Neighbour>& n(lattice.neighbours[particle_pos]);
 //        long double rand_size=rand*n.size();
         double rand_size=rand*n.size();
         int dir=rand_size;
@@ -356,7 +363,7 @@ public:
         interactions.num_diffuse=1;
 
 
-        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+        std::vector<Neighbour>& n(lattice.neighbours[pos]);
 
         auto _is_diffuse = [this](const Neighbour &n)
         {
@@ -441,7 +448,7 @@ public:
         interactions.num_diffuse=1;
 
         int pos = get_pos(ind);
-        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+        std::vector<Neighbour>& n(lattice.neighbours[pos]);
 
         auto _is_bound = [this](const Neighbour &n)
         {
@@ -491,7 +498,7 @@ public:
 
         int pos = get_pos(ind);
         int ori = get_orientation(pos);
-        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+        std::vector<Neighbour>& n(lattice.neighbours[pos]);
 
         auto _is_bound = [this](const Neighbour &n)
         {
