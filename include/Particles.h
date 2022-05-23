@@ -177,7 +177,7 @@ public:
 
         for(unsigned int i=0; i<n.size(); i++)
         {
-            if(int raw_ori=get_ori(n[i].position) && is_interaction_allowed(ori,raw_ori-3,n[i].slope))
+            if(int raw_ori=get_ori(n[i].position); raw_ori>1 && is_interaction_allowed(ori,raw_ori-3,n[i].slope))
             {
                 count_bound++;
             }
@@ -381,7 +381,7 @@ public:
                 interactions.orientations.emplace_back(ori2);
                 interactions.num_bonds++;
                 interactions.num_diffuse++;
-                int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori);
+                int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori2);
                 if(bound_neigh_of_neigh>1)
                 {
                     interactions.num_bonds=interactions.num_bonds+(bound_neigh_of_neigh-1);
