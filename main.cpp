@@ -202,9 +202,6 @@ int main(int argc,char *argv[])
                     particles.label(label_index,label_i,labels,num_bonds,num_particles);
                     label_i++;
 //                        std::cout << num_bonds << '\t';
-                    if(num_particles==1){
-                        int x=1;
-                    }
                     assert(num_particles>1);
                     out << num_particles<< '\t';
                     out2 << num_bonds<< '\t';

@@ -177,7 +177,7 @@ public:
 
         for(unsigned int i=0; i<n.size(); i++)
         {
-            if(int raw_ori=get_ori(n[i].position); raw_ori && is_interaction_allowed(ori,raw_ori-3,n[i].slope))
+            if(int raw_ori=get_ori(n[i].position); raw_ori>1 && is_interaction_allowed(ori,raw_ori-3,n[i].slope))
             {
                 count_bound++;
             }
@@ -494,7 +494,6 @@ public:
     void label(int ind, int i,std::vector<int> &labels,int &num_bonds,int &num_particles) const
     {
 
-        std::cout << "Labelling particle " << ind << " with label " << i << ". Bond neighbours are paticles ";
         labels[ind]=i;
         num_particles++;
 
@@ -546,23 +545,6 @@ public:
             }
         };
 
-        auto _write = [this,&labels,i,pos,&num_bonds,&num_particles](const Neighbour &n)
-        {
-            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q)
-            {
-                return q->pos == n.position;
-            }));
-            if(it!= particles.end())
-            {
-                int inds = it-particles.begin();
-                std::cout <<  inds << '\t';
-            }
-            else
-            {
-
-            std::cout << "error";}
-
-        };
 
 
         auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
@@ -571,9 +553,6 @@ public:
         auto cnt = std::ranges::distance(s2);
         num_bonds=num_bonds+cnt;
 
-
-        std::ranges::for_each(s1,_write);
-        std::cout << '\n';
         std::ranges::for_each(s1,_label);
     }
 
