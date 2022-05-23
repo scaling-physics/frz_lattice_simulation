@@ -177,7 +177,7 @@ public:
 
         for(unsigned int i=0; i<n.size(); i++)
         {
-            if(int raw_ori=get_ori(n[i].position) && is_interaction_allowed(ori,raw_ori-3,n[i].slope))
+            if(int raw_ori=get_ori(n[i].position); raw_ori && is_interaction_allowed(ori,raw_ori-3,n[i].slope))
             {
                 count_bound++;
             }
@@ -381,7 +381,7 @@ public:
                 interactions.orientations.emplace_back(ori2);
                 interactions.num_bonds++;
                 interactions.num_diffuse++;
-                int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori);
+                int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori2);
                 if(bound_neigh_of_neigh>1)
                 {
                     interactions.num_bonds=interactions.num_bonds+(bound_neigh_of_neigh-1);
@@ -447,8 +447,7 @@ public:
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
 
-        int pos = get_pos(ind);
-        std::vector<Neighbour>& n(lattice.neighbours[pos]);
+        std::vector<Neighbour>& n(lattice.neighbours[particle_pos]);
 
         auto _is_bound = [this](const Neighbour &n)
         {
@@ -492,9 +491,12 @@ public:
     }
 
 
-    void label(int ind, int i,std::vector<int> &labels,int &num_bonds) const
+    void label(int ind, int i,std::vector<int> &labels,int &num_bonds,int &num_particles) const
     {
+
+        std::cout << "Labelling particle " << ind << " with label " << i << ". Bond neighbours are paticles ";
         labels[ind]=i;
+        num_particles++;
 
         int pos = get_pos(ind);
         int ori = get_orientation(pos);
@@ -522,10 +524,11 @@ public:
                 int inds = it-particles.begin();
                 return labels[inds]!=0;
             }
+            return false;
         };
 
 
-        auto _label = [this,&labels,i,pos,&num_bonds](const Neighbour &n)
+        auto _label = [this,&labels,i,pos,&num_bonds,&num_particles](const Neighbour &n)
         {
             auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q)
             {
@@ -537,19 +540,41 @@ public:
                 int inds = it-particles.begin();
                 if(labels[inds]==0)
                 {
-                    label(inds,i,labels,num_bonds);
+                    assert(particles[inds]->ori >1);
+                    label(inds,i,labels,num_bonds,num_particles);
                 }
             }
         };
 
+        auto _write = [this,&labels,i,pos,&num_bonds,&num_particles](const Neighbour &n)
+        {
+            auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q)
+            {
+                return q->pos == n.position;
+            }));
+            if(it!= particles.end())
+            {
+                int inds = it-particles.begin();
+                std::cout <<  inds << '\t';
+            }
+            else
+            {
+
+            std::cout << "error";}
+
+        };
 
 
-        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed) | std::views::filter(_is_labelled);
-        auto cnt = std::ranges::distance(s1);
+        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+
+        auto s2=s1 | std::views::filter(_is_labelled);
+        auto cnt = std::ranges::distance(s2);
         num_bonds=num_bonds+cnt;
 
-        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
-        std::ranges::for_each(s2,_label);
+
+        std::ranges::for_each(s1,_write);
+        std::cout << '\n';
+        std::ranges::for_each(s1,_label);
     }
 
     std::vector<int> orientations_vec() const

@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <ranges>
 
-# define NDEBUG //comment out to turn on assert.
+//# define NDEBUG //comment out to turn on assert.
 # include <assert.h>	// for assert()
 
 #include "lattice.h"
@@ -34,11 +34,11 @@ int main(int argc,char *argv[])
         alpha=0.1;
         J=2.6;
         exponent=16;
-        slurm_index = 21;
+        slurm_index = 1001;
         std::cout << "Using default parameters." << '\n';
     }
     density = 0.1;
-    const int MC_steps = 5*pow(10,4); // number of Monte Carlo Steps
+    const int MC_steps = 5*pow(10,5); // number of Monte Carlo Steps
 //    const int MC_steps =500;
     int MC_counter = 0;
 //    long double rand;
@@ -63,11 +63,13 @@ int main(int argc,char *argv[])
 //    std::ofstream out2;
 //    out2.open(fn2.str());
     std::ostringstream fn;
-    fn << slurm_index << "_growth_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";//k_un << "_" << k << ".txt";
+    //fn << slurm_index << "_growth_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";//k_un << "_" << k << ".txt";
+    fn << slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
     std::ostringstream fn2;
-    fn2 << slurm_index << "_growth_dFrzB_labels_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";// k_un << "_" << k << ".txt";
+    //fn2 << slurm_index << "_growth_dFrzB_labels_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";// k_un << "_" << k << ".txt";
+    fn2 << slurm_index << "_bonds.txt";//k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
@@ -142,16 +144,26 @@ int main(int argc,char *argv[])
 //BINDING
                 particles.attempt_binding(alpha,J,ind,rand);
 //            print_container(particles.positions);
+            if(particles.is_bound(particles.get_pos(ind))){
 
-
+            assert(particles.get_orientation(particles.get_pos(ind))>-2);
+            assert(particles.get_ori(particles.get_pos(ind))==particles.particles[ind]->ori);
+            assert(particles.count_interacting_neighbors(particles.get_pos(ind),particles.get_orientation(particles.get_pos(ind))));
+            }
 
             }
 
             else if(particles.is_bound(particles.get_pos(ind)))
             {
 // UNBINDING ATTEMPT
+            assert(particles.get_ori(particles.get_pos(ind))==particles.particles[ind]->ori);
+            assert(particles.count_interacting_neighbors(particles.get_pos(ind),particles.get_orientation(particles.get_pos(ind))));
                 particles.attempt_unbinding(alpha,J,ind,rand);
 //            print_container(particles.positions);
+            if(particles.is_bound(particles.get_pos(ind))){
+            assert(particles.get_ori(particles.get_pos(ind))==particles.particles[ind]->ori);
+            assert(particles.count_interacting_neighbors(particles.get_pos(ind),particles.get_orientation(particles.get_pos(ind))));
+            }
 
             }
 
@@ -168,31 +180,44 @@ int main(int argc,char *argv[])
 
 
 
-        if(MC_counter%10000==0)
+        if(MC_counter%(   MC_counter<100 ? 1:  (int) pow(10,floor(log10(MC_counter))-2))==0)
         {
-            std::cout<<Nx<<"num of particles \t"<<particles.particles.size()<<'\n';
+
+            out << MC_counter << '\t';
+            out2 << MC_counter << '\t';
+            //std::cout<<Nx<<"num of particles \t"<<particles.particles.size()<<'\n';
 
 //                std::cout<<"Number of bonds: ";
             std::vector<int> labels(particles.particles.size(),0);
             int label_i = 1;
             for (unsigned int label_index=0; label_index < particles.particles.size(); label_index++)
             {
-                if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
+                //if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
+                if(particles.particles[label_index]->ori>1 && labels[label_index]==0)
                 {
+                    assert(particles.is_bound(particles.get_pos(label_index)));
+                    assert(particles.get_ori(particles.get_pos(label_index))==particles.particles[label_index]->ori);
                     int num_bonds=0;
-                    particles.label(label_index,label_i,labels,num_bonds);
+                    int num_particles=0;
+                    particles.label(label_index,label_i,labels,num_bonds,num_particles);
                     label_i++;
 //                        std::cout << num_bonds << '\t';
-                    out << num_bonds<< '\t';
+                    if(num_particles==1){
+                        int x=1;
+                    }
+                    assert(num_particles>1);
+                    out << num_particles<< '\t';
+                    out2 << num_bonds<< '\t';
                 }
             }
 
             //std::cout<<labels.size()<<" "<<particles.positions.size()<<'\n';
-            std::cout<<"Number of clusters: " << std::ranges::max(labels) << '\n';
+            //std::cout<<"Number of clusters: " << std::ranges::max(labels) << '\n';
 //            print_container(labels);
             out << '\n';
-            particles.print_labels(out2,labels);
-            particles.print(out2);
+            out2 << '\n';
+            //particles.print_labels(out2,labels);
+            //particles.print(out2);
         }
         MC_counter++;
     }
