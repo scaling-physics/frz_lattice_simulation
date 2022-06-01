@@ -129,6 +129,12 @@ public:
         return ori==1;
 
     }
+
+    inline bool is_diffuse_ind(const int ind) const
+    {
+        return particles[ind]->ori==1;
+    }
+
     inline bool is_bound(const int pos) const
     {
         int ori=0;
@@ -139,8 +145,13 @@ public:
             ori = p-> ori;
         }
         return ori>1;
-
     }
+
+        inline bool is_bound_ind(const int ind) const
+    {
+        return particles[ind]->ori>1;
+    }
+
     inline int get_orientation(const int pos) const
     {
         int ori=0;
@@ -150,12 +161,24 @@ public:
         return ori-3;
     }
 
+    inline int get_orientation_ind(const int ind) const
+    {
+        return particles[ind]->ori-3;
+    }
+
     inline void set_orientation(const int pos, const int ori)
     {
         assert(!grid1[pos].expired());
         auto p(grid1[pos].lock());
         p-> ori = ori;
     }
+
+    inline void set_orientation_ind(const int ind, const int ori)
+    {
+        particles[ind]-> ori = ori;
+    }
+
+
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
         assert(particles[ind]->pos == old_pos);
@@ -424,7 +447,7 @@ public:
             {
 //                std::cout<<"binding"<<"\n";
                 binding_succ++;
-                set_orientation(pos,ori+3);
+                set_orientation_ind(ind,ori+3);
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],interactions.orientations[i]+3);
@@ -441,7 +464,7 @@ public:
         // get bound particle
         unbinding_attempt++;
         int particle_pos = get_pos(ind);
-        int ori = get_orientation(particle_pos);
+        int ori = get_orientation_ind(ind);
 
         Interactions interactions;
         interactions.num_bonds=0;
@@ -478,7 +501,7 @@ public:
         if (rand<delta_E)
         {
 //            std::cout<<"unbinding"<<"\n";
-            set_orientation(particle_pos,1);
+            set_orientation_ind(ind,1);
             unbinding_succ++;
             if(interactions.possible_interaction_pos.size()>0)
             {

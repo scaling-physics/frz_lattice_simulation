@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <ranges>
 
-//# define NDEBUG //comment out to turn on assert.
+# define NDEBUG //comment out to turn on assert.
 # include <assert.h>	// for assert()
 
 #include "lattice.h"
@@ -31,8 +31,8 @@ int main(int argc,char *argv[])
     }
     else
     {
-        alpha=0.1;
         J=2.6;
+        alpha=0.1;
         exponent=16;
         slurm_index = 1001;
         std::cout << "Using default parameters." << '\n';
@@ -64,14 +64,16 @@ int main(int argc,char *argv[])
 //    out2.open(fn2.str());
     std::ostringstream fn;
     //fn << slurm_index << "_growth_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";//k_un << "_" << k << ".txt";
+
     fn << slurm_index << ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
-    std::ostringstream fn2;
-    //fn2 << slurm_index << "_growth_dFrzB_labels_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";// k_un << "_" << k << ".txt";
-    fn2 << slurm_index << "_bonds.txt";//k_un << "_" << k << ".txt";
-    std::ofstream out2;
-    out2.open(fn2.str());
+
+//    std::ostringstream fn2;
+//    //fn2 << slurm_index << "_growth_dFrzB_labels_J_" << J << "_alpha_" << alpha << "_exp_" << exponent << ".txt";// k_un << "_" << k << ".txt";
+//    fn2 << slurm_index << "_bonds.txt";//k_un << "_" << k << ".txt";
+//    std::ofstream out2;
+//    out2.open(fn2.str());
 
 //    out << Nx << '\t' << Ny << '\t' <<'\n';
 //    out2 << Nx << '\t' << Ny << '\t' <<'\n';
@@ -129,14 +131,10 @@ int main(int argc,char *argv[])
 //            std::cout<<"ind \t"<<ind<<"\n";
             rand=rand_size-ind;
             assert(rand<1);
-            if(particles.is_diffuse(particles.get_pos(ind)))
+            if(particles.is_diffuse_ind(ind))
             {
 
 //Move diffusive particles
-                if(rand<0)
-                {
-
-                }
                 particles.attempt_diffusion(ind, rand);
 //            print_container(particles.positions);
 
@@ -153,7 +151,7 @@ int main(int argc,char *argv[])
 
             }
 
-            else if(particles.is_bound(particles.get_pos(ind)))
+            else if(particles.is_bound_ind(ind))
             {
 // UNBINDING ATTEMPT
             assert(particles.get_ori(particles.get_pos(ind))==particles.particles[ind]->ori);
@@ -184,7 +182,8 @@ int main(int argc,char *argv[])
         {
 
             out << MC_counter << '\t';
-            out2 << MC_counter << '\t';
+            //out2 << MC_counter << '\t';
+
             //std::cout<<Nx<<"num of particles \t"<<particles.particles.size()<<'\n';
 
 //                std::cout<<"Number of bonds: ";
@@ -192,8 +191,7 @@ int main(int argc,char *argv[])
             int label_i = 1;
             for (unsigned int label_index=0; label_index < particles.particles.size(); label_index++)
             {
-                //if(particles.is_bound(particles.get_pos(label_index)) && labels[label_index]==0)
-                if(particles.particles[label_index]->ori>1 && labels[label_index]==0)
+                if(particles.is_bound_ind(label_index) && labels[label_index]==0)
                 {
                     assert(particles.is_bound(particles.get_pos(label_index)));
                     assert(particles.get_ori(particles.get_pos(label_index))==particles.particles[label_index]->ori);
@@ -204,7 +202,7 @@ int main(int argc,char *argv[])
 //                        std::cout << num_bonds << '\t';
                     assert(num_particles>1);
                     out << num_particles<< '\t';
-                    out2 << num_bonds<< '\t';
+                    //out2 << num_bonds<< '\t';
                 }
             }
 
@@ -212,7 +210,8 @@ int main(int argc,char *argv[])
             //std::cout<<"Number of clusters: " << std::ranges::max(labels) << '\n';
 //            print_container(labels);
             out << '\n';
-            out2 << '\n';
+            //out2 << '\n';
+
             //particles.print_labels(out2,labels);
             //particles.print(out2);
         }
