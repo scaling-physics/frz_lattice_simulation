@@ -129,6 +129,12 @@ public:
         return ori==1;
 
     }
+
+    inline bool is_diffuse_ind(const int ind) const
+    {
+        return particles[ind]->ori==1;
+    }
+
     inline bool is_bound(const int pos) const
     {
         int ori=0;
@@ -139,8 +145,13 @@ public:
             ori = p-> ori;
         }
         return ori>1;
-
     }
+
+        inline bool is_bound_ind(const int ind) const
+    {
+        return particles[ind]->ori>1;
+    }
+
     inline int get_orientation(const int pos) const
     {
         int ori=0;
@@ -150,12 +161,24 @@ public:
         return ori-3;
     }
 
+    inline int get_orientation_ind(const int ind) const
+    {
+        return particles[ind]->ori-3;
+    }
+
     inline void set_orientation(const int pos, const int ori)
     {
         assert(!grid1[pos].expired());
         auto p(grid1[pos].lock());
         p-> ori = ori;
     }
+
+    inline void set_orientation_ind(const int ind, const int ori)
+    {
+        particles[ind]-> ori = ori;
+    }
+
+
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
         assert(particles[ind]->pos == old_pos);
@@ -424,7 +447,7 @@ public:
             {
 //                std::cout<<"binding"<<"\n";
                 binding_succ++;
-                set_orientation(pos,ori+3);
+                set_orientation_ind(ind,ori+3);
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],interactions.orientations[i]+3);
@@ -441,14 +464,13 @@ public:
         // get bound particle
         unbinding_attempt++;
         int particle_pos = get_pos(ind);
-        int ori = get_orientation(particle_pos);
+        int ori = get_orientation_ind(ind);
 
         Interactions interactions;
         interactions.num_bonds=0;
         interactions.num_diffuse=1;
 
-        int pos = get_pos(ind);
-        std::vector<Neighbour>& n(lattice.neighbours[pos]);
+        std::vector<Neighbour>& n(lattice.neighbours[particle_pos]);
 
         auto _is_bound = [this](const Neighbour &n)
         {
@@ -479,7 +501,7 @@ public:
         if (rand<delta_E)
         {
 //            std::cout<<"unbinding"<<"\n";
-            set_orientation(particle_pos,1);
+            set_orientation_ind(ind,1);
             unbinding_succ++;
             if(interactions.possible_interaction_pos.size()>0)
             {
@@ -492,9 +514,11 @@ public:
     }
 
 
-    void label(int ind, int i,std::vector<int> &labels,int &num_bonds) const
+    void label(int ind, int i,std::vector<int> &labels,int &num_bonds,int &num_particles) const
     {
+
         labels[ind]=i;
+        num_particles++;
 
         int pos = get_pos(ind);
         int ori = get_orientation(pos);
@@ -522,10 +546,11 @@ public:
                 int inds = it-particles.begin();
                 return labels[inds]!=0;
             }
+            return false;
         };
 
 
-        auto _label = [this,&labels,i,pos,&num_bonds](const Neighbour &n)
+        auto _label = [this,&labels,i,pos,&num_bonds,&num_particles](const Neighbour &n)
         {
             auto it=(std::find_if(begin(particles),end(particles), [n](std::shared_ptr<Particle> q)
             {
@@ -537,19 +562,21 @@ public:
                 int inds = it-particles.begin();
                 if(labels[inds]==0)
                 {
-                    label(inds,i,labels,num_bonds);
+                    assert(particles[inds]->ori >1);
+                    label(inds,i,labels,num_bonds,num_particles);
                 }
             }
         };
 
 
 
-        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed) | std::views::filter(_is_labelled);
-        auto cnt = std::ranges::distance(s1);
+        auto s1= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+
+        auto s2=s1 | std::views::filter(_is_labelled);
+        auto cnt = std::ranges::distance(s2);
         num_bonds=num_bonds+cnt;
 
-        auto s2= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
-        std::ranges::for_each(s2,_label);
+        std::ranges::for_each(s1,_label);
     }
 
     std::vector<int> orientations_vec() const
