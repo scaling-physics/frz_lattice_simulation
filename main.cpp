@@ -24,25 +24,25 @@ int main(int argc,char *argv[])
     int FrzB_num;
     if(argc==6)
     {
-        J= atof(argv[1]);
-        alpha=atof(argv[2]);
-        FrzB_num=atof(argv[3]);
-        rate=atof(argv[4]);
+        J = atof(argv[1]);
+        alpha = atof(argv[2]);
+        FrzB_num = atof(argv[3]);
+        rate = atof(argv[4]);
         slurm_index = atof(argv[5]);
     }
     else
     {
-        J= 4;
+        J = 4;
         alpha=0.5;
         FrzB_num=210;
         rate=0.03;
-        slurm_index = 10;
+        slurm_index = 12;
         std::cout << "Using default parameters." << '\n';
     }
     titration_concentration_frzb= 1;
     density = 0.2;
 
-    const long int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
+    const long int MC_steps = 5*pow(10,5); // number of Monte Carlo Steps
     long int MC_counter = 0;
 //    long double rand;
     double rand;

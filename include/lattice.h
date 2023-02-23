@@ -48,10 +48,10 @@ public:
     inline std::array<int,2> get_coord(const int pos) const
     {
         //transform 1d array into 2d notation
-//        int x=pos%Nx;
-//        int y=pos/Nx;
-        int x=pos/Ny;
-        int y=pos%Ny;
+        int x=pos%Nx;
+        int y=pos/Nx;
+//        int x=pos/Ny;
+//        int y=pos%Ny;
 
         std::array<int, 2> coord{x,y};
         return coord;
@@ -59,8 +59,8 @@ public:
 
     inline int get_single_index(const int x, const int y) const
     {
-//        int index = y*Nx+x;
-        int index = x*Ny+y;
+        int index = y*Nx+x;
+//        int index = x*Ny+y;
         return index;
     }
 
