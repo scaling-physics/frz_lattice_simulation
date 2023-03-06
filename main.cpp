@@ -33,16 +33,16 @@ int main(int argc,char *argv[])
     else
     {
         J = 4;
-        alpha=0.5;
-        FrzB_num=210;
+        alpha=0.0;
+        FrzB_num=28;
         rate=0.03;
-        slurm_index = 12;
+        slurm_index = 20;
         std::cout << "Using default parameters." << '\n';
     }
-    titration_concentration_frzb= 1;
+    titration_concentration_frzb = 1;
     density = 0.2;
 
-    const long int MC_steps = 5*pow(10,5); // number of Monte Carlo Steps
+    const long int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
     long int MC_counter = 0;
 //    long double rand;
     double rand;
@@ -100,6 +100,19 @@ int main(int argc,char *argv[])
 //        else if(free_sites.size()==1){d++;}
 //
 //    }
+            int temp_FrzB_num = FrzB_num;
+//          choose random particle for FrzB binding/unbinding
+//            rand = unidist(gen);
+//            rand_size = rand*particles.particles.size();
+//            int ind=rand_size;
+//            rand = rand_size-ind;
+//            assert(rand<1);
+            for(unsigned int j=0;j<temp_FrzB_num;j++)
+                {//BINDING OF FrzB
+            particles.binding_FrzB(j, FrzB_num, rand);
+            std::cout<<FrzB_num<<'\n';
+                }
+
 //
 //    std::vector<int> free_sites(particles.get_free_flag_sites(258));
 //    std::cout<<"c= \t"<<c<<"\n";

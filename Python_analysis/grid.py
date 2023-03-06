@@ -102,7 +102,7 @@ for J in J_r:
         sns.lineplot(data=traj_long,x='X',y='num_of_clusters',color='b', ci='sd',ax=axs[2])
         plt.savefig(f'/home/hannohennighausen/Documents/frz_lattice_model/Python_analysis/image_par_sweep/avg_{J}_{alpha}_{density}.svg')
         plt.show()
-#%%
+##############
 
 color_scale=[[0,0,1],[0,1,0],[1,0,0],[1,0,0.6],[1,0.6,0],[0.6,1,0],[0,1,0.6],[0,0.6,1],[0.6,0,1],[1,1,0.6],[1,0.6,1],[0.6,1,1],[0,0,0.6],[0,0.6,0],[0.6,0,0],
              [0,0,0.2],[0,0.2,0],[0.2,0,0],[1,0,0.2],[1,0.2,0],[0.2,1,0],[0,1,0.2],[0,0.2,1],[0.2,0,1],[1,1,0.2],[1,0.2,1],[0.2,1,1],
