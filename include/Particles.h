@@ -776,6 +776,10 @@ public:
     void binding_FrzB(int ind, int &FrzB_num, double &rand)
     {
 //        assert (rand<1 && rand>0);
+        if (FrzB_num>0)
+        {
+
+
         int pos=get_pos(ind);
         int frz = get_flag(pos);
 //        std::cout<<"FrzB_num \t"<<FrzB_num<<"\t"<<"pos frz \t"<< pos<<"\t"<<frz<<"\t"<<"rand \t"<<rand<<"\t";
@@ -838,32 +842,33 @@ public:
                 }
             }
         }
+        }
 //        std::cout<<FrzB_num<<"\n";
     }
 // Unbinding FrzB acceptance rate proportional to e^(-deltaE)=const
     void unbinding_FrzB(const int ind,int &FrzB_num, const double &rate, double &rand )
     {
-        return;
-//        int pos=get_pos(ind);
-//        int frz = get_flag(pos);
-//        if(frz==0)
-//        {
-//            return;
-//        }
-//
-//        else if(frz>0 && frz<3 && rand<rate)
-//        {
-//            FrzB_num++;
-//            set_frz(ind,0);
-//            //options are to go from one to no FrzB
-//        }
-//        else if(frz==3 && (rate*2)>rand)
-//        {
-//            int new_frz = unidist(gen)*2;
-//            FrzB_num++;
-//            set_frz(ind,new_frz+1);
-//            //options are no FrzB = 0, or one FrzB = 1 or 2
-//        }
+//        return;
+        int pos=get_pos(ind);
+        int frz = get_flag(pos);
+        if(frz==0)
+        {
+            return;
+        }
+
+        else if(frz>0 && frz<3 && rand<rate)
+        {
+            FrzB_num++;
+            set_frz(ind,0);
+            //options are to go from one to no FrzB
+        }
+        else if(frz==3 && (rate*2)>rand)
+        {
+            int new_frz = unidist(gen)*2;
+            FrzB_num++;
+            set_frz(ind,new_frz+1);
+            //options are no FrzB = 0, or one FrzB = 1 or 2
+        }
     }
 
 
