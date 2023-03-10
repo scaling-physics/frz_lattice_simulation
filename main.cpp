@@ -19,7 +19,7 @@
 
 int main(int argc,char *argv[])
 {
-    double J,alpha,rate;
+    double J,alpha,beta,rate;
     int slurm_index;
     int FrzB_num;
     if(argc==6)
@@ -34,16 +34,17 @@ int main(int argc,char *argv[])
     {
         J = 4;
         alpha=0.5;
+        beta = J+2;
         FrzB_num=28;
         rate=0.03;
-        slurm_index = 26;
+        slurm_index = 4;
         std::cout << "Using default parameters." << '\n';
     }
 
     titration_concentration_frzb = 1;
     density = 0.2;
 
-    const long int MC_steps = 2*pow(10,6); // number of Monte Carlo Steps
+    const long int MC_steps = 4*pow(10,6); // number of Monte Carlo Steps
     long int MC_counter = 0;
 //    long double rand;
     double rand;
@@ -110,7 +111,7 @@ int main(int argc,char *argv[])
 //            assert(rand<1);
             for(unsigned int j=0;j<temp_FrzB_num;j++)
             {//BINDING OF FrzB
-                particles.binding_FrzB(j, FrzB_num, rand);
+                particles.binding_FrzB(j, FrzB_num);
                 std::cout<<FrzB_num<<'\n';
             }
 
@@ -129,24 +130,8 @@ int main(int argc,char *argv[])
 
         for(unsigned int attempted_moves=0; attempted_moves<particles.particles.size(); attempted_moves++)
         {
-//        std::cout <<"counter"<< MC_counter <<'\n';
-////////////////// FrzB Un-/Binding Section //////////////////////////
 
-//      choose random particle for FrzB binding/unbinding
-            rand = unidist(gen);
-            rand_size = rand*particles.particles.size();
-            int ind=rand_size;
-            rand = rand_size-ind;
-            assert(rand<1);
-            //BINDING OF FrzB
-            particles.binding_FrzB(ind, FrzB_num, rand);
 
-            rand = unidist(gen);
-            rand_size = rand*particles.particles.size();
-            ind=rand_size;
-            rand = rand_size-ind;
-            //UNBINDING OF FrezB
-            particles.unbinding_FrzB(ind, FrzB_num,rate, rand);
 //////////////////////////////////////////////////////////////////////
 
 //////////////////// Particle Movement, Un-/Binding to Clusters etc ///
@@ -154,7 +139,7 @@ int main(int argc,char *argv[])
 //      choose random particle for interaction and movement
             rand = unidist(gen);
             rand_size = rand*particles.particles.size();
-            ind=rand_size;
+            int ind=rand_size;
             rand=rand_size-ind;
             assert(rand<1);
             if(particles.is_diffuse(particles.get_pos(ind)))
@@ -163,13 +148,13 @@ int main(int argc,char *argv[])
                 particles.attempt_diffusion(ind, rand);
 
 //BINDING
-                particles.attempt_binding(alpha,J,ind,rand);
+                particles.attempt_binding(alpha,beta,J,ind,rand);
             }
 
             else if(particles.is_bound(particles.get_pos(ind)))
             {
 // UNBINDING ATTEMPT
-                particles.attempt_unbinding(alpha,J,ind,rand);
+                particles.attempt_unbinding(alpha,beta,J,ind,rand);
             }
 //////////////////////////////////////////////////////////////////////////
         }
