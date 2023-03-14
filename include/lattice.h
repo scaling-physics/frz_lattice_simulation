@@ -6,10 +6,10 @@
 # include <fstream>
 # include <cmath>
 # include <iostream>	// cout, etc.
-#include <sstream>      // std::stringstrea
-#include <vector>
-#include <array>
-#include <algorithm>
+# include <sstream>      // std::stringstrea
+# include <vector>
+# include <array>
+# include <algorithm>
 
 //declare global dimensions
 int Nx=70;

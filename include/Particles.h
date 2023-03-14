@@ -236,7 +236,6 @@ public:
 
     inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
-
         return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_self*flag_other!=1));
     }
 ////////////////////////////////////////////////////////////
@@ -400,8 +399,8 @@ public:
 //DELTA_H
     double delta_H(double const alpha, double const J, int num_dif, int num_aa_bonds, int num_ab_bonds, double a, double beta) const
     {
-//        std::cout<<"num_dif "<<num_dif<<"\t num_aa_bonds "<< num_aa_bonds<<"\t"<<num_ab_bonds<<"\n";
-        double delta_E=(a*J)*(num_aa_bonds-(num_dif*alpha)) - beta*num_ab_bonds;
+//        std::cout<<"num_dif "<<num_dif<<"\t num_aa_bonds "<< num_aa_bonds<<"\t num_ab_bonds"<<num_ab_bonds<<"\n";
+        double delta_E=a*(J*(num_aa_bonds-(num_dif*alpha)) + beta*num_ab_bonds);
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
     }
 
@@ -439,21 +438,26 @@ public:
                 interactions.possible_interaction_pos.emplace_back(n.position);
                 interactions.orientations.emplace_back(ori2);
 
-                if((get_flag(pos)==0 && get_flag(n.position)==0))              //check if aa is interacting or ab is interacting
-                {
-                    interactions.num_aa_bonds++;
-                }
-                else
-                {
-                    interactions.num_ab_bonds++;
-                }
-
                 interactions.num_diffuse++;
                 int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori);
                 if(bound_neigh_of_neigh>1)
                 {
                     interactions.num_bonds=interactions.num_bonds+(bound_neigh_of_neigh-1);
                 }
+
+                if((get_flag(pos)==0 && get_flag(n.position)==0))              //check if aa is interacting or ab is interacting
+                {
+                    interactions.num_aa_bonds++;
+                }
+                else if((get_flag(pos)==1 && get_flag(n.position)==0))
+                {
+                    interactions.num_ab_bonds=1;
+                }
+                else if((get_flag(pos)==0 && get_flag(n.position)==1))
+                {
+                    interactions.num_ab_bonds++;
+                }
+
             }
         };
 
@@ -478,10 +482,10 @@ public:
             {
                 interactions.num_aa_bonds++;
             }
-            else
-            {
-                interactions.num_ab_bonds++;
-            }
+//            else
+//            {
+//                interactions.num_ab_bonds++;
+//            }
 
         };
 //        std::cout<<interactions.num_aa_bonds<<'\n';
@@ -505,13 +509,15 @@ public:
                 binding_succ++;
                 set_orientation(pos,ori+3);
 //                std::cout<<"pos after binding "<<pos<<"\n";
-//                std::cout<<"ori after binding "<<get_orientation(pos)<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n";
+//                std::cout<<"ori after binding "<<get_orientation(pos)<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n
+
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],interactions.orientations[i]+3);
 //                    std::cout<<"pos after binding "<<interactions.possible_interaction_pos[i]<<"\n";
 //                    std::cout<<"ori after binding "<<get_orientation(interactions.possible_interaction_pos[i])<<"\t"<<"Frz_flag"<<get_flag(interactions.possible_interaction_pos[i])<<"\n";
                 }
+
 
                 std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
                 int test1=0;
@@ -583,10 +589,15 @@ public:
             {
                 interactions.num_aa_bonds++;
             }
-            else
+            else if((get_flag(pos)==1 && get_flag(n.position)==0))
+            {
+                interactions.num_ab_bonds=1;
+            }
+            else if((get_flag(pos)==0 && get_flag(n.position)==1))
             {
                 interactions.num_ab_bonds++;
             }
+
             int bound_neigh_of_neigh = count_interacting_neighbors(n.position,get_orientation(n.position));
             if(bound_neigh_of_neigh==1)
             {
