@@ -33,11 +33,11 @@ int main(int argc,char *argv[])
     else
     {
         J = 3;
-        alpha = 0.5;
+        alpha = 0;
         beta = J+2;
-        FrzB_num = 28;
+        FrzB_num = 40;
         rate=0.03;
-        slurm_index = 10;
+        slurm_index = 14;
         std::cout << "Using default parameters." << '\n';
     }
 

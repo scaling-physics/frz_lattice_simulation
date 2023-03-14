@@ -56,6 +56,7 @@ struct Particle
     int pos=0;
     int ori=0;
     int Frz_A_B=0;
+    std::vector<int> partners = {};
 };
 
 
@@ -236,12 +237,51 @@ public:
 
     inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
-        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_self*flag_other!=1));
+        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_self*flag_other==0));
     }
 ////////////////////////////////////////////////////////////
 
     //COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
+//    std::vector<int> count_interacting_neighbors(const int pos, const int ori) const
+//    {
+//        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+//        std::vector<int> count_bound = {0,0};
+//
+//        for(unsigned int i=0; i<n.size(); i++)
+//        {
+//            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),get_flag(pos),get_flag(n[i].position),n[i].slope))
+//            {
+//                if(get_flag(pos)==0 && get_flag(n[i].position==0))
+//                    count_bound[0]++;
+//                else
+//                    count_bound[1]=1;
+//            }
+//        }
+////        assert(count_bound>=0);
+//        return count_bound;
+//    }
+
+
+//        COUNTING THE BOUND PARTICLES OF A GIVEN POSITION
     int count_interacting_neighbors(const int pos, const int ori) const
+    {
+        std::vector<Neighbour> n(lattice.get_neighbors2(pos));
+        int count_bound = 0;
+
+        for(unsigned int i=0; i<n.size(); i++)
+        {
+            if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),get_flag(pos),get_flag(n[i].position),n[i].slope))
+            {
+                if(get_flag(pos)==0 && get_flag(n[i].position)==0)
+                    count_bound++;
+
+            }
+        }
+//        assert(count_bound>=0);
+        return count_bound;
+    }
+
+    int count_interacting_neighbors_ab(const int pos, const int ori) const
     {
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
         int count_bound = 0;
@@ -253,118 +293,10 @@ public:
                 count_bound++;
             }
         }
-        assert(count_bound>=0);
+//        assert(count_bound>=0);
         return count_bound;
     }
 
-////CREATION ATTEMPT
-    void attempt_creation(double &rand)
-    {
-        int initial_num = Nxy*density;
-        int free_hexes=(Nx*Ny)-particles.size();
-        double k_on_1 = k_on*(initial_num-particles.size());
-        std::binomial_distribution<int> bnom(free_hexes,k_on_1);
-        double random=unidist(gen);
-
-        int new_particles_created = bnom(generator);
-        if(particles.size()+new_particles_created>initial_num)
-        {
-            new_particles_created=new_particles_created+(initial_num-particles.size()-new_particles_created);
-        }
-        for ( int i=0;i<new_particles_created;i++)
-        {
-            double random_size = random*Nxy;
-            int pos=random_size;
-            random=random_size-pos;
-            if(grid1[pos].expired())
-            {
-                auto p = std::make_shared<Particle>();
-                p-> pos = pos;
-                p->ori =1;
-
-                particles.emplace_back(p);
-                std::weak_ptr<Particle> pw(p);
-                grid1[pos]= pw;
-            }
-            else
-            {
-                i--;
-            }
-
-        }
-        rand=random;
-    }
-//
-//
-////DESTRUCTION ATTEMPT
-    void attempt_destruction(double &rand)
-    {
-        for(unsigned int ind=0; ind<particles.size(); ind++)
-        {
-            if(is_diffuse(get_pos(ind)))
-            {
-                rand = unidist(gen);
-                if(rand<k_off)
-                {
-                    int pos = get_pos(ind);
-                    assert(!grid1[pos].expired());
-                    auto it = particles.begin()+ind;
-                    particles.erase(it);
-                    assert(grid1[pos].expired());
-                }
-            }
-
-        }
-
-    }
-
-
-//CELL GROWTH
-    void cell_growth(double &rand,int &Nx)
-    {
-        double rand_size = Nx*rand;
-        int column_insert = rand_size;
-        rand = rand_size-column_insert;
-        Nx++;
-        std::vector<std::weak_ptr<Particle> > column;
-        column.resize(Ny);
-        auto it = grid1.begin()+column_insert*Ny;
-
-        grid1.insert(it, column.begin(),column.end());
-        std::cout<<grid1.size();
-
-        for(int i=(Nx*Ny-1); i>=Ny*column_insert; i--)
-        {
-            if(!grid1[i].expired())
-            {
-                auto p = std::shared_ptr<Particle> (grid1[i].lock());
-
-                int pos = p->pos;
-                int new_pos = pos+Ny;
-                p->pos = new_pos;
-            }
-        }
-        for(unsigned int i=(Nx*Ny-1); i>=Ny*column_insert; i--)
-        {
-            if(!grid1[i].expired() && is_bound(i))
-            {
-                auto p = std::shared_ptr<Particle> (grid1[i].lock());
-
-                int pos = p->pos;
-                int ori = p-> ori;
-                int is_still_bound = count_interacting_neighbors(pos, ori);
-                if(is_still_bound>=1)
-                {
-                    return;
-                }
-                else
-                {
-                    set_orientation(pos,1);
-                }
-            }
-        }
-
-    }
 
 
 //DIFFUSE PARTICLES
@@ -394,11 +326,10 @@ public:
 
 
 
-
-
 //DELTA_H
     double delta_H(double const alpha, double const J, int num_dif, int num_aa_bonds, int num_ab_bonds, double a, double beta) const
     {
+//        if(num_ab_bonds>0)
 //        std::cout<<"num_dif "<<num_dif<<"\t num_aa_bonds "<< num_aa_bonds<<"\t num_ab_bonds"<<num_ab_bonds<<"\n";
         double delta_E=a*(J*(num_aa_bonds-(num_dif*alpha)) + beta*num_ab_bonds);
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
@@ -439,23 +370,26 @@ public:
                 interactions.orientations.emplace_back(ori2);
 
                 interactions.num_diffuse++;
-                int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori);
-                if(bound_neigh_of_neigh>1)
-                {
-                    interactions.num_bonds=interactions.num_bonds+(bound_neigh_of_neigh-1);
-                }
 
                 if((get_flag(pos)==0 && get_flag(n.position)==0))              //check if aa is interacting or ab is interacting
                 {
                     interactions.num_aa_bonds++;
                 }
-                else if((get_flag(pos)==1 && get_flag(n.position)==0))
-                {
-                    interactions.num_ab_bonds=1;
-                }
-                else if((get_flag(pos)==0 && get_flag(n.position)==1))
+                else
                 {
                     interactions.num_ab_bonds++;
+                }
+
+                int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori);
+                int bound_neigh_of_neigh2 = count_interacting_neighbors_ab(n.position,ori);
+                if(bound_neigh_of_neigh > 1)
+                {
+                    interactions.num_aa_bonds=interactions.num_aa_bonds+(bound_neigh_of_neigh-1);
+
+                }
+                if(bound_neigh_of_neigh2 > 1)
+                {
+                    interactions.num_ab_bonds = interactions.num_ab_bonds+(bound_neigh_of_neigh2-1);
                 }
 
             }
@@ -508,8 +442,10 @@ public:
 //                std::cout<<"binding"<<"\n";
                 binding_succ++;
                 set_orientation(pos,ori+3);
+
 //                std::cout<<"pos after binding "<<pos<<"\n";
 //                std::cout<<"ori after binding "<<get_orientation(pos)<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n
+
 
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
@@ -518,21 +454,22 @@ public:
 //                    std::cout<<"ori after binding "<<get_orientation(interactions.possible_interaction_pos[i])<<"\t"<<"Frz_flag"<<get_flag(interactions.possible_interaction_pos[i])<<"\n";
                 }
 
-
-                std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
-                int test1=0;
-
-                for(unsigned int i=0; i<neig.size(); i++)
-                {
-                    if(is_bound(neig[i].position))
-                    {
-                        test1++;
-                    }
-                }
-
-                int test = count_interacting_neighbors(pos,ori);
-                assert(test>0);
-                assert(test1>0);
+//
+//
+//                std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
+//                int test1=0;
+//
+//                for(unsigned int i=0; i<neig.size(); i++)
+//                {
+//                    if(is_bound(neig[i].position))
+//                    {
+//                        test1++;
+//                    }
+//                }
+//
+//                int test = count_interacting_neighbors_aa(pos,ori);
+//                assert(test>0);
+//                assert(test1>0);
             }
         }
     }
@@ -550,20 +487,6 @@ public:
 //        std::cout<<"pos pre unbinding "<<pos<<"\n";
 //        std::cout<<"ori pre unbinding "<<ori<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n";
         std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
-//////        int test1=0;
-//////
-//////        for(unsigned int i=0; i<neig.size(); i++)
-//////        {
-//////            if(is_bound(neig[i].position)&& is_interaction_allowed(ori,get_orientation(neig[i].position),get_flag(pos),get_flag(neig[i].position),neig[i].slope))
-//////            {
-////////                        std::cout<<"pos pre unbinding "<<neig[i].position<<"\n";
-////////                        std::cout<<"ori pre unbinding "<<get_orientation(neig[i].position)<<"\t"<<"Frz_flag"<<get_flag(neig[i].position)<<"\n";
-//////                test1++;
-//////            }
-//////        }
-//////        assert(test1>0);
-//////        int test = count_interacting_neighbors(pos,ori);
-//////        assert(test>0);
 
         Interactions interactions;
         interactions.num_bonds=0;
@@ -589,16 +512,12 @@ public:
             {
                 interactions.num_aa_bonds++;
             }
-            else if((get_flag(pos)==1 && get_flag(n.position)==0))
+            else
             {
                 interactions.num_ab_bonds=1;
             }
-            else if((get_flag(pos)==0 && get_flag(n.position)==1))
-            {
-                interactions.num_ab_bonds++;
-            }
 
-            int bound_neigh_of_neigh = count_interacting_neighbors(n.position,get_orientation(n.position));
+            int bound_neigh_of_neigh = count_interacting_neighbors(n.position,get_orientation(n.position)) + count_interacting_neighbors_ab(n.position,get_orientation(n.position));
             if(bound_neigh_of_neigh==1)
             {
                 interactions.possible_interaction_pos.emplace_back(n.position);
@@ -606,10 +525,10 @@ public:
             }
         };
 
-        auto s= n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
+        auto s = n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
         std::ranges::for_each(s,_get_affected_particles);
 
-        double delta_E =delta_H(alpha,J,interactions.num_diffuse,interactions.num_aa_bonds,interactions.num_ab_bonds, 1,beta);
+        double delta_E = delta_H(alpha,J,interactions.num_diffuse,interactions.num_aa_bonds,interactions.num_ab_bonds, 1,beta);
 
         if (rand<delta_E)
         {
@@ -618,14 +537,26 @@ public:
             unbinding_succ++;
 //            std::cout<<"pos after unbinding "<<pos<<"\n";
 //            std::cout<<"ori after unbinding "<<grid[pos].ori<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n";
+
             if(interactions.possible_interaction_pos.size()>0)
             {
+//
+//                if(get_flag(pos)==1)
+//                {
+//                    rand = unidist(gen);
+//                    rand_size = rand*interactions.possible_interaction_pos.size();
+//                    int ind=rand_size;
+//                    set_orientation(interactions.possible_interaction_pos[ind],interactions.orientations[ind]+3);
+//                }
+//                else
+//                {
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],1);
 //                    std::cout<<"pos after unbinding "<<interactions.possible_interaction_pos[i]<<"\n";
 //                    std::cout<<"ori after unbinding "<<grid[interactions.possible_interaction_pos[i]].ori<<"\t"<<"Frz_flag"<<get_flag(interactions.possible_interaction_pos[i])<<"\n";
                 }
+//                }
             }
         }
 //        else{std::cout<<"no unbinding"<<"\n";}
@@ -652,31 +583,6 @@ public:
         }
         }
     }
-// Unbinding FrzB acceptance rate proportional to e^(-deltaE)=const
-//    void unbinding_FrzB(const int ind,int &FrzB_num, const double &rate, double &rand )
-//    {
-////        return;
-//        int pos=get_pos(ind);
-//        int frz = get_flag(pos);
-//        if(frz==0)
-//        {
-//            return;
-//        }
-//
-//        else if(frz>0 && frz<3 && rand<rate)
-//        {
-//            FrzB_num++;
-//            set_frz(ind,0);
-//            //options are to go from one to no FrzB
-//        }
-//        else if(frz==3 && (rate*2)>rand)
-//        {
-//            int new_frz = unidist(gen)*2;
-//            FrzB_num++;
-//            set_frz(ind,new_frz+1);
-//            //options are no FrzB = 0, or one FrzB = 1 or 2
-//        }
-//    }
 
 
 // labeling a cluster
