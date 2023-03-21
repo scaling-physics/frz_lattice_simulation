@@ -32,19 +32,20 @@ int main(int argc,char *argv[])
     }
     else
     {
-        J = 3;
+        J = 2.6;
         alpha = 0;
-        beta = J+2;
-        FrzB_num = 40;
+        beta = 2*J;
+        FrzB_num = 1;
         rate=0.03;
-        slurm_index = 14;
+        slurm_index = 36;
         std::cout << "Using default parameters." << '\n';
     }
 
     titration_concentration_frzb = 1;
     density = 0.2;
 
-    const long int MC_steps = 4*pow(10,6); // number of Monte Carlo Steps
+
+    const long int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
     long int MC_counter = 0;
 //    long double rand;
     double rand;
@@ -90,18 +91,7 @@ int main(int argc,char *argv[])
 ///////////////////////////
 //    int c=0;
 //    int d=0;
-//    for(unsigned int i=0; i<particles.particles.size();i++)
-//    {
-//        int pos = particles.get_pos(i);
-//        std::vector<int> free_sites(particles.get_free_flag_sites(pos));
-//
-//        std::cout<<pos<<"\t"<<free_sites.size()<<"\n";
-//
-//
-//        if(free_sites.size()==2){c++;}
-//        else if(free_sites.size()==1){d++;}
-//
-//    }
+
             int temp_FrzB_num = FrzB_num;
 //          choose random particle for FrzB binding/unbinding
 //            rand = unidist(gen);
@@ -141,12 +131,13 @@ int main(int argc,char *argv[])
             rand_size = rand*particles.particles.size();
             int ind=rand_size;
             rand=rand_size-ind;
+
+
             assert(rand<1);
             if(particles.is_diffuse(particles.get_pos(ind)))
             {
 //Move diffusive particles
                 particles.attempt_diffusion(ind, rand);
-
 //BINDING
                 particles.attempt_binding(alpha,beta,J,ind,rand);
             }

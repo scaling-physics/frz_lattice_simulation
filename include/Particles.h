@@ -216,6 +216,7 @@ public:
             p-> ori = ori;
         }
     }
+
     inline void set_pos(const int old_pos,const int new_pos, const int ind)
     {
         assert(particles[ind]->pos == old_pos);
@@ -237,7 +238,7 @@ public:
 
     inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
-        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_self*flag_other==0));
+        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_other*flag_self==0));
     }
 ////////////////////////////////////////////////////////////
 
@@ -272,9 +273,8 @@ public:
         {
             if(is_bound(n[i].position) && is_interaction_allowed(ori,get_orientation(n[i].position),get_flag(pos),get_flag(n[i].position),n[i].slope))
             {
-                if(get_flag(pos)==0 && get_flag(n[i].position)==0)
+//                if(get_flag(pos)==0 && get_flag(n[i].position)==0)
                     count_bound++;
-
             }
         }
 //        assert(count_bound>=0);
@@ -324,14 +324,26 @@ public:
         }
     }
 
+    int count_flags() const
+    {   int count=0;
+        for(unsigned int index=0; index<particles.size(); index++)
+            {
+                if(particles[index]->Frz_A_B>0)
+                count++;
+            }
+
+        return count;
+    }
+
 
 
 //DELTA_H
     double delta_H(double const alpha, double const J, int num_dif, int num_aa_bonds, int num_ab_bonds, double a, double beta) const
     {
 //        if(num_ab_bonds>0)
-//        std::cout<<"num_dif "<<num_dif<<"\t num_aa_bonds "<< num_aa_bonds<<"\t num_ab_bonds"<<num_ab_bonds<<"\n";
+//            std::cout<<"num_dif "<<num_dif<<"\t num_aa_bonds "<< num_aa_bonds<<"\t num_ab_bonds"<<num_ab_bonds<<"\n";
         double delta_E=a*(J*(num_aa_bonds-(num_dif*alpha)) + beta*num_ab_bonds);
+//        double delta_E=(a*J)*(num_bonds-(num_dif*alpha));
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
     }
 
@@ -353,6 +365,7 @@ public:
 
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 
+
         auto _is_diffuse = [this](const Neighbour &n)
         {
             return is_diffuse(n.position);
@@ -364,36 +377,53 @@ public:
             int ori2 = rand_size;
             rand=rand_size-ori2;
             ori2--;
+
+//            std::cout<<get_flag(pos)<<'\n';
             if(is_interaction_allowed(ori,ori2,get_flag(pos),get_flag(n.position),n.slope))
             {
                 interactions.possible_interaction_pos.emplace_back(n.position);
                 interactions.orientations.emplace_back(ori2);
-
                 interactions.num_diffuse++;
+//                interactions.num_bonds++;
+
 
                 if((get_flag(pos)==0 && get_flag(n.position)==0))              //check if aa is interacting or ab is interacting
                 {
-                    interactions.num_aa_bonds++;
+                    interactions.num_bonds++;
                 }
-                else
+                if((get_flag(pos)==1 && get_flag(n.position)==0))
+                {
+                    interactions.num_ab_bonds=1;
+                }
+                if((get_flag(pos)==0 && get_flag(n.position)==1))
                 {
                     interactions.num_ab_bonds++;
                 }
 
                 int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori);
-                int bound_neigh_of_neigh2 = count_interacting_neighbors_ab(n.position,ori);
-                if(bound_neigh_of_neigh > 1)
+                if(bound_neigh_of_neigh>1)
                 {
-                    interactions.num_aa_bonds=interactions.num_aa_bonds+(bound_neigh_of_neigh-1);
-
+                    interactions.num_bonds=interactions.num_bonds+(bound_neigh_of_neigh-1);
                 }
-                if(bound_neigh_of_neigh2 > 1)
-                {
-                    interactions.num_ab_bonds = interactions.num_ab_bonds+(bound_neigh_of_neigh2-1);
-                }
+//                else
+//                {
+//                    interactions.num_ab_bonds++;
+//                }
+//
+//                int bound_neigh_of_neigh = count_interacting_neighbors(n.position,ori);
+//                int bound_neigh_of_neigh2 = count_interacting_neighbors_ab(n.position,ori);
+//                if(bound_neigh_of_neigh > 1)
+//                {
+//                    interactions.num_aa_bonds=interactions.num_aa_bonds+(bound_neigh_of_neigh-1);
+//
+//                }
+//                if(bound_neigh_of_neigh2 > 1)
+//                {
+//                    interactions.num_ab_bonds = interactions.num_ab_bonds+(bound_neigh_of_neigh2-1);
+//                }
 
             }
-        };
+         };
 
         auto s = n | std::views::filter(_is_diffuse);
         std::ranges::for_each(s,_get_compatible_diffuse_neighbours);
@@ -411,15 +441,20 @@ public:
         {
             interactions.orientations.emplace_back(get_orientation(n.position));
             interactions.possible_interaction_pos.emplace_back(n.position);
+            interactions.num_bonds++;
 
             if((get_flag(pos)==0 && get_flag(n.position)==0))              //check if aa is interacting or ab is interacting
             {
-                interactions.num_aa_bonds++;
+                interactions.num_bonds++;
             }
-//            else
-//            {
-//                interactions.num_ab_bonds++;
-//            }
+            if((get_flag(pos)==1 && get_flag(n.position)==0))
+            {
+                interactions.num_ab_bonds=1;
+            }
+            if((get_flag(pos)==0 && get_flag(n.position)==1))
+            {
+                interactions.num_ab_bonds++;
+            }
 
         };
 //        std::cout<<interactions.num_aa_bonds<<'\n';
@@ -429,11 +464,11 @@ public:
 
 
 
-        if((interactions.num_aa_bonds+interactions.num_ab_bonds)>0)
+        if((interactions.num_bonds+interactions.num_ab_bonds)>0)
         {
             assert(interactions.possible_interaction_pos.size()>0);
             binding_attempt++;
-            double delta = delta_H(alpha,J,interactions.num_diffuse,interactions.num_aa_bonds,interactions.num_ab_bonds, -1,beta);
+            double delta = delta_H(alpha,J,interactions.num_diffuse,interactions.num_bonds,interactions.num_ab_bonds, -1,beta);
 //            std::cout<<"delta "<< delta << "\n";
             //std::cout<<"\n rand "<<rand;
             //the binding attempt is succesful if rand < delta_E
@@ -446,32 +481,40 @@ public:
 //                std::cout<<"pos after binding "<<pos<<"\n";
 //                std::cout<<"ori after binding "<<get_orientation(pos)<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n
 
-
+//                if(get_flag(pos)==1)
+//                {
+//                    set_orientation(interactions.possible_interaction_pos[0],interactions.orientations[i]+3);
+//                }
+//                else
+//                {
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],interactions.orientations[i]+3);
 //                    std::cout<<"pos after binding "<<interactions.possible_interaction_pos[i]<<"\n";
 //                    std::cout<<"ori after binding "<<get_orientation(interactions.possible_interaction_pos[i])<<"\t"<<"Frz_flag"<<get_flag(interactions.possible_interaction_pos[i])<<"\n";
                 }
-
-//
-//
-//                std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
-//                int test1=0;
-//
-//                for(unsigned int i=0; i<neig.size(); i++)
-//                {
-//                    if(is_bound(neig[i].position))
-//                    {
-//                        test1++;
-//                    }
 //                }
 //
-//                int test = count_interacting_neighbors_aa(pos,ori);
-//                assert(test>0);
-//                assert(test1>0);
+
+                std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
+                int test1=0;
+
+                for(unsigned int i=0; i<neig.size(); i++)
+                {
+                    if(is_bound(neig[i].position))
+                    {
+                        test1++;
+                    }
+                }
+
+                int test = count_interacting_neighbors(pos,ori);
+                assert(test>0);
+                assert(test1>0);
             }
         }
+
+        if(get_flag(pos)>0)
+            std::cout<<get_flag(pos)<<'\t'<<interactions.num_ab_bonds<<'\n';
     }
 
 
@@ -507,28 +550,39 @@ public:
         };
         auto _get_affected_particles = [&interactions,this,pos](auto n)
         {
-
-            if((get_flag(pos)==0 && get_flag(n.position)==0))              //check if aa is interacting or ab is interacting
-            {
-                interactions.num_aa_bonds++;
-            }
-            else
-            {
-                interactions.num_ab_bonds=1;
-            }
-
-            int bound_neigh_of_neigh = count_interacting_neighbors(n.position,get_orientation(n.position)) + count_interacting_neighbors_ab(n.position,get_orientation(n.position));
+//            interactions.num_bonds++;
+            int bound_neigh_of_neigh = count_interacting_neighbors(n.position,get_orientation(n.position));
             if(bound_neigh_of_neigh==1)
             {
                 interactions.possible_interaction_pos.emplace_back(n.position);
                 interactions.num_diffuse++;
             }
+
+            if((get_flag(pos)==0 && get_flag(n.position)==0))              //check if aa is interacting or ab is interacting
+            {
+                interactions.num_bonds++;
+            }
+            if((get_flag(pos)==1 && get_flag(n.position)==0))
+            {
+                interactions.num_ab_bonds=1;
+            }
+            if((get_flag(pos)==0 && get_flag(n.position)==1))
+            {
+                interactions.num_ab_bonds++;
+            }
+
+//            int bound_neigh_of_neigh = count_interacting_neighbors(n.position,get_orientation(n.position)) + count_interacting_neighbors_ab(n.position,get_orientation(n.position));
+//            if(bound_neigh_of_neigh==1)
+//            {
+//                interactions.possible_interaction_pos.emplace_back(n.position);
+//                interactions.num_diffuse++;
+//            }
         };
 
         auto s = n | std::views::filter(_is_bound) | std::views::filter(_is_allowed);
         std::ranges::for_each(s,_get_affected_particles);
 
-        double delta_E = delta_H(alpha,J,interactions.num_diffuse,interactions.num_aa_bonds,interactions.num_ab_bonds, 1,beta);
+        double delta_E = delta_H(alpha,J,interactions.num_diffuse,interactions.num_bonds,interactions.num_ab_bonds, 1,beta);
 
         if (rand<delta_E)
         {
@@ -559,6 +613,8 @@ public:
 //                }
             }
         }
+//        if(get_flag(pos)>0)
+//            std::cout<<get_flag(pos)<<'\t'<<interactions.num_ab_bonds<<'\n';
 //        else{std::cout<<"no unbinding"<<"\n";}
     }
 
@@ -572,11 +628,11 @@ public:
         int pos=get_pos(ind);
         int frz = get_flag(pos);
 
-        if(frz==1)
+        if(frz>0)
         {
             return;
         }
-        else if(frz==0)
+        else
         {
             FrzB_num--;
             set_frz(ind,1);
