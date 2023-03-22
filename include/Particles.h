@@ -238,7 +238,7 @@ public:
 
     inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
-        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_other*flag_self==0));
+        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_self*flag_other!=1) );
     }
 ////////////////////////////////////////////////////////////
 
@@ -342,7 +342,9 @@ public:
     {
 //        if(num_ab_bonds>0)
 //            std::cout<<"num_dif "<<num_dif<<"\t num_aa_bonds "<< num_aa_bonds<<"\t num_ab_bonds"<<num_ab_bonds<<"\n";
+//        std::cout<<beta<<'\n';
         double delta_E=a*(J*(num_aa_bonds-(num_dif*alpha)) + beta*num_ab_bonds);
+//        std::cout<<a*beta*num_ab_bonds<<'\t'<<delta_E<<'\n';
 //        double delta_E=(a*J)*(num_bonds-(num_dif*alpha));
         return delta_E<0.0f ? 1.0 : exp(-delta_E);
     }
@@ -391,11 +393,11 @@ public:
                 {
                     interactions.num_bonds++;
                 }
-                if((get_flag(pos)==1 && get_flag(n.position)==0))
+                else if((get_flag(pos)==1 && get_flag(n.position)==0))
                 {
                     interactions.num_ab_bonds=1;
                 }
-                if((get_flag(pos)==0 && get_flag(n.position)==1))
+                else if((get_flag(pos)==0 && get_flag(n.position)==1))
                 {
                     interactions.num_ab_bonds++;
                 }
@@ -441,17 +443,17 @@ public:
         {
             interactions.orientations.emplace_back(get_orientation(n.position));
             interactions.possible_interaction_pos.emplace_back(n.position);
-            interactions.num_bonds++;
+
 
             if((get_flag(pos)==0 && get_flag(n.position)==0))              //check if aa is interacting or ab is interacting
             {
                 interactions.num_bonds++;
             }
-            if((get_flag(pos)==1 && get_flag(n.position)==0))
+            else if((get_flag(pos)==1 && get_flag(n.position)==0))
             {
                 interactions.num_ab_bonds=1;
             }
-            if((get_flag(pos)==0 && get_flag(n.position)==1))
+            else if((get_flag(pos)==0 && get_flag(n.position)==1))
             {
                 interactions.num_ab_bonds++;
             }
@@ -512,9 +514,9 @@ public:
                 assert(test1>0);
             }
         }
-
-        if(get_flag(pos)>0)
-            std::cout<<get_flag(pos)<<'\t'<<interactions.num_ab_bonds<<'\n';
+//
+//        if(get_flag(pos)>0)
+//            std::cout<<get_flag(pos)<<'\t'<<interactions.num_ab_bonds<<'\n';
     }
 
 
@@ -562,11 +564,11 @@ public:
             {
                 interactions.num_bonds++;
             }
-            if((get_flag(pos)==1 && get_flag(n.position)==0))
+            else if((get_flag(pos)==1 && get_flag(n.position)==0))
             {
                 interactions.num_ab_bonds=1;
             }
-            if((get_flag(pos)==0 && get_flag(n.position)==1))
+            else if((get_flag(pos)==0 && get_flag(n.position)==1))
             {
                 interactions.num_ab_bonds++;
             }
