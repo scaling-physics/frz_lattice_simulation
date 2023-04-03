@@ -483,19 +483,19 @@ public:
 //                std::cout<<"pos after binding "<<pos<<"\n";
 //                std::cout<<"ori after binding "<<get_orientation(pos)<<"\t"<<"Frz_flag"<<get_flag(pos)<<"\n
 
-//                if(get_flag(pos)==1)
-//                {
-//                    set_orientation(interactions.possible_interaction_pos[0],interactions.orientations[i]+3);
-//                }
-//                else
-//                {
+                if(get_flag(pos)==1)
+                {
+                    set_orientation(interactions.possible_interaction_pos[0],interactions.orientations[0]+3);
+                }
+                else
+                {
                 for(unsigned int i=0; i<interactions.possible_interaction_pos.size(); i++)
                 {
                     set_orientation(interactions.possible_interaction_pos[i],interactions.orientations[i]+3);
 //                    std::cout<<"pos after binding "<<interactions.possible_interaction_pos[i]<<"\n";
 //                    std::cout<<"ori after binding "<<get_orientation(interactions.possible_interaction_pos[i])<<"\t"<<"Frz_flag"<<get_flag(interactions.possible_interaction_pos[i])<<"\n";
                 }
-//                }
+                }
 //
 
                 std::vector<Neighbour> neig(lattice.get_neighbors2(pos));
@@ -538,7 +538,6 @@ public:
         interactions.num_aa_bonds=0;
         interactions.num_ab_bonds=0;
         interactions.num_diffuse=1;
-
 
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
 

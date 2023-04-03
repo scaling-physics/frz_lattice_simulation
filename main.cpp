@@ -34,10 +34,10 @@ int main(int argc,char *argv[])
     {
         J = 2.6;
         alpha = 0;
-        beta = 4*J;
-        FrzB_num = 40;
+        beta = 2*J;
+        FrzB_num = 60;
         rate=0.03;
-        slurm_index = 36;
+        slurm_index = 42;
         std::cout << "Using default parameters." << '\n';
     }
 
