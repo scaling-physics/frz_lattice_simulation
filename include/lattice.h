@@ -12,8 +12,8 @@
 # include <algorithm>
 
 //declare global dimensions
-int Nx=70;
-int Ny=30;
+int Nx=50;
+int Ny=20;
 int Nxy = Nx*Ny;
 
 inline int mod(int a, int b)

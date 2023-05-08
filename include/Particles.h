@@ -21,6 +21,7 @@ int diffuse_succ=0;
 double const  k_off=5*pow(10,-4);
 double const k_on=k_off/55;
 
+int FrzB_num;
 double density;
 double titration_concentration_frzb;
 
@@ -76,7 +77,7 @@ public:
 
     Particles(Lattice &lattice):lattice{lattice}
     {
-        int initial_num = Nxy*density;
+        int initial_num = Nxy*density + FrzB_num;
         particles.resize(initial_num);
         grid1.resize(Nxy);
 
@@ -238,7 +239,8 @@ public:
 
     inline bool is_interaction_allowed(const int ori_self, const int ori_other, const int flag_self, const int flag_other, const int slope) const
     {
-        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_self*flag_other!=1) );
+//        return (ori_self != ori_other && ((ori_self + (slope%3-1))*(ori_other+(slope%3-1)))!=0 && (flag_self*flag_other!=1) );
+        return ((flag_self*flag_other!=1));
     }
 ////////////////////////////////////////////////////////////
 
@@ -366,7 +368,6 @@ public:
         interactions.num_diffuse=1;
 
         std::vector<Neighbour> n(lattice.get_neighbors2(pos));
-
 
         auto _is_diffuse = [this](const Neighbour &n)
         {

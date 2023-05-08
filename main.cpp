@@ -21,13 +21,13 @@ int main(int argc,char *argv[])
 {
     double J,alpha,beta,rate;
     int slurm_index;
-    int FrzB_num;
+//    int FrzB_num;
     if(argc==6)
     {
         J = atof(argv[1]);
         alpha = atof(argv[2]);
         FrzB_num = atof(argv[3]);
-        rate = atof(argv[4]);
+        beta = atof(argv[4]);
         slurm_index = atof(argv[5]);
     }
     else
@@ -35,17 +35,17 @@ int main(int argc,char *argv[])
         J = 2.6;
         alpha = 0;
         beta = 2*J;
-        FrzB_num = 60;
-        rate=0.03;
-        slurm_index = 42;
+        FrzB_num = 25;
+        rate = 0.03;
+        slurm_index = 64;
         std::cout << "Using default parameters." << '\n';
     }
 
     titration_concentration_frzb = 1;
-    density = 0.2;
+    density = 0.1;
 
 
-    const long int MC_steps = 5*pow(10,6); // number of Monte Carlo Steps
+    const long int MC_steps = 10*pow(10,6); // number of Monte Carlo Steps
     long int MC_counter = 0;
 //    long double rand;
     double rand;
@@ -71,17 +71,17 @@ int main(int argc,char *argv[])
 //    out3.open(fn3.str());
 
     std::ostringstream fn;
-    fn << slurm_index << "_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate << ".txt";//k_un << "_" << k << ".txt";
+    fn << slurm_index << "_dFrzB_bondspercluster_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_beta_" <<beta<< ".txt";//k_un << "_" << k << ".txt";
     std::ofstream out;
     out.open(fn.str());
 
     std::ostringstream fn2;
-    fn2 << slurm_index << "_dFrzB_labels_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<< ".txt";// k_un << "_" << k << ".txt";
+    fn2 << slurm_index << "_dFrzB_labels_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_beta_" <<beta<< ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out2;
     out2.open(fn2.str());
 
     std::ostringstream fn3;
-    fn3 << slurm_index << "_dFrzB_flags_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_off_" <<rate<< ".txt";// k_un << "_" << k << ".txt";
+    fn3 << slurm_index << "_dFrzB_flags_J_" << J << "_alpha_" << alpha << "_FrzB_" <<FrzB_num<<"_beta_" <<beta<< ".txt";// k_un << "_" << k << ".txt";
     std::ofstream out3;
     out3.open(fn3.str());
 
@@ -139,12 +139,13 @@ int main(int argc,char *argv[])
 //Move diffusive particles
                 particles.attempt_diffusion(ind, rand);
 //BINDING
-                particles.attempt_binding(alpha,J,beta,ind,rand);
+                    particles.attempt_binding(alpha,J,beta,ind,rand);
             }
 
             else if(particles.is_bound(particles.get_pos(ind)))
             {
 // UNBINDING ATTEMPT
+
                 particles.attempt_unbinding(alpha,J,beta,ind,rand);
             }
 //////////////////////////////////////////////////////////////////////////
@@ -155,7 +156,7 @@ int main(int argc,char *argv[])
 //        particles.attempt_creation(rand);
 
 ////////////////////////// Labelling of clusters, Printout////////////////
-        if(MC_counter%10000==0)
+        if(MC_counter%20000==0)
         {
 //        out << Nx << '\t' << Ny << '\t' <<'\n';
 //        out2 << Nx << '\t' << Ny << '\t' <<'\n';
