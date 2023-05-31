@@ -32,10 +32,10 @@ int main(int argc,char *argv[])
     }
     else
     {
-        J = 2.6;
+        J = 3;
         alpha = 0;
         beta = 2*J;
-        FrzB_num = 25;
+        FrzB_num = 50;
         rate = 0.03;
         slurm_index = 64;
         std::cout << "Using default parameters." << '\n';
@@ -45,7 +45,7 @@ int main(int argc,char *argv[])
     density = 0.1;
 
 
-    const long int MC_steps = 10*pow(10,6); // number of Monte Carlo Steps
+    const long int MC_steps = pow(10,9); // number of Monte Carlo Steps
     long int MC_counter = 0;
 //    long double rand;
     double rand;
@@ -139,14 +139,15 @@ int main(int argc,char *argv[])
 //Move diffusive particles
                 particles.attempt_diffusion(ind, rand);
 //BINDING
-                    particles.attempt_binding(alpha,J,beta,ind,rand);
+//            if(MC_counter==int(exp(J)))
+                particles.attempt_binding(alpha,J,beta,ind,rand);
             }
 
             else if(particles.is_bound(particles.get_pos(ind)))
             {
 // UNBINDING ATTEMPT
-
-                particles.attempt_unbinding(alpha,J,beta,ind,rand);
+//                if(MC_counter==int(exp(J)))
+                    particles.attempt_unbinding(alpha,J,beta,ind,rand);
             }
 //////////////////////////////////////////////////////////////////////////
         }
@@ -156,7 +157,7 @@ int main(int argc,char *argv[])
 //        particles.attempt_creation(rand);
 
 ////////////////////////// Labelling of clusters, Printout////////////////
-        if(MC_counter%20000==0)
+        if(MC_counter%2000000==0)
         {
 //        out << Nx << '\t' << Ny << '\t' <<'\n';
 //        out2 << Nx << '\t' << Ny << '\t' <<'\n';

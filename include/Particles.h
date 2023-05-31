@@ -77,7 +77,7 @@ public:
 
     Particles(Lattice &lattice):lattice{lattice}
     {
-        int initial_num = Nxy*density + FrzB_num;
+        int initial_num = int(Nxy*density) + FrzB_num;
         particles.resize(initial_num);
         grid1.resize(Nxy);
 
