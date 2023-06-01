@@ -1,3 +1,3 @@
-- Hanno Hennighausen
-- Sean Murray
+- Hanno I. Hennighausen
+- Seán M. Murray
 - Srikanth Subramanian
