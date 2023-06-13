@@ -16,7 +16,7 @@ To use this simulation, follow these steps:
 
 1. There are two important branches. 
 - `git checkout master`. The master branch has the version of the simulation without FrzB particles. 
-- `git checkout two_particle_model`. The two_particle_model branch contains the updated model in th presence of FrzB particles. 
+- `git checkout two_particle_model`. The two_particle_model branch contains the updated model in the presence of FrzB particles. 
 
 2. Execute binary file with the following inputs: `./frz_lattice_model $J $alpha $FrzB_num $beta $index`. J=J_AA and beta = J_AB represent the interaction between AA and AB particles, FrzB_num: Number of FrzB particles, index: simulation instance.
 
