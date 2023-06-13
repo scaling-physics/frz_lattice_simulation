@@ -1,5 +1,7 @@
 # FRZ Lattice Simulation
 
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
+
 This project is a lattice simulation for studying the behavior of interacting particles on a 2D hexagonal lattice. The simulation is implemented on C++ and provides a framework for analyzing the properties and dynamics of the lattice system. 
 
 ## Installation
