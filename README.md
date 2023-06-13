@@ -1,6 +1,6 @@
 # FRZ Lattice Simulation
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 This project is a lattice simulation for studying the behavior of interacting particles on a 2D hexagonal lattice. The simulation is implemented on C++ and provides a framework for analyzing the properties and dynamics of the lattice system. 
 
@@ -16,9 +16,8 @@ To use this simulation, follow these steps:
 
 4. Execute binary file with the following inputs: `./frz_lattice_model $J $alpha $FrzB_num $beta $index`. J=J_AA and beta = J_AB represent the interaction between AA and AB particles, FrzB_num: Number of FrzB particles, index: simulation instance.
 
-
 ## License
 
-This project is licensed under the [MIT License](LICENSE.md). See the `LICENSE.md` file for more details.
+This project is licensed under the [MIT License](LICENSE). See the `LICENSE` file for more details.
 
 
