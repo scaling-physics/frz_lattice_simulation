@@ -1,8 +1,8 @@
-# FRZ Lattice Simulation
+# FRZ system Lattice Simulation
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-This project is a lattice simulation for studying the behavior of interacting particles on a 2D hexagonal lattice. The simulation is implemented on C++ and provides a framework for analyzing the properties and dynamics of the lattice system. 
+In this project we perform Monte Carlo lattice simulations to study the emergent behavior of interacting particles on a 2D hexagonal lattice. The simulation is implemented in C++ and the analysis is performed in Python. The system attempts to capture the complex emergent structures in a system of chemotaxis proteins in bacteria (mainly in _E.coli_ and _M. Xanthus_).
 
 ## Installation
 
