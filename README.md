@@ -22,7 +22,7 @@ To use this simulation, follow these steps:
 
 The code for data analysis, plotting and lattice visualisations are in a single python notebook: `/Python_analysis/plot_sweep.ipynb file`. Before running it one might want to install the required python libraries listed in `requirements.txt`. 
 
-Run: pip install -r requirements.txt
+Run: `pip install -r requirements.txt`
 
 ## License
 
