@@ -6,11 +6,11 @@ This project is a lattice simulation for studying the behavior of interacting pa
 
 To use this simulation, follow these steps:
 
-1. Clone the repository: git clone git@gitlab.gwdg.de:murray-group/frz_lattice_simulation.git
+1. Clone the repository: `git clone git@gitlab.gwdg.de:murray-group/frz_lattice_simulation.git`
 
 2. Compile main.cpp. 
 
-3. Execute binary file with the following inputs: '''./frz_lattice_model $J $alpha $FrzB_num $beta $index'''. In the scripts '''J=J_AA and beta = J_AB'''.
+3. Execute binary file with the following inputs: `./frz_lattice_model $J $alpha $FrzB_num $beta $index`. In the scripts `J=J_AA and beta = J_AB`.
 
 
 
